@@ -24,7 +24,7 @@ SEGS = [
     ("v3", 7.00, 10.50, 1, "real", 1.00),   # price standee
     ("v3", 19.50, 25.00, 1, "real", 1.00),  # shop front at night
 ]
-END_SCREEN = 4.0
+END_SCREEN = 0.0  # no end screen (call board + like/subscribe removed)
 
 
 def frames(seg):

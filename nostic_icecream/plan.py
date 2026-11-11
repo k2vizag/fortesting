@@ -97,7 +97,6 @@ ST(14, 19.8, "l", "📍", "మాధవధార", 2.4)
 
 for s in starts[1:]:
     sfx.append({"t": s, "k": "cut"})
-sfx.append({"t": MAIN, "k": "end"})
 
 data = {"main_end": MAIN, "total": MAIN + END_SCREEN, "captions": caps, "stickers": stk, "numbers": [], "cards": [],
         "board": {"phone": "7989615350"}, "title": None, "sfx": sfx}
