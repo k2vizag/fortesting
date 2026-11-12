@@ -19,3 +19,5 @@ user's message is short.
 - Google Drive links must be shared as "Anyone with the link"; if a download
   returns a sign-in page, ask the user to change sharing.
 - Do not commit video files over ~90 MB (GitHub rejects files over 100 MB).
+- Comedy SFX library: `sfx/comedy_ref1/` (18 named clips + README with timing
+  rules). Use it when the user asks for comedy sound effects or "SFX like the reference".
