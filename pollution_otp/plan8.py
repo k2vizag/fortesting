@@ -27,7 +27,7 @@ TXT = [
     "KYC ki online lo apply chesi, RTO office ki vellali approval ki,",
     "After that, mobile number update cheyali",
     "Ante ippudu paatha mobile number mana daggara lekapothe, kotha number update chesukune varaku pollution cheyinchukolemannamaata!",
-    "Avunu.",
+    "Avunu bro!",
     "Inkoka update kuda undhi, next video lo chepthanu",
     "Ee information meeku konchem aina use ayyindhi anukunte", "like cheyandi", "maa channel content nachithe",
     "subscribe chesukondi", "Thank you",
@@ -36,7 +36,7 @@ assert len(TXT) == len(P), (len(TXT), len(P))
 KEY = {"pollution": None, "otp": "One Time Password", "certificate": None, "website": None, "old": None, "new": None,
        "mobile": None, "net": None, "rto": "Regional Transport Office", "agent": None, "krishna": None, "vahan": "Govt vehicle portal",
        "kyc": "Know Your Customer", "approval": None, "registration": None, "update": None, "subscribe": None, "like": None,
-       "lekapothe": None, "ledhu": None, "kotha": None, "paatha": None, "online": None, "oho!": None, "avuna?": None, "avunu.": None,
+       "lekapothe": None, "ledhu": None, "kotha": None, "paatha": None, "online": None, "oho!": None, "avuna?": None, "avunu.": None, "avunu": None,
        "thank": None, "cheyinchukolemannamaata!": None}
 PAIR = {("mobile", "number"), ("net", "center"), ("rto", "agent"), ("rto", "office"), ("vahan", "portal"), ("thank", "you"),
         ("pollution", "certificate"), ("phone", "number"), ("next", "video")}

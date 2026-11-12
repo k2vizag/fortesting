@@ -21,13 +21,13 @@ SEGS = [
     ("L11a", "c07", 3.90, 10.02, "K"),
     ("L11b", "c06", 3.03, 7.93, "K"),
     ("L12", "c04", 5.23, 9.92, "N"),
-    ("L13a", "c09", 1.40, 1.73, "K"),
+    ("L13a", "c09", 1.40, 2.04, "K"),   # "Avunu bro"
     ("PAUSE", "BLACK", 0.0, 2.0, "-"),     # 2 s black screen with topic text
     ("L13b", "c06", 7.94, 9.82, "K"),
     ("L13c", "c05", 1.06, 9.52, "K"),
 ]
-# per-segment speed (default SP): Krishna's KYC part + ending at normal speed, "Avunu" slowed to the max (0.5x)
-SPEED = {"L11a": 1.0, "L11b": 1.0, "L13b": 1.0, "L13c": 1.0, "L13a": 0.5}
+# per-segment speed (default SP): checker's first line + Krishna from his 2nd clip on at 0.9x, "Avunu bro" at 1.0x
+SPEED = {"L2": 0.9, "L9": 0.9, "L11a": 0.9, "L11b": 0.9, "L13b": 0.9, "L13c": 0.9, "L13a": 1.0}
 # per-clip framing: (crop_w, crop_h, x, y) in source 478x850, None = full frame
 CROP = {"c05": (377, 670, 50, 0),      # hide burned-in subtitles at the bottom
         "c04": (422, 750, 40, 100)}    # hide "Inside - Right Side" text at the top
@@ -69,11 +69,12 @@ for i, (sid, clip, a, b, spk) in enumerate(pieces):
     cw, ch, x0, y0 = CROP.get(clip, (478, 850, 0, 0))
     cw2, ch2 = int(cw / z) // 2 * 2, int(ch / z) // 2 * 2
     x0 += (cw - cw2) // 2; y0 += int((ch - ch2) * 0.3)
-    f = f"{W}/p{i:02d}.mov"
+    f = f"{W}/p{i:02d}.mov"; nf = max(1, round(d / sp * 30))
     subprocess.run(["ffmpeg", "-v", "error", "-y", "-ss", f"{a:.3f}", "-t", f"{d:.3f}", "-i", f"{RAW}/{clip}.mp4",
         "-filter_complex", f"[0:v]delogo=x=383:y=750:w=32:h=36,crop={cw2}:{ch2}:{x0}:{y0},scale=1080:1920:flags=lanczos,unsharp=5:5:0.6,setsar=1,setpts=(PTS-STARTPTS)/{sp},fps=30[v];"
-        f"[0:a]aresample=48000,afade=t=in:d=0.015,afade=t=out:st={d-0.03:.3f}:d=0.03,atempo={sp},aformat=channel_layouts=stereo[a]",
-        "-map", "[v]", "-map", "[a]", "-c:v", "libx264", "-preset", "veryfast", "-crf", "14", "-c:a", "pcm_s16le", f], check=True)
+        f"[0:a]aresample=48000,afade=t=in:d=0.015,afade=t=out:st={d-0.03:.3f}:d=0.03,atempo={sp},aformat=channel_layouts=stereo,"
+        f"apad,atrim=0:{nf/30:.6f}[a]",            # audio exactly as long as the video -> no a/v drift after concat
+        "-map", "[v]", "-map", "[a]", "-frames:v", str(nf), "-c:v", "libx264", "-preset", "veryfast", "-crf", "14", "-c:a", "pcm_s16le", f], check=True)
     real = float(subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", f],
                                 capture_output=True, text=True).stdout)
     tl.append({"sid": sid, "clip": clip, "a": a, "b": b, "spk": spk, "t0": round(t, 3), "t1": round(t + real, 3)})
