@@ -3,7 +3,8 @@ import json, re
 S = "/tmp/claude-0/-home-user-fortesting/f0703b19-2505-5b8b-b72d-114eb35464cd/scratchpad/pol"
 W = S + "/work"
 TL = json.load(open(W + "/timeline.json"))
-P = TL["pieces"]; ME = TL["main_end"]; TOT = TL["total"]
+PA = [q for q in TL["pieces"] if q["sid"] == "PAUSE"][0]
+P = [q for q in TL["pieces"] if q["sid"] != "PAUSE"]; ME = TL["main_end"]; TOT = TL["total"]
 # text spoken in each cut piece (same order as timeline pieces)
 TXT = [
     "Pollution check cheyali",
@@ -98,6 +99,10 @@ cards = [
                 {"v": "RTO Approval", "t": "Online apply → RTO office", "s": "", "icon": "check", "at": at("L11b") - at("L11a")},
                 {"v": "Update", "t": "Kotha mobile number", "s": "", "icon": "phone", "at": P[[q["sid"] for q in P].index("L11b") + 1]["t0"] - at("L11a")}]),
 ]
+cards.append(dict(type="blacktext", theme="black", a=PA["t0"], b=PA["t1"], hideTitle=True,
+                  lines=[{"t": "OLD NUMBER LEKAPOTHE", "cls": "w", "at": 0.1},
+                         {"t": "NO OTP ❌", "cls": "h", "at": 0.45},
+                         {"t": "NO POLLUTION CERTIFICATE", "cls": "w", "at": 0.9}]))
 # ---- stickers: (time, side, emoji, icon, label, color, dur)
 ST = [
     (at("L1") + 0.1, "r", "", "user", "Navin", "blue", 2.4),
@@ -127,6 +132,8 @@ for t0, side, emo, icon, label, color, dur in ST:
 for c in cards:
     sfx += [{"t": c["a"] - 0.2, "k": "whoosh"}, {"t": c["a"], "k": "impact"}, {"t": c["b"] - 0.2, "k": "whoosh_out"}]
     if c["type"] == "profile": sfx.append({"t": c["a"] + c["pillAt"], "k": "chime"})
+    if c["type"] == "blacktext":
+        sfx[-3:] = [{"t": c["a"], "k": "impact"}] + [{"t": c["a"] + l["at"], "k": "tick"} for l in c["lines"]]
     if c["type"] == "timeline":
         for s_ in c["steps"]: sfx.append({"t": c["a"] + s_["at"], "k": "tick"})
 sfx += [{"t": ME, "k": "whoosh"}, {"t": ME + 0.2, "k": "chime"}, {"t": ME + 1.45, "k": "click"}, {"t": ME + 2.35, "k": "click"}, {"t": ME + 2.4, "k": "ding"}]

@@ -237,8 +237,14 @@ function RENDER_journey(ctx,lt){const p=ctx.parts,c=ctx.c;p.k.style.opacity=clam
     e.style.transform=`translateX(${lt<s.at?0:(1-eOut(x))*50}px) scale(${i===act?0.95+0.05*eBack(x):1})`;e.style.transformOrigin='0 50%'});
   const prog=clamp((lt-0.2)/1.0);p.line.style.clipPath=`inset(0 0 ${100-100*prog}% 0)`;
 }
-const BUILD={profile:BUILD_profile,timeline:BUILD_timeline,chart:BUILD_chart,photo:BUILD_photo,terminal:BUILD_terminal,carcam:BUILD_carcam,journey:BUILD_journey};
-const RENDER={profile:RENDER_profile,timeline:RENDER_timeline,chart:RENDER_chart,photo:RENDER_photo,terminal:RENDER_terminal,carcam:RENDER_carcam,journey:RENDER_journey};
+function BUILD_blacktext(ctx){const {c,n}=ctx; n.style.background='#000';
+  ctx.parts.ls=c.lines.map((l,i)=>el(`<div class="abs" style="left:0;right:0;top:${660+i*230}px;text-align:center;white-space:nowrap">
+     <span class="${l.cls==='h'?'ch':'cw'}" style="${l.cls==='h'?'font-size:150px':'font-family:PX;font-size:70px;letter-spacing:2px'}">${l.t}</span></div>`,n));
+}
+function RENDER_blacktext(ctx,lt){ctx.parts.ls.forEach((e,i)=>{const x=(lt-ctx.c.lines[i].at)/0.35;
+  e.style.opacity=clamp(x*2.5);e.style.transform=`translateY(${(1-eOut(x))*30}px) scale(${x<=0?0.7:0.7+0.3*eBack(x)})`})}
+const BUILD={blacktext:BUILD_blacktext,profile:BUILD_profile,timeline:BUILD_timeline,chart:BUILD_chart,photo:BUILD_photo,terminal:BUILD_terminal,carcam:BUILD_carcam,journey:BUILD_journey};
+const RENDER={blacktext:RENDER_blacktext,profile:RENDER_profile,timeline:RENDER_timeline,chart:RENDER_chart,photo:RENDER_photo,terminal:RENDER_terminal,carcam:RENDER_carcam,journey:RENDER_journey};
 // ---- cards
 for(const c of D.cards){
   const n=el(`<div class="card ${c.theme}" style="opacity:0;display:none"></div>`); const ctx={c,n,parts:{}};
@@ -286,7 +292,7 @@ E.sub=el(`<div class="btn" style="left:520px;top:1160px;width:410px;background:#
 E.cur=el(`<div class="abs" style="left:0;top:0;width:60px;height:60px">${'<svg viewBox="0 0 24 24" width="60" height="60"><path d="M4 2l14 10-6 1 4 8-3 1-4-8-5 4z" fill="#fff" stroke="#000" stroke-width="1.2"/></svg>'}</div>`,E.wrap);
 
 function render(t){
-  let whiteCard=false;
+  let whiteCard=false, hideT=false;
   for(const it of items){
     const on=t>=it.a && t<it.b; const lt=t-it.a, rem=it.b-t;
     if(it.kind==='card'){const n=it.ctx.n;
@@ -295,6 +301,7 @@ function render(t){
       const i=eOut(lt/0.28), o=clamp(rem/0.22);
       n.style.opacity=Math.min(i,o); n.style.transform=`scale(${1.06-0.06*i})`;
       if(it.ctx.c.theme==='white' && n.style.opacity>0.5) whiteCard=true;
+      if(it.ctx.c.hideTitle) hideT=true;
       RENDER[it.ctx.c.type](it.ctx,lt);
     } else if(it.kind==='num'){const n=it.n; if(!on){n.style.display='none';continue}
       n.style.display='block';const x=lt/0.35;
@@ -334,7 +341,7 @@ function render(t){
   s2.setAttribute('x1',bx);s2.setAttribute('y1',by);s2.setAttribute('x2',bx0+W-55*bs);s2.setAttribute('y2',by0+18*bs);
   nl.setAttribute('cx',bx);nl.setAttribute('cy',by);
   // title
-  {const o=t<me?1:clamp(1-(t-me)/0.3); t1.style.opacity=t2.style.opacity=o;
+  {const o=hideT?0:(t<me?1:clamp(1-(t-me)/0.3)); t1.style.opacity=t2.style.opacity=o;
    const k=eBack(t/0.5); t1.style.transform=`scale(${0.6+0.4*k})`; t2.style.transform=`scale(${0.6+0.4*eBack((t-0.12)/0.5)})`;}
   // end screen
   if(t>=me){E.wrap.style.display='block';const lt=t-me;
