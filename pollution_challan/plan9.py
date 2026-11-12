@@ -3,7 +3,8 @@ import json
 S = "/tmp/claude-0/-home-user-fortesting/f0703b19-2505-5b8b-b72d-114eb35464cd/scratchpad/ch"
 W = S + "/work"
 TL = json.load(open(W + "/timeline.json"))
-P = TL["pieces"]; ME = TL["main_end"]; TOT = TL["total"]
+QP = [q for q in TL["pieces"] if q["sid"] == "Q"][0]
+P = [q for q in TL["pieces"] if q["sid"] != "Q"]; ME = TL["main_end"]; TOT = TL["total"]
 R = "₹1,035/-"
 TXT = {
     "S1": "Pollution bro! Mobile number update cheyinchukunnanu. Ippudu pollution cheyinchandi.",
@@ -14,7 +15,8 @@ TXT = {
     "S7": "Malli net center ki velli challan kattinchukuni randi anna!",
     "S8": "Krishna bro! Enti bro idhi? | Prabhutvam roju rojuki kotha kotha rules testhondhi! | Challan pending lo unte pollution kuda avvadhanta! | Twaraga challan katteyi bro!",
     "S9": "Helmet fine aa bro?",
-    "S10": f"Avunu bro! {R} | Inkosari nunchi helmet lekunda bayatiki vellanu bro! | Naa bodi juttu pothe poyindhi... | Fine kattalsina avasaram ledhu! | Ika nunchi naa thala kuda safe ga untundhi!",
+    "S10a": f"Avunu bro! {R}",
+    "S10b": "Inkosari nunchi helmet lekunda bayatiki vellanu bro! | Naa bodi juttu pothe poyindhi... | Fine kattalsina avasaram ledhu! | Ika nunchi naa thala kuda safe ga untundhi!",
     "S11": "Katteshanu bro!",
     "S12": "Challan website maarindhi bro! | Kotha website link description lo pedathanu. | Check chesukuni pay chesukondi.",
     "S13": "Ee samacharam meeku konchemaina upayogapadindhanipisthe video ni like cheyandi. | Maa channel content nachithe subscribe chesukondi bro! | Thank you!",
@@ -93,6 +95,10 @@ cards = [
          kicker="CHALLAN WEBSITE CHANGED", title="New Website", pill="Link in description", pillAt=at("S12", 0.36) - at("S12"),
          desc="Check chesukuni pay chesukondi", tiles=["phone", "rupee", "check"]),
 ]
+cards.append(dict(type="blacktext", theme="black", a=QP["t0"], b=QP["t1"], hideTitle=True,   # Navin's question (no take)
+                  lines=[{"t": "NAVIN 🤔", "cls": "w", "at": 0.05},
+                         {"t": "Ee website lo", "cls": "w", "at": 0.25},
+                         {"t": "pay chesaru?", "cls": "h", "at": 0.45}]))
 # ---- stickers: (time, side, emoji, icon, label, color, dur)
 ST = [
     (at("S1") + 0.1, "r", "", "user", "Navin", "blue", 2.2),
@@ -113,10 +119,10 @@ ST = [
     (at("S7") + 0.1, "l", "🏪", "", "Net Center", None, 2.2),
     (at("S8") + 0.2, "r", "", "user", "Navin", "blue", 1.6),
     (at("S8", 0.3), "l", "📜", "", "New rules", None, 2.2),
-    (at("S9") + 0.05, "l", "", "user", "Krishna", "orange", 2.2),
-    (at("S10", 0.18), "r", "⛑️", "", "Helmet", None, 2.2),
-    (at("S10", 0.48), "l", "😂", "", "", None, 1.6),
-    (src("S10", 8.3), "r", "😎", "", "Safe!", None, 2.0),
+    (at("S9") + 0.05, "l", "", "user", "Krishna", "orange", 0.85),
+    (at("S10b", 0.05), "r", "⛑️", "", "Helmet", None, 2.2),
+    (at("S10b", 0.4), "l", "😂", "", "", None, 1.6),
+    (src("S10b", 8.3), "r", "😎", "", "Safe!", None, 2.0),
     (at("S11") + 0.05, "r", "✅", "", "Paid", None, 1.6),
     (at("S13", 0.4), "l", "👍", "", "Like", None, 1.6),
     (at("S13", 0.68), "r", "🔔", "", "Subscribe", None, 1.8),
@@ -127,11 +133,13 @@ for t0, side, emo, icon, label, color, dur in ST:
     if emo: st["emoji"] = emo
     stickers.append(st); sfx.append({"t": t0, "k": "pop"})
 for c in cards:
+    if c["type"] == "blacktext":
+        sfx += [{"t": c["a"], "k": "impact"}] + [{"t": c["a"] + l["at"], "k": "tick"} for l in c["lines"]]; continue
     sfx += [{"t": c["a"] - 0.2, "k": "whoosh"}, {"t": c["a"], "k": "impact"}, {"t": c["b"] - 0.2, "k": "whoosh_out"},
             {"t": c["a"] + c["pillAt"], "k": "chime"}]
 sfx += [{"t": ME, "k": "whoosh"}, {"t": ME + 0.2, "k": "tick"}, {"t": ME + 1.45, "k": "click"}, {"t": ME + 2.35, "k": "click"}, {"t": ME + 2.4, "k": "ding"}]
 # ---- funny parts: comedy music bed + real CC0 comedy sfx (sfx_library)
-fun = {"music": [[at("FB0"), at("S6", 1.0)], [at("S10"), at("S10", 1.0)]],
+fun = {"music": [[at("FB0"), at("S6", 1.0)], [at("S10b"), at("S10b", 1.0)]],
        "events": [  # time, sound, max length, dB vs voice
            (at("S2", 0.56), "crowd-ooh-01", 1.6, -16),          # shocking news
            (at("FB0") + 0.05, "cartoon-eye-blink-01", 0.8, -11), # shock face zoom
@@ -140,8 +148,8 @@ fun = {"music": [[at("FB0"), at("S6", 1.0)], [at("S10"), at("S10", 1.0)]],
            (at("S5", 0.62), "laugh-01", 1.6, -16),              # pelli kuda kaaledhu
            (at("S6") + 0.05, "crowd-groan-01", 1.4, -16),       # Odiyamma!
            (at("S6", 0.8), "ready-coin-04", 0.9, -12),          # 1035 photo
-           (at("S10", 0.5), "cartoon-boing-01", 0.9, -13),      # bodi juttu
-           (src("S10", 8.3), "tada-04", 1.4, -13),              # helmet pose
+           (at("S10b", 0.42), "cartoon-boing-01", 0.9, -13),    # bodi juttu
+           (src("S10b", 8.3), "tada-04", 1.4, -13),             # helmet pose
            (at("S11") + 0.05, "ready-coin-04", 0.9, -12),       # katteshanu
        ]}
 data = {"main_end": ME, "total": TOT, "captions": caps, "stickers": stickers, "numbers": [], "cards": cards,

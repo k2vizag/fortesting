@@ -239,7 +239,7 @@ function RENDER_journey(ctx,lt){const p=ctx.parts,c=ctx.c;p.k.style.opacity=clam
 }
 function BUILD_blacktext(ctx){const {c,n}=ctx; n.style.background='#000';
   ctx.parts.ls=c.lines.map((l,i)=>el(`<div class="abs" style="left:0;right:0;top:${660+i*230}px;text-align:center;white-space:nowrap">
-     <span class="${l.cls==='h'?'ch':'cw'}" style="${l.cls==='h'?'font-size:150px':'font-family:PX;font-size:70px;letter-spacing:2px'}">${l.t}</span></div>`,n));
+     <span class="${l.cls==='h'?'ch':'cw'}" style="${l.cls==='h'?'font-size:128px':'font-family:PX;font-size:70px;letter-spacing:2px'}">${l.t}</span></div>`,n));
 }
 function RENDER_blacktext(ctx,lt){ctx.parts.ls.forEach((e,i)=>{const x=(lt-ctx.c.lines[i].at)/0.35;
   e.style.opacity=clamp(x*2.5);e.style.transform=`translateY(${(1-eOut(x))*30}px) scale(${x<=0?0.7:0.7+0.3*eBack(x)})`})}

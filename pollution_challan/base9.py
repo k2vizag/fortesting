@@ -18,14 +18,16 @@ SEGS = [
     ("S7",  "d05", 7.12, 9.40, "P"),     # Malli net center ki velli...
     ("S8",  "d06", 0.00, 9.20, "N"),     # Krishna bro! enti bro idhi?...
     ("S9",  "d08", 0.22, 1.24, "K"),     # Helmet fine aa bro?
-    ("S10", "d07", 0.10, 10.02, "N"),    # Avunu bro 1035 ... helmet pose
-    ("S11", "d08", 2.44, 3.33, "K"),     # Katteshanu bro!
+    ("S10a", "d07", 0.10, 1.47, "N"),    # Avunu bro! 1035
+    ("S11", "d08", 2.44, 3.33, "K"),     # Katteshanu bro!  (right after the amount)
+    ("S10b", "d07", 1.50, 10.02, "N"),   # Inkosari nunchi helmet lekunda ... helmet pose
+    ("Q", "BLACK", 0.0, 1.8, "-"),       # Navin's "ee website lo pay chesaru?" has no take -> text screen
     ("S12", "d08", 4.40, 9.52, "K"),     # Challan website maarindhi...
     ("S13", "d09", 0.28, 9.24, "K"),     # ending
 ]
 NOSPLIT = {"FB0", "FB1"}                       # keep the flashback shots whole (no speech inside)
 # per-segment speed (default SP = 1.1x)
-SPEED = {"S1": 0.9, "S2": 0.95, "S7": 0.9, "S8": 1.05, "S10": 1.05, "S12": 0.9, "S13": 1.0}   # evens out the AI voices (~17.5 chars/s)
+SPEED = {"S1": 0.9, "S2": 0.95, "S7": 0.9, "S8": 1.05, "S10a": 1.05, "S10b": 1.05, "S12": 0.9, "S13": 1.0}   # evens out the AI voices (~17.5 chars/s)
 # flashback look (FB1 after the shock zoom, and the pleading scene)
 GRADE = {"FB1": "eq=saturation=0.55:contrast=1.06,colorbalance=rs=0.06:bs=-0.06,vignette=PI/4.5",
          "S5": "eq=saturation=0.55:contrast=1.06,colorbalance=rs=0.06:bs=-0.06,vignette=PI/4.5"}
