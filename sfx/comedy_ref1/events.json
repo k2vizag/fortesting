@@ -1,0 +1,1472 @@
+[
+ {
+  "start": 0.25,
+  "end": 0.85,
+  "bg": [
+   [
+    "Music",
+    0.5
+   ],
+   [
+    "Television",
+    0.21
+   ],
+   [
+    "Speech",
+    0.11
+   ],
+   [
+    "Musical instrument",
+    0.03
+   ],
+   [
+    "Violin, fiddle",
+    0.02
+   ]
+  ],
+  "mix": [
+   [
+    "Speech",
+    0.75
+   ],
+   [
+    "Music",
+    0.14
+   ],
+   [
+    "Television",
+    0.11
+   ],
+   [
+    "Male speech, man speaking",
+    0.06
+   ],
+   [
+    "Vehicle",
+    0.03
+   ]
+  ],
+  "peak": -33.6
+ },
+ {
+  "start": 1.15,
+  "end": 2.65,
+  "bg": [
+   [
+    "Television",
+    0.57
+   ],
+   [
+    "Music",
+    0.4
+   ],
+   [
+    "Speech",
+    0.06
+   ],
+   [
+    "Cattle, bovinae",
+    0.05
+   ],
+   [
+    "Sound effect",
+    0.04
+   ]
+  ],
+  "mix": [
+   [
+    "Speech",
+    0.58
+   ],
+   [
+    "Music",
+    0.54
+   ],
+   [
+    "Television",
+    0.1
+   ],
+   [
+    "Male speech, man speaking",
+    0.03
+   ],
+   [
+    "Vehicle",
+    0.03
+   ]
+  ],
+  "peak": -33.7
+ },
+ {
+  "start": 9.95,
+  "end": 11.5,
+  "bg": [
+   [
+    "Music",
+    0.25
+   ],
+   [
+    "Television",
+    0.13
+   ],
+   [
+    "Speech",
+    0.07
+   ],
+   [
+    "Sound effect",
+    0.06
+   ],
+   [
+    "Animal",
+    0.03
+   ]
+  ],
+  "mix": [
+   [
+    "Speech",
+    0.8
+   ],
+   [
+    "Music",
+    0.7
+   ],
+   [
+    "Television",
+    0.15
+   ],
+   [
+    "Male speech, man speaking",
+    0.02
+   ],
+   [
+    "Snicker",
+    0.01
+   ]
+  ],
+  "peak": -23.0
+ },
+ {
+  "start": 16.2,
+  "end": 16.55,
+  "bg": [
+   [
+    "Music",
+    0.42
+   ],
+   [
+    "Speech",
+    0.1
+   ],
+   [
+    "Musical instrument",
+    0.05
+   ],
+   [
+    "Television",
+    0.04
+   ],
+   [
+    "Sound effect",
+    0.03
+   ]
+  ],
+  "mix": [
+   [
+    "Speech",
+    0.54
+   ],
+   [
+    "Music",
+    0.38
+   ],
+   [
+    "Vehicle",
+    0.06
+   ],
+   [
+    "Car",
+    0.05
+   ],
+   [
+    "Sound effect",
+    0.03
+   ]
+  ],
+  "peak": -37.6
+ },
+ {
+  "start": 17.6,
+  "end": 18.0,
+  "bg": [
+   [
+    "Music",
+    0.57
+   ],
+   [
+    "Fowl",
+    0.08
+   ],
+   [
+    "Tick-tock",
+    0.05
+   ],
+   [
+    "Sound effect",
+    0.04
+   ],
+   [
+    "Tick",
+    0.03
+   ]
+  ],
+  "mix": [
+   [
+    "Speech",
+    0.42
+   ],
+   [
+    "Music",
+    0.35
+   ],
+   [
+    "Fowl",
+    0.22
+   ],
+   [
+    "Cluck",
+    0.13
+   ],
+   [
+    "Chicken, rooster",
+    0.13
+   ]
+  ],
+  "peak": -32.2
+ },
+ {
+  "start": 20.75,
+  "end": 22.35,
+  "bg": [
+   [
+    "Music",
+    0.45
+   ],
+   [
+    "Speech",
+    0.17
+   ],
+   [
+    "Inside, small room",
+    0.05
+   ],
+   [
+    "Rodents, rats, mice",
+    0.04
+   ],
+   [
+    "Squeak",
+    0.04
+   ]
+  ],
+  "mix": [
+   [
+    "Speech",
+    0.15
+   ],
+   [
+    "Music",
+    0.14
+   ],
+   [
+    "Animal",
+    0.07
+   ],
+   [
+    "Domestic animals, pets",
+    0.06
+   ],
+   [
+    "Fowl",
+    0.06
+   ]
+  ],
+  "peak": -26.0
+ },
+ {
+  "start": 27.6,
+  "end": 27.7,
+  "bg": [
+   [
+    "Music",
+    0.4
+   ],
+   [
+    "Speech",
+    0.09
+   ],
+   [
+    "Musical instrument",
+    0.07
+   ],
+   [
+    "Television",
+    0.06
+   ],
+   [
+    "Sound effect",
+    0.03
+   ]
+  ],
+  "mix": [
+   [
+    "Speech",
+    0.5
+   ],
+   [
+    "Male speech, man speaking",
+    0.15
+   ],
+   [
+    "Narration, monologue",
+    0.09
+   ],
+   [
+    "Music",
+    0.06
+   ],
+   [
+    "Vehicle",
+    0.02
+   ]
+  ],
+  "peak": -35.1
+ },
+ {
+  "start": 28.05,
+  "end": 28.85,
+  "bg": [
+   [
+    "Music",
+    0.16
+   ],
+   [
+    "Ding",
+    0.14
+   ],
+   [
+    "Speech",
+    0.12
+   ],
+   [
+    "Boing",
+    0.05
+   ],
+   [
+    "Sound effect",
+    0.05
+   ]
+  ],
+  "mix": [
+   [
+    "Speech",
+    0.57
+   ],
+   [
+    "Ding",
+    0.22
+   ],
+   [
+    "Music",
+    0.11
+   ],
+   [
+    "Clang",
+    0.09
+   ],
+   [
+    "Chink, clink",
+    0.05
+   ]
+  ],
+  "peak": -29.0
+ },
+ {
+  "start": 31.2,
+  "end": 32.6,
+  "bg": [
+   [
+    "Music",
+    0.4
+   ],
+   [
+    "Fowl",
+    0.27
+   ],
+   [
+    "Cluck",
+    0.08
+   ],
+   [
+    "Chicken, rooster",
+    0.06
+   ],
+   [
+    "Speech",
+    0.03
+   ]
+  ],
+  "mix": [
+   [
+    "Speech",
+    0.5
+   ],
+   [
+    "Music",
+    0.26
+   ],
+   [
+    "Fowl",
+    0.06
+   ],
+   [
+    "Boing",
+    0.06
+   ],
+   [
+    "Snicker",
+    0.06
+   ]
+  ],
+  "peak": -25.9
+ },
+ {
+  "start": 39.4,
+  "end": 39.75,
+  "bg": [
+   [
+    "Music",
+    0.51
+   ],
+   [
+    "Musical instrument",
+    0.27
+   ],
+   [
+    "Plucked string instrument",
+    0.14
+   ],
+   [
+    "Guitar",
+    0.12
+   ],
+   [
+    "Violin, fiddle",
+    0.06
+   ]
+  ],
+  "mix": [
+   [
+    "Music",
+    0.53
+   ],
+   [
+    "Speech",
+    0.21
+   ],
+   [
+    "Dog",
+    0.1
+   ],
+   [
+    "Animal",
+    0.09
+   ],
+   [
+    "Musical instrument",
+    0.09
+   ]
+  ],
+  "peak": -25.7
+ },
+ {
+  "start": 41.1,
+  "end": 41.4,
+  "bg": [
+   [
+    "Music",
+    0.2
+   ],
+   [
+    "Sound effect",
+    0.11
+   ],
+   [
+    "Television",
+    0.06
+   ],
+   [
+    "Bang",
+    0.05
+   ],
+   [
+    "Whoosh, swoosh, swish",
+    0.04
+   ]
+  ],
+  "mix": [
+   [
+    "Music",
+    0.43
+   ],
+   [
+    "Speech",
+    0.13
+   ],
+   [
+    "Sound effect",
+    0.05
+   ],
+   [
+    "Grunt",
+    0.03
+   ],
+   [
+    "Television",
+    0.03
+   ]
+  ],
+  "peak": -28.0
+ },
+ {
+  "start": 45.85,
+  "end": 45.95,
+  "bg": [
+   [
+    "Music",
+    0.35
+   ],
+   [
+    "Speech",
+    0.12
+   ],
+   [
+    "Musical instrument",
+    0.07
+   ],
+   [
+    "Sound effect",
+    0.03
+   ],
+   [
+    "Guitar",
+    0.03
+   ]
+  ],
+  "mix": [
+   [
+    "Speech",
+    0.41
+   ],
+   [
+    "Music",
+    0.09
+   ],
+   [
+    "Sound effect",
+    0.04
+   ],
+   [
+    "Buzzer",
+    0.04
+   ],
+   [
+    "Grunt",
+    0.03
+   ]
+  ],
+  "peak": -37.5
+ },
+ {
+  "start": 47.6,
+  "end": 47.75,
+  "bg": [
+   [
+    "Music",
+    0.38
+   ],
+   [
+    "Sound effect",
+    0.09
+   ],
+   [
+    "Speech",
+    0.07
+   ],
+   [
+    "Beep, bleep",
+    0.02
+   ],
+   [
+    "Ringtone",
+    0.02
+   ]
+  ],
+  "mix": [
+   [
+    "Music",
+    0.39
+   ],
+   [
+    "Speech",
+    0.24
+   ],
+   [
+    "Sound effect",
+    0.03
+   ],
+   [
+    "Vehicle",
+    0.02
+   ],
+   [
+    "Whoop",
+    0.02
+   ]
+  ],
+  "peak": -32.7
+ },
+ {
+  "start": 50.4,
+  "end": 50.6,
+  "bg": [
+   [
+    "Music",
+    0.46
+   ],
+   [
+    "Speech",
+    0.19
+   ],
+   [
+    "Finger snapping",
+    0.06
+   ],
+   [
+    "Sound effect",
+    0.04
+   ],
+   [
+    "Slap, smack",
+    0.04
+   ]
+  ],
+  "mix": [
+   [
+    "Music",
+    0.37
+   ],
+   [
+    "Speech",
+    0.28
+   ],
+   [
+    "Slap, smack",
+    0.08
+   ],
+   [
+    "Finger snapping",
+    0.05
+   ],
+   [
+    "Sound effect",
+    0.04
+   ]
+  ],
+  "peak": -29.6
+ },
+ {
+  "start": 53.25,
+  "end": 54.65,
+  "bg": [
+   [
+    "Music",
+    0.6
+   ],
+   [
+    "Percussion",
+    0.11
+   ],
+   [
+    "Wood block",
+    0.1
+   ],
+   [
+    "Musical instrument",
+    0.06
+   ],
+   [
+    "Speech",
+    0.03
+   ]
+  ],
+  "mix": [
+   [
+    "Music",
+    0.56
+   ],
+   [
+    "Percussion",
+    0.1
+   ],
+   [
+    "Wood block",
+    0.1
+   ],
+   [
+    "Musical instrument",
+    0.04
+   ],
+   [
+    "Speech",
+    0.03
+   ]
+  ],
+  "peak": -24.1
+ },
+ {
+  "start": 57.65,
+  "end": 59.15,
+  "bg": [
+   [
+    "Music",
+    0.41
+   ],
+   [
+    "Violin, fiddle",
+    0.11
+   ],
+   [
+    "Musical instrument",
+    0.09
+   ],
+   [
+    "Squeak",
+    0.06
+   ],
+   [
+    "Fowl",
+    0.05
+   ]
+  ],
+  "mix": [
+   [
+    "Speech",
+    0.46
+   ],
+   [
+    "Music",
+    0.34
+   ],
+   [
+    "Fowl",
+    0.05
+   ],
+   [
+    "Cluck",
+    0.03
+   ],
+   [
+    "Animal",
+    0.02
+   ]
+  ],
+  "peak": -28.5
+ },
+ {
+  "start": 66.05,
+  "end": 66.4,
+  "bg": [
+   [
+    "Music",
+    0.18
+   ],
+   [
+    "Whistling",
+    0.11
+   ],
+   [
+    "Speech",
+    0.07
+   ],
+   [
+    "Sound effect",
+    0.06
+   ],
+   [
+    "Squeak",
+    0.04
+   ]
+  ],
+  "mix": [
+   [
+    "Speech",
+    0.41
+   ],
+   [
+    "Ding",
+    0.17
+   ],
+   [
+    "Music",
+    0.13
+   ],
+   [
+    "Clang",
+    0.12
+   ],
+   [
+    "Boing",
+    0.1
+   ]
+  ],
+  "peak": -29.6
+ },
+ {
+  "start": 68.5,
+  "end": 68.8,
+  "bg": [
+   [
+    "Music",
+    0.5
+   ],
+   [
+    "Television",
+    0.23
+   ],
+   [
+    "Sound effect",
+    0.05
+   ],
+   [
+    "Smash, crash",
+    0.03
+   ],
+   [
+    "Speech",
+    0.03
+   ]
+  ],
+  "mix": [
+   [
+    "Speech",
+    0.49
+   ],
+   [
+    "Music",
+    0.43
+   ],
+   [
+    "Television",
+    0.06
+   ],
+   [
+    "Male speech, man speaking",
+    0.04
+   ],
+   [
+    "Sound effect",
+    0.02
+   ]
+  ],
+  "peak": -28.4
+ },
+ {
+  "start": 78.75,
+  "end": 79.15,
+  "bg": [
+   [
+    "Music",
+    0.43
+   ],
+   [
+    "Speech",
+    0.23
+   ],
+   [
+    "Musical instrument",
+    0.06
+   ],
+   [
+    "Guitar",
+    0.04
+   ],
+   [
+    "Plucked string instrument",
+    0.04
+   ]
+  ],
+  "mix": [
+   [
+    "Speech",
+    0.58
+   ],
+   [
+    "Male speech, man speaking",
+    0.07
+   ],
+   [
+    "Music",
+    0.04
+   ],
+   [
+    "Narration, monologue",
+    0.03
+   ],
+   [
+    "Vehicle",
+    0.02
+   ]
+  ],
+  "peak": -37.5
+ },
+ {
+  "start": 79.8,
+  "end": 80.25,
+  "bg": [
+   [
+    "Music",
+    0.49
+   ],
+   [
+    "Speech",
+    0.1
+   ],
+   [
+    "Television",
+    0.04
+   ],
+   [
+    "Sound effect",
+    0.03
+   ],
+   [
+    "Silence",
+    0.02
+   ]
+  ],
+  "mix": [
+   [
+    "Speech",
+    0.58
+   ],
+   [
+    "Male speech, man speaking",
+    0.12
+   ],
+   [
+    "Music",
+    0.08
+   ],
+   [
+    "Narration, monologue",
+    0.07
+   ],
+   [
+    "Vehicle",
+    0.04
+   ]
+  ],
+  "peak": -36.3
+ },
+ {
+  "start": 81.6,
+  "end": 81.95,
+  "bg": [
+   [
+    "Music",
+    0.29
+   ],
+   [
+    "Speech",
+    0.15
+   ],
+   [
+    "Sound effect",
+    0.1
+   ],
+   [
+    "Slam",
+    0.03
+   ],
+   [
+    "Door",
+    0.02
+   ]
+  ],
+  "mix": [
+   [
+    "Speech",
+    0.68
+   ],
+   [
+    "Music",
+    0.3
+   ],
+   [
+    "Male speech, man speaking",
+    0.04
+   ],
+   [
+    "Sound effect",
+    0.03
+   ],
+   [
+    "Narration, monologue",
+    0.02
+   ]
+  ],
+  "peak": -23.8
+ },
+ {
+  "start": 83.0,
+  "end": 83.4,
+  "bg": [
+   [
+    "Music",
+    0.44
+   ],
+   [
+    "Speech",
+    0.07
+   ],
+   [
+    "Sound effect",
+    0.05
+   ],
+   [
+    "Explosion",
+    0.05
+   ],
+   [
+    "Eruption",
+    0.03
+   ]
+  ],
+  "mix": [
+   [
+    "Speech",
+    0.6
+   ],
+   [
+    "Vehicle",
+    0.08
+   ],
+   [
+    "Music",
+    0.08
+   ],
+   [
+    "Quack",
+    0.07
+   ],
+   [
+    "Animal",
+    0.05
+   ]
+  ],
+  "peak": -35.0
+ },
+ {
+  "start": 84.45,
+  "end": 84.85,
+  "bg": [
+   [
+    "Music",
+    0.28
+   ],
+   [
+    "Speech",
+    0.17
+   ],
+   [
+    "Sound effect",
+    0.03
+   ],
+   [
+    "Animal",
+    0.03
+   ],
+   [
+    "Male speech, man speaking",
+    0.03
+   ]
+  ],
+  "mix": [
+   [
+    "Speech",
+    0.65
+   ],
+   [
+    "Music",
+    0.13
+   ],
+   [
+    "Male singing",
+    0.04
+   ],
+   [
+    "Male speech, man speaking",
+    0.04
+   ],
+   [
+    "Vehicle",
+    0.04
+   ]
+  ],
+  "peak": -36.2
+ },
+ {
+  "start": 85.85,
+  "end": 86.35,
+  "bg": [
+   [
+    "Music",
+    0.49
+   ],
+   [
+    "Television",
+    0.06
+   ],
+   [
+    "Speech",
+    0.06
+   ],
+   [
+    "Sound effect",
+    0.03
+   ],
+   [
+    "Musical instrument",
+    0.02
+   ]
+  ],
+  "mix": [
+   [
+    "Speech",
+    0.59
+   ],
+   [
+    "Music",
+    0.32
+   ],
+   [
+    "Vehicle",
+    0.11
+   ],
+   [
+    "Car",
+    0.06
+   ],
+   [
+    "Male speech, man speaking",
+    0.03
+   ]
+  ],
+  "peak": -37.0
+ },
+ {
+  "start": 87.3,
+  "end": 87.65,
+  "bg": [
+   [
+    "Music",
+    0.57
+   ],
+   [
+    "Speech",
+    0.07
+   ],
+   [
+    "Musical instrument",
+    0.07
+   ],
+   [
+    "Television",
+    0.05
+   ],
+   [
+    "Sound effect",
+    0.03
+   ]
+  ],
+  "mix": [
+   [
+    "Speech",
+    0.56
+   ],
+   [
+    "Male speech, man speaking",
+    0.2
+   ],
+   [
+    "Narration, monologue",
+    0.08
+   ],
+   [
+    "Music",
+    0.06
+   ],
+   [
+    "Sound effect",
+    0.03
+   ]
+  ],
+  "peak": -35.7
+ },
+ {
+  "start": 88.0,
+  "end": 88.4,
+  "bg": [
+   [
+    "Music",
+    0.2
+   ],
+   [
+    "Fly, housefly",
+    0.2
+   ],
+   [
+    "Bee, wasp, etc.",
+    0.18
+   ],
+   [
+    "Insect",
+    0.17
+   ],
+   [
+    "Speech",
+    0.11
+   ]
+  ],
+  "mix": [
+   [
+    "Speech",
+    0.59
+   ],
+   [
+    "Music",
+    0.3
+   ],
+   [
+    "Male speech, man speaking",
+    0.09
+   ],
+   [
+    "Narration, monologue",
+    0.03
+   ],
+   [
+    "Vehicle",
+    0.03
+   ]
+  ],
+  "peak": -35.4
+ },
+ {
+  "start": 88.7,
+  "end": 89.0,
+  "bg": [
+   [
+    "Music",
+    0.26
+   ],
+   [
+    "Speech",
+    0.07
+   ],
+   [
+    "Snort",
+    0.06
+   ],
+   [
+    "Animal",
+    0.06
+   ],
+   [
+    "Gasp",
+    0.05
+   ]
+  ],
+  "mix": [
+   [
+    "Speech",
+    0.47
+   ],
+   [
+    "Music",
+    0.15
+   ],
+   [
+    "Male speech, man speaking",
+    0.1
+   ],
+   [
+    "Quack",
+    0.08
+   ],
+   [
+    "Chuckle, chortle",
+    0.03
+   ]
+  ],
+  "peak": -36.6
+ },
+ {
+  "start": 91.5,
+  "end": 92.95,
+  "bg": [
+   [
+    "Computer keyboard",
+    0.29
+   ],
+   [
+    "Typing",
+    0.25
+   ],
+   [
+    "Typewriter",
+    0.08
+   ],
+   [
+    "Speech",
+    0.05
+   ],
+   [
+    "Music",
+    0.02
+   ]
+  ],
+  "mix": [
+   [
+    "Speech",
+    0.44
+   ],
+   [
+    "Music",
+    0.06
+   ],
+   [
+    "Mechanisms",
+    0.03
+   ],
+   [
+    "Male speech, man speaking",
+    0.03
+   ],
+   [
+    "Wood",
+    0.03
+   ]
+  ],
+  "peak": -24.5
+ },
+ {
+  "start": 93.95,
+  "end": 94.25,
+  "bg": [
+   [
+    "Heart murmur",
+    0.36
+   ],
+   [
+    "Heart sounds, heartbeat",
+    0.26
+   ],
+   [
+    "Speech",
+    0.03
+   ],
+   [
+    "Throbbing",
+    0.03
+   ],
+   [
+    "Hum",
+    0.03
+   ]
+  ],
+  "mix": [
+   [
+    "Grunt",
+    0.23
+   ],
+   [
+    "Speech",
+    0.21
+   ],
+   [
+    "Music",
+    0.21
+   ],
+   [
+    "Groan",
+    0.11
+   ],
+   [
+    "Sound effect",
+    0.09
+   ]
+  ],
+  "peak": -18.7
+ },
+ {
+  "start": 99.5,
+  "end": 107.7,
+  "bg": [
+   [
+    "Music",
+    0.62
+   ],
+   [
+    "Dog",
+    0.24
+   ],
+   [
+    "Animal",
+    0.19
+   ],
+   [
+    "Domestic animals, pets",
+    0.14
+   ],
+   [
+    "Whimper (dog)",
+    0.1
+   ]
+  ],
+  "mix": [
+   [
+    "Music",
+    0.63
+   ],
+   [
+    "Fowl",
+    0.42
+   ],
+   [
+    "Cluck",
+    0.09
+   ],
+   [
+    "Turkey",
+    0.08
+   ],
+   [
+    "Snicker",
+    0.08
+   ]
+  ],
+  "peak": -14.9
+ }
+]
