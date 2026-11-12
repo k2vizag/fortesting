@@ -287,6 +287,8 @@ const E={};
 E.wrap=el(`<div class="abs" style="inset:0;z-index:40;display:none;background:radial-gradient(circle at 50% 45%,#1d1f3a,#07070f 70%)"></div>`);
 E.yt=el(`<div class="abs" style="left:390px;top:640px;width:300px;height:210px;border-radius:60px;background:linear-gradient(180deg,#FF3B3B,#D10000);display:flex;align-items:center;justify-content:center;box-shadow:0 20px 60px rgba(255,0,0,.35)"><div style="width:0;height:0;border-left:90px solid #fff;border-top:56px solid transparent;border-bottom:56px solid transparent;margin-left:18px"></div></div>`,E.wrap);
 E.tx=el(`<div class="abs" style="left:0;right:0;top:920px;text-align:center;font-family:PX;font-size:84px;line-height:1.1;color:#fff;text-shadow:0 6px 0 rgba(0,0,0,.4)">Like &amp; Subscribe<br>cheyandi</div>`,E.wrap);
+E.ct1=el(`<div class="abs" style="left:0;right:0;top:250px;text-align:center;font-family:PB;font-size:50px;color:#c9cbe0">For more details contact</div>`,E.wrap);
+E.ct2=el(`<div class="abs" style="left:0;right:0;top:325px;text-align:center"><span class="ch" style="font-size:112px">📞 ${D.board.phone}</span></div>`,E.wrap);
 E.like=el(`<div class="btn" style="left:150px;top:1160px;width:330px;background:#1E6BFF">👍 LIKE</div>`,E.wrap);
 E.sub=el(`<div class="btn" style="left:520px;top:1160px;width:410px;background:#E62117">SUBSCRIBE</div>`,E.wrap);
 E.cur=el(`<div class="abs" style="left:0;top:0;width:60px;height:60px">${'<svg viewBox="0 0 24 24" width="60" height="60"><path d="M4 2l14 10-6 1 4 8-3 1-4-8-5 4z" fill="#fff" stroke="#000" stroke-width="1.2"/></svg>'}</div>`,E.wrap);
@@ -330,7 +332,7 @@ function render(t){
   // board
   const me=D.main_end; let bx,by,bs,ang;
   const sw=3.5*Math.sin(2*Math.PI*t/2.6);
-  bwrap.style.display = t<me ? 'none' : 'block';
+  bwrap.style.display = 'none';
   {const k=eBack((t-me-0.2)/0.6);bx=540;by=200-(1-clamp(k))*260;bs=1.55;ang=3.5*Math.sin(2*Math.PI*(t-me)/2.6)*clamp((t-me-0.6)/0.5);bwrap.style.opacity=clamp((t-me-0.2)/0.3)}
   const W=330*bs,H=150*bs,drop=70*bs;
   const bx0=bx-W/2, by0=by+drop;
@@ -347,7 +349,9 @@ function render(t){
   if(t>=me){E.wrap.style.display='block';const lt=t-me;
     E.wrap.style.opacity=clamp(lt/0.25);
     E.yt.style.transform=`scale(${eBack((lt-0.15)/0.5)})`;
-    E.tx.style.opacity=clamp((lt-0.4)/0.3);E.tx.style.transform=`translateY(${(1-eOut((lt-0.4)/0.4))*30}px)`;
+    E.tx.style.opacity=clamp((lt-0.4)/0.3);
+    E.ct1.style.opacity=clamp((lt-0.2)/0.3); E.ct2.style.opacity=clamp((lt-0.3)/0.3);
+    E.ct2.style.transform=`scale(${0.7+0.3*eBack((lt-0.3)/0.45)})`;E.tx.style.transform=`translateY(${(1-eOut((lt-0.4)/0.4))*30}px)`;
     const bt=(lt-0.7)/0.4;E.like.style.transform=E.sub.style.transform=`scale(${bt<=0?0:eBack(bt)})`;
     // cursor: move to like (1.4s) click, then to subscribe (2.3s) click
     let cx,cy; const P=[[700,1550],[330,1220],[740,1220]];

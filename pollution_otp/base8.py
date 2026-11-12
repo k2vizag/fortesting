@@ -21,13 +21,13 @@ SEGS = [
     ("L11a", "c07", 3.90, 10.02, "K"),
     ("L11b", "c06", 3.03, 7.93, "K"),
     ("L12", "c04", 5.23, 9.92, "N"),
-    ("L13a", "c09", 1.40, 2.04, "K"),   # "Avunu bro"
+    ("L13a", "c06", 7.94, 8.20, "K"),   # Krishna's own "Avunu" (same take as the next line)
     ("PAUSE", "BLACK", 0.0, 2.0, "-"),     # 2 s black screen with topic text
-    ("L13b", "c06", 7.94, 9.82, "K"),
+    ("L13b", "c06", 8.20, 10.02, "K"),  # "...next video lo chepthanu" ends exactly at the clip end
     ("L13c", "c05", 1.06, 9.52, "K"),
 ]
-# per-segment speed (default SP): checker's first line + Krishna from his 2nd clip on at 0.9x, "Avunu bro" at 1.0x
-SPEED = {"L2": 0.9, "L9": 0.9, "L11a": 0.9, "L11b": 0.9, "L13b": 0.9, "L13c": 0.9, "L13a": 1.0}
+# per-segment speed (default SP): checker's first line + Krishna's explanation at 0.9x, "Avunu" at 1.0x
+SPEED = {"L2": 0.9, "L9": 0.9, "L11a": 0.9, "L11b": 0.9, "L13b": 0.9, "L13a": 1.0}   # L13c (like/subscribe) at 1.1x
 # per-clip framing: (crop_w, crop_h, x, y) in source 478x850, None = full frame
 CROP = {"c05": (377, 670, 50, 0),      # hide burned-in subtitles at the bottom
         "c04": (422, 750, 40, 100)}    # hide "Inside - Right Side" text at the top

@@ -27,7 +27,7 @@ TXT = [
     "KYC ki online lo apply chesi, RTO office ki vellali approval ki,",
     "After that, mobile number update cheyali",
     "Ante ippudu paatha mobile number mana daggara lekapothe, kotha number update chesukune varaku pollution cheyinchukolemannamaata!",
-    "Avunu bro!",
+    "Avunu!",
     "Inkoka update kuda undhi, next video lo chepthanu",
     "Ee information meeku konchem aina use ayyindhi anukunte", "like cheyandi", "maa channel content nachithe",
     "subscribe chesukondi", "Thank you",
@@ -36,7 +36,7 @@ assert len(TXT) == len(P), (len(TXT), len(P))
 KEY = {"pollution": None, "otp": "One Time Password", "certificate": None, "website": None, "old": None, "new": None,
        "mobile": None, "net": None, "rto": "Regional Transport Office", "agent": None, "krishna": None, "vahan": "Govt vehicle portal",
        "kyc": "Know Your Customer", "approval": None, "registration": None, "update": None, "subscribe": None, "like": None,
-       "lekapothe": None, "ledhu": None, "kotha": None, "paatha": None, "online": None, "oho!": None, "avuna?": None, "avunu.": None, "avunu": None,
+       "lekapothe": None, "ledhu": None, "kotha": None, "paatha": None, "online": None, "oho!": None, "avuna?": None, "avunu.": None, "avunu": None, "avunu!": None,
        "thank": None, "cheyinchukolemannamaata!": None}
 PAIR = {("mobile", "number"), ("net", "center"), ("rto", "agent"), ("rto", "office"), ("vahan", "portal"), ("thank", "you"),
         ("pollution", "certificate"), ("phone", "number"), ("next", "video")}
@@ -136,7 +136,7 @@ for c in cards:
         sfx[-3:] = [{"t": c["a"], "k": "impact"}] + [{"t": c["a"] + l["at"], "k": "tick"} for l in c["lines"]]
     if c["type"] == "timeline":
         for s_ in c["steps"]: sfx.append({"t": c["a"] + s_["at"], "k": "tick"})
-sfx += [{"t": ME, "k": "whoosh"}, {"t": ME + 0.2, "k": "chime"}, {"t": ME + 1.45, "k": "click"}, {"t": ME + 2.35, "k": "click"}, {"t": ME + 2.4, "k": "ding"}]
+sfx += [{"t": ME, "k": "whoosh"}, {"t": ME + 0.2, "k": "tick"}, {"t": ME + 1.45, "k": "click"}, {"t": ME + 2.35, "k": "click"}, {"t": ME + 2.4, "k": "ding"}]
 data = {"main_end": ME, "total": TOT, "captions": caps, "stickers": stickers, "numbers": [], "cards": cards,
         "board": {"phone": "7989615350"}, "title": ["POLLUTION CERTIFICATE", "OLD NUMBER LEKAPOTHE?"]}
 json.dump(data, open(W + "/data.json", "w"), ensure_ascii=False, indent=1)
