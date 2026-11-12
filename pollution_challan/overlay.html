@@ -243,8 +243,27 @@ function BUILD_blacktext(ctx){const {c,n}=ctx; n.style.background='#000';
 }
 function RENDER_blacktext(ctx,lt){ctx.parts.ls.forEach((e,i)=>{const x=(lt-ctx.c.lines[i].at)/0.35;
   e.style.opacity=clamp(x*2.5);e.style.transform=`translateY(${(1-eOut(x))*30}px) scale(${x<=0?0.7:0.7+0.3*eBack(x)})`})}
-const BUILD={blacktext:BUILD_blacktext,profile:BUILD_profile,timeline:BUILD_timeline,chart:BUILD_chart,photo:BUILD_photo,terminal:BUILD_terminal,carcam:BUILD_carcam,journey:BUILD_journey};
-const RENDER={blacktext:RENDER_blacktext,profile:RENDER_profile,timeline:RENDER_timeline,chart:RENDER_chart,photo:RENDER_photo,terminal:RENDER_terminal,carcam:RENDER_carcam,journey:RENDER_journey};
+function BUILD_status(ctx){const {c,n}=ctx;
+  ctx.parts.box=el(`<div class="abs" style="left:70px;right:70px;top:330px;height:1000px;border-radius:40px;background:rgba(255,255,255,.06);border:2px solid rgba(255,255,255,.12);box-shadow:0 30px 80px rgba(0,0,0,.45)"></div>`,n);
+  ctx.parts.hd=el(`<div class="abs" style="left:120px;right:120px;top:380px;display:flex;align-items:center;gap:22px">
+     <div style="width:84px;height:84px;border-radius:24px;background:linear-gradient(135deg,#4FA3FF,#1E5BFF);display:flex;align-items:center;justify-content:center">${svg('bike')}</div>
+     <div><div style="font-family:PX;font-size:52px;color:#fff;letter-spacing:2px">${c.head}</div>
+     <div class="chk" style="font-family:PB;font-size:32px;color:#8b93b5">Checking…</div></div></div>`,n);
+  ctx.parts.hd.querySelector('svg').style.cssText='width:52px;height:52px';
+  ctx.parts.rows=c.rows.map((r,i)=>el(`<div class="abs" style="left:120px;right:120px;top:${560+i*190}px;height:150px;border-radius:28px;padding:0 36px;display:flex;align-items:center;justify-content:space-between;
+     background:${r.c==='bad'?'rgba(229,57,53,.16)':r.c==='amt'?'rgba(255,176,32,.14)':'rgba(59,227,138,.12)'};border:3px solid ${r.c==='bad'?'#E53935':r.c==='amt'?'#FFB020':'#3BE38A'}">
+     <div style="font-family:PB;font-size:42px;color:#dfe2f2">${r.k}</div>
+     <div class="rv" style="font-family:PX;font-size:${r.c==='amt'?64:50}px;color:${r.c==='bad'?'#FF5A4A':r.c==='amt'?'#FFC21A':'#3BE38A'};white-space:nowrap">${r.v}</div></div>`,n));
+}
+function RENDER_status(ctx,lt){const p=ctx.parts,c=ctx.c;
+  p.box.style.opacity=clamp(lt/0.3); p.hd.style.opacity=clamp((lt-0.1)/0.3);
+  const done=lt>=c.rows[c.rows.length-1].at; p.hd.querySelector('.chk').textContent=done?'Status checked':'Checking'+'.'.repeat(1+Math.floor(lt*3)%3);
+  p.rows.forEach((e,i)=>{const r=c.rows[i];const x=(lt-r.at)/0.35;e.style.opacity=clamp(x*2.5);
+    e.style.transform=`translateX(${(1-eOut(x))*60}px) scale(${x<=0?0.9:0.9+0.1*eBack(x)})`;
+    if(r.c==='bad'&&lt>r.at){const v=e.querySelector('.rv');v.style.opacity=0.65+0.35*Math.abs(Math.sin((lt-r.at)*4))}});
+}
+const BUILD={status:BUILD_status,blacktext:BUILD_blacktext,profile:BUILD_profile,timeline:BUILD_timeline,chart:BUILD_chart,photo:BUILD_photo,terminal:BUILD_terminal,carcam:BUILD_carcam,journey:BUILD_journey};
+const RENDER={status:RENDER_status,blacktext:RENDER_blacktext,profile:RENDER_profile,timeline:RENDER_timeline,chart:RENDER_chart,photo:RENDER_photo,terminal:RENDER_terminal,carcam:RENDER_carcam,journey:RENDER_journey};
 // ---- cards
 for(const c of D.cards){
   const n=el(`<div class="card ${c.theme}" style="opacity:0;display:none"></div>`); const ctx={c,n,parts:{}};

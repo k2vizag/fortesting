@@ -160,7 +160,7 @@ for a0, b0 in FUN["music"]:
     env_ = np.ones(N); env_[ia:ib] = 0.0
     env_[max(0, ia - fd):ia] = np.linspace(1, 0, ia - max(0, ia - fd)); env_[ib:ib + fd] = np.linspace(0, 1, fd)[:len(env_[ib:ib + fd])]
     mus *= env_
-mus += funm * 1.6
+funm *= 1.6   # comedy bed is mixed separately with only light ducking so it stays audible under the dialogue
 # ---- real CC0 comedy sfx from the repo's sfx_library
 LIB = "/home/user/fortesting/sfx_library"
 def libload(name, maxlen):
@@ -176,11 +176,13 @@ for t0, name, ml, dbv in FUN["events"]:
 fade = int(1.5 * SR); mus[:fade] *= np.linspace(0, 1, fade); mus[int(T * SR) - fade:int(T * SR)] *= np.linspace(1, 0, fade); mus[int(T * SR):] = 0
 sf.write(f"{W}/fx.wav", fx.astype(np.float32), SR, subtype="FLOAT")
 sf.write(f"{W}/music.wav", np.stack([mus, mus], 1).astype(np.float32), SR, subtype="FLOAT")
+sf.write(f"{W}/funmus.wav", np.stack([funm, funm], 1).astype(np.float32), SR, subtype="FLOAT")
 
 # ---- mix: voice (loudnorm) + music ducked under voice + sfx
-fc = ("[0:a]loudnorm=I=-14:TP=-1.5:LRA=9,aresample=48000,asplit=2[v][vs];"
+fc = ("[0:a]loudnorm=I=-14:TP=-1.5:LRA=9,aresample=48000,asplit=3[v][vs][vs2];"
+      "[3:a]volume=1.2[fm];[fm][vs2]sidechaincompress=threshold=0.05:ratio=2:attack=30:release=300[fmd];"
       "[1:a]volume=0.42[m];[m][vs]sidechaincompress=threshold=0.02:ratio=8:attack=20:release=400[md];"
-      "[2:a]volume=0.75[f];[v][md][f]amix=inputs=3:normalize=0:duration=first,loudnorm=I=-14:TP=-1.5:LRA=9,aresample=48000[out]")
-subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", f"{W}/base.mov", "-i", f"{W}/music.wav", "-i", f"{W}/fx.wav",
+      "[2:a]volume=0.75[f];[v][md][f][fmd]amix=inputs=4:normalize=0:duration=first,loudnorm=I=-14:TP=-1.5:LRA=9,aresample=48000[out]")
+subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", f"{W}/base.mov", "-i", f"{W}/music.wav", "-i", f"{W}/fx.wav", "-i", f"{W}/funmus.wav",
                 "-filter_complex", fc, "-map", "[out]", "-c:a", "pcm_s16le", f"{W}/mix.wav"], check=True)
 print("mixed", W)

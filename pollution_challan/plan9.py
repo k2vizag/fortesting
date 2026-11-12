@@ -11,7 +11,7 @@ TXT = {
     "S2": "Sare anna! Meeku OTP vasthundhi chudandi. Ippude pollution chesesthanu. | Okka nimisham anna... Shocking news! | Mee vehicle meedha challan undhi anna!",
     "S3": f"Challan pending lo unte pollution avvadhu. | Mundu challan kattandi. Mottham {R}",
     "S5": "Sir! Please sir! Fine veyakandi sir! | Juttu oodipothundhani helmet pettukoledhu sir! | Inka pelli kuda kaaledhu sir! | Please sir... ee okkasariki vadileyandi sir!",
-    "S6": f"Odiyamma! | Fine vesesaadannamaata! | Ippudu kattala? | Aa khareedhaina photo ki {R}!",
+    "S6": f"Odiyamma! | Fine vesesaadannamaata! | Ippudu kattala? | Aa khareedhaina photo ki!",
     "S7": "Malli net center ki velli challan kattinchukuni randi anna!",
     "S8": "Krishna bro! Enti bro idhi? | Prabhutvam roju rojuki kotha kotha rules testhondhi! | Challan pending lo unte pollution kuda avvadhanta! | Twaraga challan katteyi bro!",
     "S9": "Helmet fine aa bro?",
@@ -88,9 +88,12 @@ def src(sid, t):      # source-clip time -> output time (inside one segment)
     raise ValueError((sid, t))
 # ---- cards (minimal b-roll)
 cards = [
-    dict(type="profile", theme="white", a=at("S3", 0.48), b=at("S3", 1.0) - 0.03, icon="doc", color="red",
-         kicker="CHALLAN PENDING", title=R, pill="Mundu challan kattandi", pillAt=0.25,
-         desc="Challan pending lo unte pollution certificate raadhu", tiles=["bike", "doc", "rupee"]),
+    # challan-status screen from "okka nimisham" (after "ippude pollution chesesthanu") to the end of the checker's lines
+    dict(type="status", theme="dark", a=at("S2", 0.5), b=at("S3", 1.0) - 0.03, head="VEHICLE STATUS",
+         rows=[{"k": "OTP", "v": "Verified ✓", "c": "ok", "at": 0.35},
+               {"k": "Challan", "v": "PENDING", "c": "bad", "at": at("S2", 0.86) - at("S2", 0.5)},
+               {"k": "Pollution Certificate", "v": "Not allowed ❌", "c": "bad", "at": at("S3", 0.2) - at("S2", 0.5)},
+               {"k": "Amount to pay", "v": R, "c": "amt", "at": at("S3", 0.72) - at("S2", 0.5)}]),
     dict(type="profile", theme="white", a=at("S12") + 0.05, b=at("S12", 1.0) - 0.03, icon="eye", color="blue",
          kicker="CHALLAN WEBSITE CHANGED", title="New Website", pill="Link in description", pillAt=at("S12", 0.36) - at("S12"),
          desc="Check chesukuni pay chesukondi", tiles=["phone", "rupee", "check"]),
@@ -106,8 +109,6 @@ ST = [
     (at("S2") + 0.1, "l", "", "user", "Checker", "green", 2.2),
     (at("S2", 0.18), "r", "", "otp", "OTP", "purple", 2.0),
     (at("S2", 0.56), "r", "😱", "", "Shocking news", None, 2.0),
-    (at("S2", 0.8), "l", "🚨", "", "Challan!", None, 2.2),
-    (at("S3") + 0.1, "r", "🚫", "", "No pollution", None, 2.2),
     (at("FB0") + 0.05, "r", "😨", "", "", None, 1.2),
     (at("FB1") + 0.1, "l", "🎞️", "", "Flashback", None, 3.4),
     (src("FB1", 3.5), "r", "📸", "", "Click!", None, 1.6),
@@ -115,7 +116,7 @@ ST = [
     (at("S5", 0.3), "l", "💇", "", "Juttu", None, 2.0),
     (at("S5", 0.58), "r", "💍", "", "Pelli kaaledhu", None, 2.2),
     (at("S6") + 0.05, "l", "😩", "", "Odiyamma!", None, 2.0),
-    (at("S6", 0.78), "r", "💸", "", "₹1,035", None, 2.2),
+    (at("S6", 0.8), "r", "💸", "", "₹1,035/-", None, 2.4),
     (at("S7") + 0.1, "l", "🏪", "", "Net Center", None, 2.2),
     (at("S8") + 0.2, "r", "", "user", "Navin", "blue", 1.6),
     (at("S8", 0.3), "l", "📜", "", "New rules", None, 2.2),
@@ -133,6 +134,9 @@ for t0, side, emo, icon, label, color, dur in ST:
     if emo: st["emoji"] = emo
     stickers.append(st); sfx.append({"t": t0, "k": "pop"})
 for c in cards:
+    if c["type"] == "status":
+        sfx += [{"t": c["a"] - 0.2, "k": "whoosh"}, {"t": c["a"], "k": "impact"}, {"t": c["b"] - 0.2, "k": "whoosh_out"}]
+        sfx += [{"t": c["a"] + r["at"], "k": "chime" if r["c"] != "ok" else "tick"} for r in c["rows"]]; continue
     if c["type"] == "blacktext":
         sfx += [{"t": c["a"], "k": "impact"}] + [{"t": c["a"] + l["at"], "k": "tick"} for l in c["lines"]]; continue
     sfx += [{"t": c["a"] - 0.2, "k": "whoosh"}, {"t": c["a"], "k": "impact"}, {"t": c["b"] - 0.2, "k": "whoosh_out"},
@@ -147,7 +151,7 @@ fun = {"music": [[at("FB0"), at("S6", 1.0)], [at("S10b"), at("S10b", 1.0)]],
            (src("FB1", 3.5), "office-camera-08", 0.6, -9),      # constable takes the photo
            (at("S5", 0.62), "laugh-01", 1.6, -16),              # pelli kuda kaaledhu
            (at("S6") + 0.05, "crowd-groan-01", 1.4, -16),       # Odiyamma!
-           (at("S6", 0.8), "ready-coin-04", 0.9, -12),          # 1035 photo
+           (at("S6", 0.84), "ready-coin-04", 0.9, -12),         # khareedhaina photo
            (at("S10b", 0.42), "cartoon-boing-01", 0.9, -13),    # bodi juttu
            (src("S10b", 8.3), "tada-04", 1.4, -13),             # helmet pose
            (at("S11") + 0.05, "ready-coin-04", 0.9, -12),       # katteshanu
