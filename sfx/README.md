@@ -19,3 +19,4 @@ The full workflow is in `CLAUDE.md` → "Sound effects (SFX) – standing workfl
 
 - `cues/pollution_certificate.txt`: Pollution Certificate "old number lekapothe?" (approved)
 - `cues/challan_kattalsindhena.txt`: Pollution cheyalante challan kattalsindhena? (part 2)
+- `cues/bheema_story.txt`: Bheema chekka shilpi (animated moral story)

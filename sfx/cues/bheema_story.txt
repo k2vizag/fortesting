@@ -1,0 +1,5 @@
+# Bheema chekka shilpi (animated story) – comedy SFX (times in the final edit)
+5.32 comedy_ref1/03_chicken_cluck -9   # mocking 'navvosthondi!'
+45.68 comedy_ref1/17_deep_thud -3   # 'Ayyo!' – the statue is broken
+57.28 comedy_ref1/02_reaction_music_sting -1   # 'Adbhutham!' – judge amazed
+62.21 comedy_ref1/05_ding_boing -4   # fox: 'nammaleka pothunnanu!'
