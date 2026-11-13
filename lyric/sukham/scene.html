@@ -1,0 +1,322 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<style>
+@font-face{font-family:TeluguCap;src:url('../../insurance/v2/fonts/TeluguCap800.ttf');}
+html,body{margin:0;background:#000;}
+canvas{display:block;}
+</style></head>
+<body><canvas id="c" width="1080" height="1920"></canvas>
+<script>
+// Lyric video "ఉన్నంతలో" – original animated scenes, one per lyric idea.
+// window.render(t) draws frame at time t (seconds). Deterministic.
+const W = 1080, H = 1920;
+const cv = document.getElementById('c'), X = cv.getContext('2d');
+const off = [0, 1].map(() => { const c = document.createElement('canvas'); c.width = W; c.height = H; return c; });
+
+// ---------- lyrics (timing from the reference video) ----------
+const LY = [
+  [0.00, 1.60, 'ఏదెలాగ రాసెనో'], [1.60, 3.10, 'అలాగే జరుగును'], [3.10, 5.10, 'మరెందుకో భయము'],
+  [5.10, 6.90, 'అది అలాగ జరగక'], [6.90, 8.10, 'ఎలాగ జరిగిన'], [8.10, 9.10, 'వదులుకోకు'],
+  [9.10, 10.60, 'ఎప్పుడు నమ్మకము'], [10.60, 12.60, 'ఏవో తెలియని'], [12.60, 13.40, 'పరుగులు'],
+  [13.40, 14.60, 'తీసే'], [14.60, 15.60, 'తొందరలో'], [15.60, 17.10, 'నీకే...'],
+  [17.10, 18.60, 'నువ్వే దొరకక'], [18.60, 19.60, 'సమయము గడపకు'], [19.60, 20.60, 'తెలివను భ్రమలో'],
+  [20.60, 22.40, 'చాలా'], [22.40, 23.60, 'ఆశల నడుమన'], [23.60, 24.90, 'చాల్లే'],
+  [24.90, 26.10, 'అన్ని చూడు'], [26.10, 27.10, 'ప్రాణం'], [27.10, 29.10, 'చిటికెలో తేలును'],
+  [29.10, 31.60, 'ఆనందాల్లో...'],
+];
+const SC = [[0, 5.1, s1], [5.1, 8.1, s2], [8.1, 10.6, s3], [10.6, 15.6, s4], [15.6, 20.6, s5], [20.6, 26.1, s6], [26.1, 31.6, s7]];
+const TOTAL = 31.6, XF = 0.45;
+
+// ---------- helpers ----------
+function rng(seed) { return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+const cl = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v));
+const ease = v => { v = cl(v); return v * v * (3 - 2 * v); };
+const lerp = (a, b, k) => a + (b - a) * k;
+function sky(c, stops) { const g = c.createLinearGradient(0, 0, 0, H); stops.forEach(([o, col]) => g.addColorStop(o, col)); c.fillStyle = g; c.fillRect(0, 0, W, H); }
+function glow(c, x, y, r, col, a = 1) { const g = c.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, col); g.addColorStop(1, 'rgba(0,0,0,0)'); c.globalAlpha = a; c.fillStyle = g; c.fillRect(x - r, y - r, 2 * r, 2 * r); c.globalAlpha = 1; }
+function hills(c, base, amp, col, seed, f = 1, shift = 0) {
+  const r = rng(seed), ph = [r() * 6, r() * 6, r() * 6];
+  c.fillStyle = col; c.beginPath(); c.moveTo(0, H);
+  for (let x = 0; x <= W; x += 8) { const u = x / W * f + shift; c.lineTo(x, base - amp * (0.55 * Math.sin(u * 3.1 + ph[0]) + 0.3 * Math.sin(u * 7.3 + ph[1]) + 0.15 * Math.sin(u * 17 + ph[2]))); }
+  c.lineTo(W, H); c.closePath(); c.fill();
+}
+function stars(c, n, seed, t, ymax, a = 1) {
+  const r = rng(seed); c.fillStyle = '#fff';
+  for (let i = 0; i < n; i++) { const x = r() * W, y = r() * ymax, s = 0.6 + r() * 2.2, tw = 0.5 + 0.5 * Math.sin(t * (1 + r() * 3) + r() * 6);
+    c.globalAlpha = a * (0.3 + 0.7 * tw); c.beginPath(); c.arc(x, y, s, 0, 7); c.fill(); }
+  c.globalAlpha = 1;
+}
+function mist(c, y, h, t, col, a, seed, speed = 20) {
+  const r = rng(seed);
+  for (let i = 0; i < 9; i++) { const x = ((r() * W * 1.6 + t * speed * (0.5 + r())) % (W * 1.6)) - W * 0.3, yy = y + (r() - 0.5) * h, rr = 260 + r() * 260;
+    glow(c, x, yy, rr, col, a); }
+}
+// silhouette person. (x,y)=feet, h=height.
+function person(c, x, y, h, pose, ph = 0, col = '#05080a') {
+  c.save(); c.strokeStyle = col; c.fillStyle = col; c.lineCap = 'round'; c.lineJoin = 'round';
+  const lw = h * 0.075, L = (a, b) => { c.beginPath(); c.moveTo(a[0], a[1]); c.lineTo(b[0], b[1]); c.stroke(); };
+  const P = (a, b) => [x + a * h, y - b * h];
+  c.lineWidth = lw;
+  let hip = P(0, 0.47), sh = P(0, 0.79), head = P(0, 0.9);
+  if (pose === 'sit') {
+    hip = P(0, 0.06); sh = P(-0.02, 0.40); head = P(-0.02, 0.51);
+    L(hip, sh); L(hip, P(0.17, 0.2)); L(P(0.17, 0.2), P(0.27, 0.0)); L(hip, P(0.14, 0.17)); L(P(0.14, 0.17), P(0.22, 0.0));
+    L(sh, P(0.13, 0.23)); L(P(0.13, 0.23), P(0.17, 0.2));
+  } else {
+    c.beginPath(); c.moveTo(sh[0] - h * 0.085, sh[1]); c.lineTo(sh[0] + h * 0.085, sh[1]); c.lineTo(hip[0] + h * 0.06, hip[1]); c.lineTo(hip[0] - h * 0.06, hip[1]); c.closePath(); c.fill();
+    L(hip, sh);
+    let lg = 0, ar = 0;
+    if (pose === 'walk') { lg = Math.sin(ph) * 0.42; ar = -Math.sin(ph) * 0.5; }
+    const leg = (a) => { const k = [hip[0] + Math.sin(a) * h * 0.24, hip[1] + Math.cos(a) * h * 0.24]; L(hip, k); L(k, [k[0] + Math.sin(a - (a < 0 ? 0.25 : 0)) * h * 0.24, k[1] + Math.cos(a) * h * 0.24]); };
+    if (pose === 'joy') { leg(0.22); leg(-0.22); } else { leg(lg + 0.05); leg(-lg - 0.05); }
+    const arm = (a1, a2) => { const e = [sh[0] + Math.sin(a1) * h * 0.17, sh[1] + Math.cos(a1) * h * 0.17]; L(sh, e); L(e, [e[0] + Math.sin(a2) * h * 0.16, e[1] + Math.cos(a2) * h * 0.16]); };
+    if (pose === 'walk' || pose === 'stand') { arm(ar + 0.08, ar * 1.2 + 0.05); arm(-ar - 0.08, -ar * 1.2 - 0.25); }
+    else if (pose === 'reach') { arm(0.12, 0.05); arm(Math.PI - 0.15 + Math.sin(ph) * 0.05, Math.PI - 0.1); }
+    else if (pose === 'joy') { arm(Math.PI - 0.6, Math.PI - 0.7); arm(-(Math.PI - 0.6), -(Math.PI - 0.7)); }
+    else if (pose === 'open') { arm(2.0, 2.2); arm(-2.0, -2.2); }
+  }
+  c.beginPath(); c.arc(head[0], head[1], h * 0.075, 0, 7); c.fill();
+  c.restore();
+}
+function bird(c, x, y, s, ph, col = '#06090c') {
+  const f = Math.sin(ph) * 0.6; c.strokeStyle = col; c.lineWidth = s * 0.16; c.lineCap = 'round';
+  c.beginPath(); c.moveTo(x - s, y - s * f); c.quadraticCurveTo(x - s * 0.4, y - s * 0.35 - s * f * 0.3, x, y); c.quadraticCurveTo(x + s * 0.4, y - s * 0.35 - s * f * 0.3, x + s, y - s * f); c.stroke();
+}
+function tree(c, x, y, h, col, seed) {
+  const r = rng(seed); c.fillStyle = col; c.strokeStyle = col; c.lineCap = 'round';
+  c.lineWidth = h * 0.05; c.beginPath(); c.moveTo(x, y); c.lineTo(x + h * 0.02, y - h * 0.6); c.stroke();
+  for (let i = 0; i < 7; i++) { c.beginPath(); c.arc(x + (r() - 0.5) * h * 0.5, y - h * (0.55 + r() * 0.4), h * (0.14 + r() * 0.12), 0, 7); c.fill(); }
+}
+
+// ---------- scenes: (c, local t, scene length, absolute t) ----------
+function s1(c, t, d) { // "however it is written, so it happens — why fear": fate written in the stars, calm person
+  const z = 1 + 0.05 * t / d; c.save(); c.translate(W / 2, H * 0.62); c.scale(z, z); c.translate(-W / 2, -H * 0.62);
+  sky(c, [[0, '#02060f'], [0.55, '#0b1f33'], [0.8, '#1d3a4a'], [1, '#0a1418']]);
+  stars(c, 260, 3, t, H * 0.75);
+  // constellation being "written"
+  const pts = [[260, 380], [380, 300], [520, 350], [610, 250], [760, 300], [840, 420], [700, 520], [540, 470], [420, 560]];
+  const k = ease(t / 2.8) * (pts.length - 1);
+  c.strokeStyle = 'rgba(255,214,140,0.85)'; c.lineWidth = 3; c.shadowColor = '#ffcf7a'; c.shadowBlur = 18;
+  c.beginPath(); c.moveTo(...pts[0]);
+  for (let i = 1; i <= Math.floor(k); i++) c.lineTo(...pts[i]);
+  const fi = Math.floor(k), fr = k - fi; if (fi < pts.length - 1) c.lineTo(lerp(pts[fi][0], pts[fi + 1][0], fr), lerp(pts[fi][1], pts[fi + 1][1], fr));
+  c.stroke(); c.shadowBlur = 0;
+  pts.forEach((p, i) => { if (i <= k + 0.01) glow(c, p[0], p[1], 34, 'rgba(255,225,160,0.95)'); });
+  // shooting star on "why fear"
+  if (t > 3.2 && t < 4.4) { const u = (t - 3.2) / 1.2, sx = lerp(950, 300, u), sy = lerp(150, 520, u);
+    const g = c.createLinearGradient(sx, sy, sx + 260, sy - 150); g.addColorStop(0, 'rgba(255,255,255,0.95)'); g.addColorStop(1, 'rgba(255,255,255,0)');
+    c.strokeStyle = g; c.lineWidth = 4; c.beginPath(); c.moveTo(sx, sy); c.lineTo(sx + 260, sy - 150); c.stroke(); glow(c, sx, sy, 30, 'rgba(255,255,255,0.9)'); }
+  mist(c, H * 0.78, 120, t, 'rgba(120,170,190,0.10)', 1, 5);
+  hills(c, H * 0.80, 70, '#0a1820', 11, 1.2);
+  hills(c, H * 0.86, 50, '#04090c', 12, 0.9);
+  person(c, 560, H * 0.845, 150, 'sit');
+  c.restore();
+}
+function s2(c, t, d) { // "even if it doesn't happen that way, however it happens": blocked path, take the other road
+  sky(c, [[0, '#1b2a3a'], [0.45, '#7a6a68'], [0.62, '#e7a56a'], [0.7, '#9b7a66'], [1, '#1c1a18']]);
+  const sunUp = ease((t - 1.8) / 1.2); glow(c, 760, H * 0.6 - 40 * sunUp, 380, `rgba(255,190,110,${0.35 + 0.4 * sunUp})`);
+  hills(c, H * 0.63, 60, '#4a4448', 21, 1.3); mist(c, H * 0.63, 80, t, 'rgba(255,220,190,0.12)', 1, 22, 30);
+  hills(c, H * 0.68, 40, '#2a2626', 23, 1.0);
+  // ground
+  c.fillStyle = '#16120f'; c.fillRect(0, H * 0.68, W, H);
+  // fork road (perspective)
+  const fy = H * 0.86;
+  c.fillStyle = '#5a4a3e';
+  c.beginPath(); c.moveTo(380, H); c.lineTo(700, H); c.lineTo(560, fy); c.lineTo(520, fy); c.closePath(); c.fill();
+  c.beginPath(); c.moveTo(520, fy); c.lineTo(545, fy); c.lineTo(330, H * 0.69); c.lineTo(318, H * 0.69); c.closePath(); c.fill();   // left path
+  c.beginPath(); c.moveTo(535, fy); c.lineTo(560, fy); c.lineTo(770, H * 0.69); c.lineTo(755, H * 0.69); c.closePath(); c.fill();   // right path
+  // left path blocked: fallen log + dark fog
+  const blk = ease(t / 0.8);
+  glow(c, 340, H * 0.70, 260, 'rgba(15,18,24,0.8)', blk);
+  c.save(); c.globalAlpha = blk; const bx = 410, by = H * 0.765;
+  c.fillStyle = '#1a1210'; c.fillRect(bx - 95, by, 12, 60); c.fillRect(bx + 83, by, 12, 60);
+  for (let i = 0; i < 6; i++) { c.fillStyle = i % 2 ? '#f2efe8' : '#c8352b'; c.beginPath(); c.moveTo(bx - 100 + i * 33, by); c.lineTo(bx - 67 + i * 33, by); c.lineTo(bx - 77 + i * 33, by + 26); c.lineTo(bx - 110 + i * 33, by + 26); c.closePath(); c.fill(); }
+  c.restore();
+  // person: stops at fork, then turns onto the right path
+  let px, py, sc, pose = 'walk';
+  if (t < 1.3) { const u = t / 1.3; px = 545; py = lerp(H * 1.02, fy + 10, u); sc = lerp(320, 210, u); }
+  else if (t < 1.9) { px = 545; py = fy + 10; sc = 210; pose = 'stand'; }
+  else { const u = ease((t - 1.9) / 1.4); px = lerp(548, 690, u); py = lerp(fy + 10, H * 0.73, u); sc = lerp(210, 110, u); }
+  person(c, px, py, sc, pose, t * 9);
+  // light rays on the right path
+  glow(c, 770, H * 0.66, 220, 'rgba(255,200,120,0.35)', sunUp);
+}
+function s3(c, t, d) { // "never give up faith": diya flame in the wind, keeps burning and grows
+  sky(c, [[0, '#050403'], [0.6, '#120b06'], [1, '#050302']]);
+  const steady = ease((t - 1.0) / 0.9);
+  const R = rng(31);
+  for (let i = 0; i < 26; i++) { const bx = R() * W, by = R() * H * 0.8, br = 20 + R() * 50; glow(c, bx, by, br, 'rgba(255,170,80,0.5)', 0.15 + 0.35 * steady); }
+  const cx = W / 2, cy = H * 0.66;
+  glow(c, cx, cy - 120, lerp(260, 620, steady), 'rgba(255,160,60,0.55)');
+  // wind streaks before faith steadies
+  c.strokeStyle = 'rgba(200,190,170,0.25)'; c.lineWidth = 2;
+  for (let i = 0; i < 18; i++) { const r = rng(40 + i), y = r() * H * 0.8 + 200, x = ((r() * W + t * 900) % (W + 400)) - 200;
+    c.globalAlpha = 1 - steady; c.beginPath(); c.moveTo(x, y); c.lineTo(x + 140, y + 6); c.stroke(); }
+  c.globalAlpha = 1;
+  // diya bowl
+  c.fillStyle = '#3a1d0e'; c.beginPath(); c.ellipse(cx, cy, 170, 55, 0, 0, Math.PI); c.fill();
+  c.fillStyle = '#6b3818'; c.beginPath(); c.ellipse(cx, cy, 170, 26, 0, 0, 7); c.fill();
+  c.fillStyle = '#c47a2c'; c.beginPath(); c.ellipse(cx, cy, 150, 18, 0, 0, 7); c.fill();
+  // flame: bends with wind, then stands tall
+  const bend = (1 - steady) * (0.5 + 0.3 * Math.sin(t * 13)), fl = 1 + 0.06 * Math.sin(t * 21) + 0.04 * Math.sin(t * 33);
+  const fh = lerp(110, 190, steady) * fl;
+  c.save(); c.translate(cx + 60, cy - 8); c.rotate(bend * 0.9);
+  const g = c.createRadialGradient(0, -fh * 0.35, 4, 0, -fh * 0.35, fh * 0.7);
+  g.addColorStop(0, '#fffbe8'); g.addColorStop(0.35, '#ffd36a'); g.addColorStop(0.75, '#ff8a1e'); g.addColorStop(1, 'rgba(255,90,0,0)');
+  c.fillStyle = g; c.beginPath(); c.moveTo(0, 0); c.bezierCurveTo(-38, -fh * 0.3, -12, -fh * 0.75, 0, -fh); c.bezierCurveTo(12, -fh * 0.75, 38, -fh * 0.3, 0, 0); c.fill();
+  c.restore();
+  glow(c, cx + 60, cy - fh * 0.4, 140, 'rgba(255,220,140,0.6)');
+}
+function s4(c, t, d) { // "in the hurry of running unknown races": rushing crowd, clock spinning
+  sky(c, [[0, '#0d1820'], [0.5, '#2c3e48'], [0.75, '#58504a'], [1, '#141414']]);
+  // clock in sky
+  const cx = W / 2, cy = H * 0.3, r = 230;
+  glow(c, cx, cy, 420, 'rgba(230,220,200,0.25)');
+  c.fillStyle = 'rgba(235,228,210,0.9)'; c.beginPath(); c.arc(cx, cy, r, 0, 7); c.fill();
+  c.strokeStyle = '#2b2b2b'; c.lineWidth = 6;
+  for (let i = 0; i < 12; i++) { const a = i / 12 * Math.PI * 2; c.beginPath(); c.moveTo(cx + Math.cos(a) * r * 0.8, cy + Math.sin(a) * r * 0.8); c.lineTo(cx + Math.cos(a) * r * 0.92, cy + Math.sin(a) * r * 0.92); c.stroke(); }
+  const sp = t * t * 1.4 + t * 2;
+  c.lineCap = 'round'; c.lineWidth = 14; c.beginPath(); c.moveTo(cx, cy); c.lineTo(cx + Math.sin(sp / 12) * r * 0.5, cy - Math.cos(sp / 12) * r * 0.5); c.stroke();
+  c.lineWidth = 8; c.beginPath(); c.moveTo(cx, cy); c.lineTo(cx + Math.sin(sp) * r * 0.78, cy - Math.cos(sp) * r * 0.78); c.stroke();
+  // city
+  const R = rng(51);
+  for (let layer = 0; layer < 2; layer++) {
+    let x = -20; const col = layer ? '#0b0f12' : '#1a2228';
+    while (x < W) { const bw = 70 + R() * 110, bh = (layer ? 260 : 420) + R() * 300; c.fillStyle = col; c.fillRect(x, H * 0.72 - bh, bw, bh + 10);
+      if (layer) for (let wy = H * 0.72 - bh + 20; wy < H * 0.70; wy += 34) for (let wx = x + 10; wx < x + bw - 14; wx += 26) if (R() > 0.55) { c.fillStyle = 'rgba(255,200,120,0.75)'; c.fillRect(wx, wy, 12, 16); }
+      x += bw + 6; }
+  }
+  { const g = c.createLinearGradient(0, H * 0.72, 0, H); g.addColorStop(0, '#6b5640'); g.addColorStop(0.5, '#3a2e24'); g.addColorStop(1, '#141009'); c.fillStyle = g; c.fillRect(0, H * 0.72, W, H); }
+  for (let i = 0; i < 4; i++) glow(c, 140 + i * 270, H * 0.78, 260, 'rgba(255,190,110,0.35)');
+  // crowd rushing, faster each second
+  const speed = 260 + t * 120;
+  for (let row = 0; row < 3; row++) {
+    const yy = H * (0.80 + row * 0.07), hh = 140 + row * 70, n = 6 + row;
+    for (let i = 0; i < n; i++) { const rr = rng(60 + row * 10 + i), dir = rr() > 0.5 ? 1 : -1;
+      const px = ((rr() * (W + 400) + dir * t * speed * (0.7 + rr() * 0.6)) % (W + 400) + (W + 400)) % (W + 400) - 200;
+      c.save(); c.globalAlpha = 0.3; c.fillStyle = '#120d08'; c.fillRect(px - dir * 90, yy - hh * 0.85, dir * 70, hh * 0.8); c.restore();   // motion streak
+      c.save(); if (dir < 0) { c.translate(px, 0); c.scale(-1, 1); c.translate(-px, 0); }
+      person(c, px, yy, hh, 'walk', t * (10 + rr() * 6) + rr() * 6, '#030405'); c.restore(); }
+  }
+}
+function s5(c, t, d) { // "not finding yourself, don't spend time in the illusion of cleverness": lake reflection, hourglass
+  const shake = 0; sky(c, [[0, '#0d1b24'], [0.5, '#3d5966'], [0.58, '#6f8a92'], [1, '#0b1418']]);
+  hills(c, H * 0.55, 80, '#29404a', 71, 1.1); mist(c, H * 0.55, 100, t, 'rgba(200,220,225,0.18)', 1, 72, 25);
+  // water
+  c.fillStyle = '#1b2e36'; c.fillRect(0, H * 0.58, W, H);
+  for (let i = 0; i < 30; i++) { const y = H * 0.6 + i * 26, a = 0.05 + 0.04 * Math.sin(i + t * 2); c.fillStyle = `rgba(190,215,220,${a})`; c.fillRect(0, y, W, 2); }
+  // jetty
+  c.fillStyle = '#0a1013'; c.fillRect(0, H * 0.575, 600, 18); for (let i = 40; i < 600; i += 110) c.fillRect(i, H * 0.575, 12, 70);
+  // person + wavering reflection (not finding yourself)
+  const px = 520, py = H * 0.575, ph = 210;
+  person(c, px, py, ph, 'stand', 0, '#05090b');
+  const dist = 1 - ease((t - 3.6) / 1.2) * 0.6;
+  for (let s = 0; s < ph; s += 6) {
+    const off = Math.sin(s * 0.08 + t * 5) * 18 * dist;
+    c.save(); c.beginPath(); c.rect(0, py + s + 18, W, 6); c.clip();
+    c.translate(off, 0); c.translate(0, 2 * py + 18); c.scale(1, -1); c.globalAlpha = 0.45;
+    person(c, px, py, ph, 'stand', 0, '#05090b'); c.restore();
+  }
+  mist(c, H * 0.63, 160, t, 'rgba(200,220,225,0.16)', 1, 73, 40);
+  // hourglass ("don't waste time")
+  const ha = ease((t - 2.8) / 0.6);
+  if (ha > 0) { c.save(); c.globalAlpha = ha * 0.85; const hx = 830, hy = H * 0.3, hw = 120, hh = 170;
+    c.strokeStyle = '#e8dcc0'; c.lineWidth = 6; c.beginPath(); c.moveTo(hx - hw / 2, hy - hh); c.lineTo(hx + hw / 2, hy - hh); c.lineTo(hx, hy); c.lineTo(hx + hw / 2, hy + hh); c.lineTo(hx - hw / 2, hy + hh); c.lineTo(hx, hy); c.closePath(); c.stroke();
+    const sand = cl((t - 2.8) / 2.2); c.fillStyle = '#f0c27a';
+    c.beginPath(); const tl = hh * (1 - sand) * 0.9; c.moveTo(hx - hw / 2 * tl / hh, hy - tl); c.lineTo(hx + hw / 2 * tl / hh, hy - tl); c.lineTo(hx, hy); c.closePath(); c.fill();
+    const bl = hh * sand * 0.6; c.beginPath(); c.moveTo(hx - hw / 2, hy + hh); c.lineTo(hx + hw / 2, hy + hh); c.lineTo(hx + hw / 2 * (1 - bl / hh), hy + hh - bl); c.lineTo(hx - hw / 2 * (1 - bl / hh), hy + hh - bl); c.closePath(); c.fill();
+    c.fillRect(hx - 2, hy, 4, hh - bl); glow(c, hx, hy, 220, 'rgba(240,200,130,0.25)'); c.restore(); }
+}
+function icon(c, k, x, y, s) {
+  c.save(); c.translate(x, y); c.fillStyle = '#ffe9b8'; c.strokeStyle = '#ffe9b8'; c.lineWidth = s * 0.08; c.lineJoin = 'round';
+  if (k === 0) { c.fillRect(-s * 0.35, -s * 0.05, s * 0.7, s * 0.4); c.beginPath(); c.moveTo(-s * 0.45, 0); c.lineTo(0, -s * 0.4); c.lineTo(s * 0.45, 0); c.fill(); }   // house
+  if (k === 1) { c.beginPath(); c.roundRect(-s * 0.45, -s * 0.1, s * 0.9, s * 0.28, s * 0.08); c.fill(); c.beginPath(); c.roundRect(-s * 0.25, -s * 0.3, s * 0.5, s * 0.25, s * 0.08); c.fill();
+    c.fillStyle = '#2a2014'; c.beginPath(); c.arc(-s * 0.25, s * 0.2, s * 0.1, 0, 7); c.arc(s * 0.25, s * 0.2, s * 0.1, 0, 7); c.fill(); }   // car
+  if (k === 2) { c.font = `bold ${s * 0.75}px sans-serif`; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText('₹', 0, s * 0.03); }   // money
+  if (k === 3) { c.beginPath(); c.roundRect(-s * 0.2, -s * 0.35, s * 0.4, s * 0.7, s * 0.07); c.stroke(); c.fillRect(-s * 0.06, s * 0.24, s * 0.12, s * 0.04); }   // phone
+  if (k === 4) { c.beginPath(); c.arc(0, s * 0.08, s * 0.25, 0, 7); c.stroke(); c.beginPath(); c.moveTo(-s * 0.12, -s * 0.17); c.lineTo(0, -s * 0.32); c.lineTo(s * 0.12, -s * 0.17); c.closePath(); c.fill(); }   // ring
+  c.restore();
+}
+function s6(c, t, d) { // "amid so many desires — enough! look at everything": desire bubbles pop, world opens up
+  const open = ease((t - 4.3) / 0.6);   // "అన్ని చూడు" at abs 24.9
+  sky(c, [[0, lerp(0, 1, open) ? '#0c1626' : '#0c1626'], [0.6, '#2d3550'], [1, '#0c0f16']]);
+  if (open > 0) { c.globalAlpha = open; sky(c, [[0, '#2a4b6a'], [0.5, '#e9b07a'], [0.62, '#f7d29a'], [1, '#26302e']]); c.globalAlpha = 1;
+    glow(c, W / 2, H * 0.58, 520, 'rgba(255,214,150,0.7)', open); }
+  stars(c, 120, 81, t, H * 0.5, 1 - open);
+  hills(c, H * 0.66, 90, open > 0.5 ? '#3b4a44' : '#1a2230', 82, 1.2);
+  hills(c, H * 0.74, 60, open > 0.5 ? '#1e2a24' : '#0d1219', 83, 0.9);
+  c.fillStyle = '#05080a'; c.beginPath(); c.ellipse(W / 2, H * 0.92, 520, 170, 0, Math.PI, 0); c.fill(); c.fillRect(0, H * 0.92, W, H);
+  if (open > 0) for (let i = 0; i < 5; i++) bird(c, 300 + i * 90 + t * 30, H * 0.42 + (i % 2) * 30, 22, t * 8 + i);
+  // desire bubbles rising around the person
+  const pop0 = 3.0;   // "చాల్లే" at abs 23.6
+  for (let i = 0; i < 10; i++) {
+    const r = rng(90 + i), bx = 140 + r() * 800, by0 = H * 0.86 - r() * 200, rise = (t * (60 + r() * 50));
+    const by = by0 - rise - (i % 3) * 120, bs = 90 + r() * 50, popT = pop0 + i * 0.09;
+    const appear = ease((t - i * 0.18) / 0.4); if (appear <= 0) continue;
+    if (t < popT) {
+      c.save(); c.globalAlpha = appear; glow(c, bx, by, bs * 1.3, 'rgba(255,215,140,0.25)');
+      c.strokeStyle = 'rgba(255,236,200,0.8)'; c.lineWidth = 3; c.beginPath(); c.arc(bx, by, bs * 0.6, 0, 7); c.stroke();
+      icon(c, i % 5, bx, by, bs * 0.75); c.restore();
+    } else { const u = (t - popT) / 0.35; if (u < 1) { c.save(); c.globalAlpha = 1 - u; c.strokeStyle = '#fff2d0'; c.lineWidth = 4;
+      for (let j = 0; j < 8; j++) { const a = j / 8 * 7; c.beginPath(); c.moveTo(bx + Math.cos(a) * bs * 0.6 * (1 + u), by + Math.sin(a) * bs * 0.6 * (1 + u)); c.lineTo(bx + Math.cos(a) * bs * 0.6 * (1.3 + u), by + Math.sin(a) * bs * 0.6 * (1.3 + u)); c.stroke(); }
+      c.restore(); } }
+  }
+  person(c, W / 2, H * 0.80, 230, open > 0.3 ? 'open' : 'reach', t * 2);
+}
+function s7(c, t, d) { // "life floats in joy in a snap": sunrise burst, birds, jumping with joy, lanterns
+  const z = 1.08 - 0.08 * ease(t / d); c.save(); c.translate(W / 2, H * 0.6); c.scale(z, z); c.translate(-W / 2, -H * 0.6);
+  sky(c, [[0, '#3a6d8c'], [0.45, '#f2b46e'], [0.6, '#ffe0a0'], [0.72, '#e79a5c'], [1, '#2c2620']]);
+  const sy = H * 0.6 - 80 * ease(t / 3);
+  glow(c, W / 2, sy, 700, 'rgba(255,230,170,0.85)'); c.fillStyle = '#fff6dc'; c.beginPath(); c.arc(W / 2, sy, 120, 0, 7); c.fill();
+  // rays
+  c.save(); c.translate(W / 2, sy); c.rotate(t * 0.05); c.fillStyle = 'rgba(255,240,200,0.10)';
+  for (let i = 0; i < 16; i++) { c.rotate(Math.PI / 8); c.beginPath(); c.moveTo(0, 0); c.lineTo(1400, -70); c.lineTo(1400, 70); c.fill(); } c.restore();
+  hills(c, H * 0.66, 70, '#6a4a3a', 101, 1.2); hills(c, H * 0.72, 50, '#3a2a22', 102, 0.9);
+  c.fillStyle = '#1a120d'; c.fillRect(0, H * 0.76, W, H);
+  // birds flying out
+  for (let i = 0; i < 9; i++) { const r = rng(110 + i), u = cl((t - 0.3 - r() * 1.5) / 4);
+    bird(c, lerp(W / 2 + (r() - 0.5) * 200, r() * W, u), lerp(H * 0.7, H * (0.15 + r() * 0.3), u), 18 + r() * 16, t * 10 + i, '#2a1a12'); }
+  // floating lanterns
+  for (let i = 0; i < 12; i++) { const r = rng(130 + i), lx = r() * W, ly = H * 0.95 - ((t - 1 + r() * 2) * (90 + r() * 60)); if (ly > H * 0.95) continue;
+    glow(c, lx, ly, 46, 'rgba(255,190,90,0.8)'); c.fillStyle = '#ffd9a0'; c.fillRect(lx - 9, ly - 13, 18, 26); }
+  // person jumps with joy
+  const jump = Math.abs(Math.sin(t * 2.6)) * 70 * ease((t - 0.5) / 0.6);
+  person(c, W / 2, H * 0.77 - jump, 250, t > 0.6 ? 'joy' : 'stand', 0, '#120c08');
+  // "in a snap" flash at abs 27.1
+  const fl = t - 1.0; if (fl > 0 && fl < 0.45) { c.fillStyle = `rgba(255,248,225,${0.55 * (1 - fl / 0.45)})`; c.fillRect(0, 0, W, H); }
+  c.restore();
+  // final fade
+  if (t > d - 0.5) { c.fillStyle = `rgba(0,0,0,${ease((t - (d - 0.5)) / 0.5)})`; c.fillRect(0, 0, W, H); }
+}
+
+// ---------- film look ----------
+const grain = document.createElement('canvas'); grain.width = 540; grain.height = 960;
+{ const g = grain.getContext('2d'), im = g.createImageData(540, 960), r = rng(7); for (let i = 0; i < im.data.length; i += 4) { const v = r() * 255; im.data[i] = im.data[i + 1] = im.data[i + 2] = v; im.data[i + 3] = 22; } g.putImageData(im, 0, 0); }
+function finish(t) {
+  const v = X.createRadialGradient(W / 2, H / 2, H * 0.3, W / 2, H / 2, H * 0.75); v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, 'rgba(0,0,0,0.55)');
+  X.fillStyle = v; X.fillRect(0, 0, W, H);
+  const ox = Math.floor((t * 97) % 2) * 270, oy = Math.floor((t * 61) % 2) * 480;
+  X.save(); X.globalCompositeOperation = 'overlay'; X.drawImage(grain, -ox, -oy, W * 2, H * 2); X.restore();
+}
+function lyric(t) {
+  const L = LY.find(l => t >= l[0] && t < l[1]); if (!L) return;
+  const u = t - L[0], left = L[1] - t, a = ease(u / 0.22) * ease(left / 0.18);
+  const s = 1 + 0.04 * (1 - ease(u / 0.3));
+  X.save(); X.globalAlpha = a; X.translate(W / 2, H * 0.47 + 18 * (1 - ease(u / 0.3))); X.scale(s, s);
+  X.font = '88px TeluguCap'; X.textAlign = 'center'; X.textBaseline = 'middle';
+  X.shadowColor = 'rgba(0,0,0,0.9)'; X.shadowBlur = 30; X.fillStyle = '#fff8ea'; X.fillText(L[2], 0, 0); X.shadowBlur = 12; X.fillText(L[2], 0, 0);
+  X.shadowColor = 'rgba(255,214,150,0.55)'; X.shadowBlur = 40; X.fillText(L[2], 0, 0);
+  X.restore();
+}
+window.render = function (t) {
+  X.setTransform(1, 0, 0, 1, 0, 0); X.globalAlpha = 1; X.clearRect(0, 0, W, H);
+  const i = SC.findIndex(s => t >= s[0] && t < s[1]); const k = i < 0 ? SC.length - 1 : i;
+  const [a, b, f] = SC[k]; const oc = off[0].getContext('2d'); oc.setTransform(1, 0, 0, 1, 0, 0); oc.globalAlpha = 1;
+  f(oc, t - a, b - a, t); X.drawImage(off[0], 0, 0);
+  // crossfade into next scene
+  if (k + 1 < SC.length && t > b - XF) { const [a2, b2, f2] = SC[k + 1]; const pc = off[1].getContext('2d'); pc.setTransform(1, 0, 0, 1, 0, 0); pc.globalAlpha = 1;
+    f2(pc, t - a2, b2 - a2, t); X.globalAlpha = ease((t - (b - XF)) / XF); X.drawImage(off[1], 0, 0); X.globalAlpha = 1; }
+  finish(t); lyric(t);
+};
+window.__ready = document.fonts.load('88px TeluguCap', 'ఏదెలాగ').then(() => true);
+</script></body></html>
