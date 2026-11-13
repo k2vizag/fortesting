@@ -1,0 +1,267 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<style>
+@font-face{font-family:Rama;src:url('../../insurance/v2/fonts/RamaCap.ttf');}
+html,body{margin:0;background:#000;}canvas{display:block;}
+</style></head><body><canvas id="c" width="1080" height="1920"></canvas>
+<script>
+// Chalkboard lyric video – "ఉన్నంతలో మనకున్నంతలో" (60 s). window.render(t) draws one frame.
+const W = 1080, H = 1920, TOTAL = 60;
+const cv = document.getElementById('c'), X = cv.getContext('2d');
+const mk = () => { const c = document.createElement('canvas'); c.width = W; c.height = H; return c; };
+const layer = mk(), ghost = mk(), txt = mk();
+const LX = layer.getContext('2d'), GXc = ghost.getContext('2d'), TX = txt.getContext('2d');
+function rng(s) { return () => { s |= 0; s = s + 0x6D2B79F5 | 0; let t = Math.imul(s ^ s >>> 15, 1 | s); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+const cl = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v));
+const ease = v => { v = cl(v); return v * v * (3 - 2 * v); };
+const C = { w: '#f4f1e8', y: '#ffe27a', o: '#ffb36b', p: '#ff9fb8', r: '#ff7a6b', g: '#9fe8a0', b: '#9fd2ff', v: '#c9a8ff' };
+
+// ---------- lyrics (timing from the song's lyric video) ----------
+const LY = [
+  [0.0, 1.8, 'ఉన్నంతలో మనకున్నంతలో', ''], [1.8, 4.4, 'బతికితే అదే సుఖము', 'అదే సుఖము'],
+  [4.4, 6.6, 'ఎవరికి తలలొంచకా', ''], [6.6, 8.2, 'నువ్వు నీ కాళ్లపై', ''], [8.2, 10.0, 'నిలబడే గుణం వరము', 'గుణం వరము'],
+  [10.0, 11.6, 'ఏదెలాగ రాసెనో', ''], [11.6, 13.1, 'అలాగే జరుగును', ''], [13.1, 15.1, 'మరెందుకో భయము', 'భయము'],
+  [15.1, 16.9, 'అది అలాగ జరగక', ''], [16.9, 18.1, 'ఎలాగ జరిగిన', ''], [18.1, 20.6, 'వదులుకోకు ఎప్పుడు నమ్మకము', 'నమ్మకము'],
+  [20.6, 22.6, 'ఏవో తెలియని', ''], [22.6, 24.6, 'పరుగులు తీసే', ''], [24.6, 25.6, 'తొందరలో', 'తొందరలో'],
+  [25.6, 28.6, 'నీకే నువ్వే దొరకక', ''], [28.6, 29.6, 'సమయము గడపకు', ''], [29.6, 30.6, 'తెలివను భ్రమలో', 'తెలివను భ్రమలో'],
+  [30.6, 33.6, 'చాలా ఆశల నడుమన', ''], [33.6, 36.1, 'చాల్లే అన్ని చూడు', 'చూడు'],
+  [36.1, 39.1, 'ప్రాణం చిటికెలో తేలును', ''], [39.1, 41.3, 'ఆనందాల్లో...', 'ఆనందాల్లో...'],
+  [41.3, 46.3, 'భజ గోవిందం భజ గోవిందం', '*'], [46.3, 51.3, 'బ్రతుకే కోలాహలం', '*'],
+  [51.3, 56.3, 'భజ గోవిందం భజ గోవిందం', '*'], [56.3, 59.6, 'బరువే కాదే క్షణం', '*'],
+];
+
+// ---------- hand-drawn primitives (return point lists) ----------
+let R = rng(1);
+function wob(pts, a = 2.2) { const s1 = R() * 9, s2 = R() * 9; return pts.map(([x, y], i) => [x + a * Math.sin(i * 0.21 + s1) + a * 0.5 * Math.sin(i * 0.77 + s2), y + a * Math.cos(i * 0.19 + s2) + a * 0.5 * Math.sin(i * 0.63 + s1)]); }
+function L(x1, y1, x2, y2) { const n = Math.max(2, Math.hypot(x2 - x1, y2 - y1) / 6 | 0); return wob(Array.from({ length: n + 1 }, (_, i) => [x1 + (x2 - x1) * i / n, y1 + (y2 - y1) * i / n]), 1.6); }
+function E(cx, cy, rx, ry, a0 = -Math.PI / 2, a1 = a0 + Math.PI * 2.08) { const n = Math.max(8, Math.abs(a1 - a0) * Math.max(rx, ry) / 6 | 0); return wob(Array.from({ length: n + 1 }, (_, i) => { const a = a0 + (a1 - a0) * i / n; return [cx + rx * Math.cos(a), cy + ry * Math.sin(a)]; }), 1.8); }
+const Ci = (cx, cy, r, a0, a1) => E(cx, cy, r, r, a0, a1);
+function B(p0, p1, p2, p3) { const n = 40; return wob(Array.from({ length: n + 1 }, (_, i) => { const t = i / n, u = 1 - t; return [u * u * u * p0[0] + 3 * u * u * t * p1[0] + 3 * u * t * t * p2[0] + t * t * t * p3[0], u * u * u * p0[1] + 3 * u * u * t * p1[1] + 3 * u * t * t * p2[1] + t * t * t * p3[1]]; }), 1.5); }
+function P(arr) { let out = []; for (let i = 0; i < arr.length - 1; i++) { const s = L(...arr[i], ...arr[i + 1]); out = out.concat(i ? s.slice(1) : s); } return out; }
+const S = (pts, col = C.w, w = 7) => ({ pts, col, w });
+const T = (x, y, str, size, col = C.w) => ({ text: str, x, y, size, col });
+// stick figure: feet centre (x,y), height h
+function man(x, y, h, pose = 'stand', col = C.w, face = 'smile', flip = 1) {
+  const q = (a, b) => [x + a * h * flip, y + b * h];
+  let head = q(0, -0.86), neck = q(0, -0.73), hip = q(0, -0.40), arms, legs;
+  const st = [];
+  if (pose === 'sit') { head = q(-0.06, -0.58); neck = q(-0.05, -0.46); hip = q(0, -0.12);
+    legs = [[hip, q(0.22, -0.32), q(0.38, -0.02)], [hip, q(0.18, -0.28), q(0.30, -0.02)]];
+    arms = [[q(-0.04, -0.42), q(0.12, -0.64), q(-0.02, -0.70)], [q(-0.04, -0.42), q(-0.20, -0.62), q(-0.10, -0.70)]]; }
+  else if (pose === 'hips') { arms = [[q(0, -0.66), q(0.2, -0.54), q(0.07, -0.42)], [q(0, -0.66), q(-0.2, -0.54), q(-0.07, -0.42)]]; legs = [[hip, q(0.08, -0.2), q(0.16, 0)], [hip, q(-0.08, -0.2), q(-0.16, 0)]]; }
+  else if (pose === 'run') { head = q(0.08, -0.84); neck = q(0.06, -0.72);
+    arms = [[q(0.05, -0.64), q(0.2, -0.52), q(0.3, -0.62)], [q(0.05, -0.64), q(-0.12, -0.5), q(-0.24, -0.58)]];
+    legs = [[hip, q(0.18, -0.24), q(0.3, -0.04)], [hip, q(-0.1, -0.2), q(-0.3, -0.16)]]; }
+  else if (pose === 'jump') { arms = [[q(0, -0.66), q(0.18, -0.86), q(0.26, -1.04)], [q(0, -0.66), q(-0.18, -0.86), q(-0.26, -1.04)]]; legs = [[hip, q(0.14, -0.22), q(0.1, -0.02)], [hip, q(-0.14, -0.22), q(-0.1, -0.02)]]; }
+  else if (pose === 'walk') { arms = [[q(0, -0.66), q(0.12, -0.52), q(0.2, -0.42)], [q(0, -0.66), q(-0.1, -0.52), q(-0.16, -0.40)]]; legs = [[hip, q(0.1, -0.2), q(0.18, 0)], [hip, q(-0.06, -0.2), q(-0.14, 0)]]; }
+  else if (pose === 'think') { arms = [[q(0, -0.66), q(0.16, -0.56), q(0.06, -0.78)], [q(0, -0.66), q(-0.16, -0.5), q(-0.12, -0.38)]]; legs = [[hip, q(0.07, -0.2), q(0.13, 0)], [hip, q(-0.07, -0.2), q(-0.13, 0)]]; }
+  else if (pose === 'hold') { arms = [[q(0, -0.66), q(0.22, -0.56), q(0.36, -0.5)], [q(0, -0.66), q(-0.22, -0.56), q(-0.36, -0.5)]]; legs = [[hip, q(0.07, -0.2), q(0.13, 0)], [hip, q(-0.07, -0.2), q(-0.13, 0)]]; }
+  else if (pose === 'up') { arms = [[q(0, -0.66), q(0.12, -0.8), q(0.16, -1.0)], [q(0, -0.66), q(-0.18, -0.52), q(-0.22, -0.38)]]; legs = [[hip, q(0.07, -0.2), q(0.13, 0)], [hip, q(-0.07, -0.2), q(-0.13, 0)]]; }
+  else { arms = [[q(0, -0.66), q(0.16, -0.52), q(0.22, -0.38)], [q(0, -0.66), q(-0.16, -0.52), q(-0.22, -0.38)]]; legs = [[hip, q(0.07, -0.2), q(0.13, 0)], [hip, q(-0.07, -0.2), q(-0.13, 0)]]; }
+  const r = h * 0.12, w = Math.max(4, h * 0.03);
+  st.push(S(Ci(head[0], head[1], r), col, w));
+  st.push(S(P([neck, hip]), col, w));
+  arms.forEach(a => st.push(S(P(a), col, w))); legs.forEach(a => st.push(S(P(a), col, w)));
+  if (face === 'smile') { st.push(S(E(head[0], head[1] + r * 0.1, r * 0.5, r * 0.4, 0.3, Math.PI - 0.3), col, w * 0.6)); st.push(S(Ci(head[0] - r * 0.35, head[1] - r * 0.25, 1.5), col, w * 0.8)); st.push(S(Ci(head[0] + r * 0.35, head[1] - r * 0.25, 1.5), col, w * 0.8)); }
+  if (face === 'sad') { st.push(S(E(head[0], head[1] + r * 0.65, r * 0.45, r * 0.3, Math.PI + 0.3, 2 * Math.PI - 0.3), col, w * 0.6)); }
+  return st;
+}
+function heart(x, y, s, col = C.p, w = 8) { return [S(B([x, y + s * 0.9], [x - s * 1.6, y - s * 0.2], [x - s * 0.6, y - s * 1.3], [x, y - s * 0.4]), col, w), S(B([x, y - s * 0.4], [x + s * 0.6, y - s * 1.3], [x + s * 1.6, y - s * 0.2], [x, y + s * 0.9]), col, w)]; }
+function sun(x, y, r, col = C.y, n = 10, rl = 50) { const s = [S(Ci(x, y, r), col, 8)]; for (let i = 0; i < n; i++) { const a = i / n * Math.PI * 2; s.push(S(L(x + Math.cos(a) * (r + 14), y + Math.sin(a) * (r + 14), x + Math.cos(a) * (r + 14 + rl), y + Math.sin(a) * (r + 14 + rl)), col, 6)); } return s; }
+function star(x, y, r, col = C.y) { return [S(L(x - r, y, x + r, y), col, 5), S(L(x, y - r, x, y + r), col, 5), S(L(x - r * 0.6, y - r * 0.6, x + r * 0.6, y + r * 0.6), col, 4), S(L(x + r * 0.6, y - r * 0.6, x - r * 0.6, y + r * 0.6), col, 4)]; }
+function bird(x, y, s, col = C.w) { return [S(P([[x - s, y - s * 0.4], [x - s * 0.4, y - s * 0.1], [x, y + s * 0.2]]), col, 5), S(P([[x, y + s * 0.2], [x + s * 0.4, y - s * 0.1], [x + s, y - s * 0.4]]), col, 5)]; }
+function note(x, y, s, col = C.y) { return [S(Ci(x, y, s * 0.35), col, 6), S(L(x + s * 0.33, y, x + s * 0.33, y - s * 1.3), col, 6), S(P([[x + s * 0.33, y - s * 1.3], [x + s * 0.9, y - s * 1.0]]), col, 6)]; }
+function cross(x, y, s, col = C.r, w = 10) { return [S(L(x - s, y - s, x + s, y + s), col, w), S(L(x + s, y - s, x - s, y + s), col, w)]; }
+function tick(x, y, s, col = C.g, w = 10) { return [S(P([[x - s, y], [x - s * 0.3, y + s * 0.7], [x + s, y - s * 0.8]]), col, w)]; }
+function rect(x, y, w2, h2, col = C.w, w = 7) { return [S(P([[x, y], [x + w2, y], [x + w2, y + h2], [x, y + h2], [x, y + 2]]), col, w)]; }
+
+// sequence a list of items between ts..te (time proportional to stroke length)
+function seq(items, ts, te) {
+  const len = it => { if (!it.text && !it.pts) throw new Error('bad item ' + JSON.stringify(it).slice(0, 200) + ' scene ' + SC.length); return it.text ? 260 : it.pts.reduce((a, p, i) => i ? a + Math.hypot(p[0] - it.pts[i - 1][0], p[1] - it.pts[i - 1][1]) : 0, 0); };
+  const tot = items.reduce((a, it) => a + len(it) + 40, 0); let t = ts;
+  items.forEach(it => { const d = (len(it) + 40) / tot * (te - ts); it.t0 = t; it.t1 = t + d * 0.92; t += d; });
+  return items;
+}
+const G = (...a) => a.flat();
+
+// ---------- scenes ----------
+const SC = [];
+function scene(t0, t1, build) { R = rng(SC.length * 97 + 5); const items = build(); SC.push({ t0, t1, items }); }
+scene(0, 4.4, () => [ // living within what we have = happiness
+  ...seq(G(S(L(110, 1180, 970, 1180)), rect(240, 880, 300, 300), S(P([[210, 885], [390, 690], [570, 885]])), rect(350, 1030, 80, 150), rect(270, 930, 60, 60, C.b, 6),
+    S(L(300, 930, 300, 990), C.b, 5), S(L(270, 960, 330, 960), C.b, 5), rect(470, 730, 40, 80), S(B([490, 720], [450, 680], [530, 650], [490, 610]), C.w, 5), S(B([495, 600], [455, 560], [535, 540], [500, 500]), C.w, 5)), 0.1, 1.6),
+  ...seq(G(sun(840, 420, 70), man(760, 1180, 280, 'sit')), 1.6, 2.9),
+  ...seq(G(heart(770, 760, 46)), 2.9, 3.3),
+]);
+scene(4.4, 10.0, () => [ // standing on your own feet, not bowing to anyone
+  ...seq(G(S(P([[80, 1300], [330, 820], [450, 960], [700, 560], [1000, 1300]])), S(P([[600, 700], [660, 660], [700, 700], [745, 650]]), C.w, 5),
+    S(B([120, 520], [150, 450], [250, 450], [270, 510]), C.b, 6), S(B([270, 510], [330, 480], [360, 540], [300, 560]), C.b, 6), S(L(120, 560, 300, 560), C.b, 6)), 4.5, 6.6),
+  ...seq(G(man(700, 560, 260, 'hips'), S(L(800, 560, 800, 300), C.w, 7), S(P([[800, 300], [930, 340], [800, 380]]), C.o, 8)), 6.6, 8.2),
+  ...seq(G(star(560, 330, 26), star(890, 470, 22), star(620, 200, 18), star(470, 470, 16)), 8.2, 9.4),
+]);
+scene(10.0, 15.1, () => [ // fate is written – why fear
+  ...seq(G(S(B([180, 760], [300, 700], [460, 700], [540, 760])), S(B([540, 760], [620, 700], [780, 700], [900, 760])), S(L(180, 760, 180, 1010)), S(L(900, 760, 900, 1010)),
+    S(B([180, 1010], [300, 950], [460, 950], [540, 1010])), S(B([540, 1010], [620, 950], [780, 950], [900, 1010])), S(L(540, 760, 540, 1010))), 10.1, 11.2),
+  ...seq([T(360, 860, 'విధి', 110, C.y)], 11.2, 11.4),
+  ...seq(G(S(L(600, 820, 840, 800), C.w, 4), S(L(600, 870, 840, 850), C.w, 4), S(L(600, 920, 790, 900), C.w, 4),
+    S(B([830, 880], [900, 760], [1000, 640], [1010, 560]), C.y, 7), S(B([1010, 560], [960, 640], [900, 760], [830, 880]), C.y, 5), S(L(950, 640, 990, 600), C.y, 4), S(L(920, 700, 965, 668), C.y, 4)), 11.4, 12.4),
+  ...seq(G(S(B([540, 1020], [420, 1120], [660, 1220], [540, 1360]), C.o, 6), man(560, 1300, 190, 'walk', C.w, 'smile'), sun(540, 600, 34, C.y, 8, 26)), 12.5, 14.3),
+]);
+scene(15.1, 20.6, () => [ // doesn't happen that way – never lose faith
+  ...seq(G(S(P([[440, 1380], [520, 1080]])), S(P([[640, 1380], [560, 1080]])), S(B([520, 1080], [450, 980], [330, 900], [160, 860])), S(B([560, 1080], [640, 980], [760, 900], [930, 860])),
+    S(L(540, 1080, 540, 690), C.o, 9), S(P([[300, 700], [520, 700], [520, 780], [300, 780], [270, 740], [300, 700]]), C.o, 7), S(P([[560, 800], [780, 800], [810, 840], [780, 880], [560, 880], [560, 800]]), C.o, 7)), 15.2, 16.8),
+  ...seq(G(cross(410, 740, 26), tick(670, 840, 28), man(790, 1010, 200, 'walk')), 16.9, 18.1),
+  ...seq(G(S(E(820, 470, 120, 34, 0, Math.PI), C.o, 8), S(E(820, 470, 120, 22), C.o, 6), S(B([830, 450], [780, 380], [820, 320], [840, 270]), C.y, 7), S(B([840, 270], [880, 330], [880, 390], [830, 450]), C.y, 7),
+    S(L(700, 330, 740, 360), C.y, 4), S(L(960, 330, 920, 360), C.y, 4), S(L(830, 220, 830, 180), C.y, 4)), 18.2, 19.4),
+  ...seq([T(820, 600, 'నమ్మకం', 64, C.y)], 19.4, 19.9),
+]);
+scene(20.6, 25.6, () => [ // running unknown races in a hurry
+  ...seq(G(S(Ci(540, 500, 160)), S(L(540, 500, 540, 400), C.w, 8), S(L(540, 500, 610, 540), C.w, 8), S(L(540, 330, 540, 352), C.w, 5), S(L(540, 648, 540, 670), C.w, 5), S(L(370, 500, 392, 500), C.w, 5), S(L(688, 500, 710, 500), C.w, 5)), 20.7, 22.0),
+  ...seq(G(man(260, 1050, 210, 'run'), S(L(90, 900, 160, 900), C.w, 4), S(L(80, 950, 150, 950), C.w, 4), man(780, 1080, 200, 'run', C.w, 'none', -1), S(L(900, 930, 980, 930), C.w, 4), S(L(910, 980, 990, 980), C.w, 4),
+    man(520, 1340, 220, 'run'), S(L(330, 1180, 400, 1180), C.w, 4)), 22.0, 24.0),
+  ...seq(G(S(P([[200, 760], [330, 700]]), C.y, 6), S(P([[300, 690], [330, 700], [315, 730]]), C.y, 6), S(P([[880, 760], [760, 700]]), C.y, 6), S(P([[790, 685], [760, 700], [775, 730]]), C.y, 6), T(170, 660, '?', 90, C.p), T(920, 660, '?', 90, C.p)), 24.0, 25.0),
+]);
+scene(25.6, 30.6, () => [ // not finding yourself; time; illusion of cleverness
+  ...seq(G(man(330, 1250, 300, 'think', C.w, 'none'), S(E(750, 950, 150, 230), C.b, 8), S(L(750, 1180, 750, 1260), C.b, 7), S(L(660, 1260, 840, 1260), C.b, 7)), 25.7, 27.4),
+  ...seq([T(750, 960, '?', 200, C.p)], 27.4, 27.9),
+  ...seq(G(S(P([[170, 360], [330, 360], [250, 470], [330, 580], [170, 580], [250, 470], [170, 360]]), C.y, 7), S(P([[205, 400], [295, 400], [250, 460], [205, 400]]), C.o, 5), S(P([[215, 570], [285, 570], [250, 520], [215, 570]]), C.o, 5)), 28.2, 28.9),
+  ...seq(G(S(Ci(800, 430, 90), C.y, 7), S(P([[765, 520], [765, 570], [835, 570], [835, 520]]), C.y, 6), S(P([[760, 360], [800, 420], [780, 450], [830, 500]]), C.r, 7)), 29.0, 29.8),
+]);
+scene(30.6, 36.1, () => [ // amid many desires – enough! look at everything
+  ...seq(G(man(540, 1350, 230, 'up', C.w, 'none'), S(Ci(510, 1080, 14), C.w, 5), S(Ci(480, 1010, 20), C.w, 5),
+    S(B([200, 900], [120, 700], [260, 560], [380, 600])), S(B([380, 600], [420, 440], [660, 440], [700, 600])), S(B([700, 600], [860, 540], [960, 760], [860, 900])), S(B([860, 900], [700, 980], [360, 980], [200, 900]))), 30.7, 32.3),
+  ...seq(G(rect(270, 760, 110, 80, C.y, 6), S(P([[255, 765], [325, 700], [395, 765]]), C.y, 6), S(P([[430, 800], [450, 760], [560, 760], [580, 800], [430, 800]]), C.b, 6), S(Ci(460, 812, 14), C.b, 5), S(Ci(550, 812, 14), C.b, 5),
+    T(650, 770, '₹', 110, C.g), rect(740, 700, 60, 110, C.v, 6), S(Ci(450, 640, 32), C.o, 6), S(P([[435, 605], [450, 585], [465, 605]]), C.o, 6)), 32.3, 33.5),
+  ...seq(G(cross(560, 740, 260, C.r, 14)), 33.6, 34.0),
+  ...seq(G(man(330, 1350, 200, 'hold', C.p), man(760, 1350, 150, 'hold', C.y), heart(540, 1080, 36)), 34.2, 35.2),
+]);
+scene(36.1, 41.33, () => [ // life floats in joy in a snap
+  ...seq(G(sun(540, 600, 120, C.y, 14, 70), S(L(100, 1330, 980, 1330))), 36.2, 37.2),
+  ...seq(G(S(P([[100, 980], [300, 980], [340, 900], [380, 1060], [420, 940], [450, 980], [620, 980]]), C.r, 7), heart(720, 985, 50, C.p, 9)), 37.2, 38.3),
+  ...seq(G(man(540, 1300, 250, 'jump'), bird(240, 360, 34), bird(330, 300, 26), bird(820, 330, 30), star(300, 1150, 20, C.y), star(800, 1120, 24, C.y), star(880, 1240, 16, C.b)), 38.3, 40.6),
+]);
+scene(41.33, 46.3, () => [ // భజ గోవిందం – flute & peacock feather
+  ...seq(G(S(L(180, 1150, 900, 520), C.o, 26), S(Ci(420, 940, 9), C.w, 6), S(Ci(500, 870, 9), C.w, 6), S(Ci(580, 800, 9), C.w, 6), S(Ci(660, 730, 9), C.w, 6)), 41.4, 42.8),
+  ...seq(G(S(B([840, 560], [800, 420], [760, 330], [700, 260]), C.g, 6), S(E(690, 250, 70, 100), C.g, 7), S(E(690, 260, 42, 62), C.b, 7), S(E(690, 268, 18, 28), C.v, 8)), 42.8, 44.0),
+  ...seq(G(note(240, 560, 60), note(360, 430, 50, C.p), note(860, 900, 56, C.b), note(760, 1040, 44, C.y)), 44.0, 45.4),
+]);
+scene(46.3, 51.3, () => [ // బ్రతుకే కోలాహలం – life is a festival
+  ...seq(G(S(B([60, 300], [360, 420], [720, 420], [1020, 300]), C.w, 5), ...[0, 1, 2, 3, 4, 5, 6].map(i => { const x = 150 + i * 120, y = 350 + 40 * Math.sin(i / 6 * Math.PI); return S(P([[x - 40, y], [x + 40, y], [x, y + 80], [x - 40, y]]), [C.r, C.y, C.g, C.b, C.p, C.o, C.v][i], 6); })), 46.4, 47.6),
+  ...seq(G(...[[250, 650, C.y], [800, 600, C.p], [540, 520, C.b]].map(([x, y, c]) => Array.from({ length: 10 }, (_, i) => { const a = i / 10 * Math.PI * 2; return S(L(x + Math.cos(a) * 20, y + Math.sin(a) * 20, x + Math.cos(a) * 95, y + Math.sin(a) * 95), c, 5); }))), 47.6, 48.8),
+  ...seq(G(man(300, 1300, 230, 'jump', C.w), man(540, 1300, 250, 'jump', C.y), man(780, 1300, 230, 'jump', C.p), S(L(120, 1310, 960, 1310))), 48.8, 50.6),
+]);
+scene(51.3, 56.19, () => [ // భజ గోవిందం – lamp & rangoli
+  ...seq(G(S(Ci(540, 900, 300), C.p, 7), S(Ci(540, 900, 220), C.y, 7), ...Array.from({ length: 8 }, (_, i) => { const a = i / 8 * Math.PI * 2; return S(E(540 + Math.cos(a) * 260, 900 + Math.sin(a) * 260, 34, 34), [C.g, C.b, C.o, C.v][i % 4], 6); })), 51.4, 53.2),
+  ...seq(G(S(E(540, 930, 120, 40, 0, Math.PI), C.o, 9), S(E(540, 930, 120, 24), C.o, 6), S(B([550, 910], [490, 830], [540, 760], [560, 700]), C.y, 8), S(B([560, 700], [610, 770], [610, 850], [550, 910]), C.y, 8)), 53.2, 54.4),
+  ...seq(G(note(220, 430, 54), note(830, 420, 54, C.p), note(170, 1380, 44, C.b), note(890, 1370, 44, C.g)), 54.4, 55.6),
+]);
+scene(56.19, 60, () => [ // బరువే కాదే క్షణం – light as balloons
+  ...seq(G(man(540, 1350, 260, 'up'), S(B([590, 1090], [600, 900], [520, 760], [540, 640]), C.w, 3), S(B([590, 1090], [660, 900], [700, 740], [720, 600]), C.w, 3), S(B([590, 1090], [560, 900], [400, 760], [380, 610]), C.w, 3),
+    S(E(540, 560, 70, 85), C.p, 8), S(E(720, 520, 70, 85), C.b, 8), S(E(380, 530, 70, 85), C.y, 8)), 56.3, 58.2),
+  ...seq(G(S(B([860, 900], [900, 820], [960, 800], [980, 740]), C.w, 5), S(B([860, 900], [840, 820], [900, 760], [980, 740]), C.w, 4)), 58.2, 58.8),
+]);
+
+// ---------- chalk texture ----------
+const grainC = document.createElement('canvas'); grainC.width = 512; grainC.height = 512;
+{ const g = grainC.getContext('2d'), im = g.createImageData(512, 512), r = rng(3);
+  for (let i = 0; i < im.data.length; i += 4) { const v = r(); im.data[i] = im.data[i + 1] = im.data[i + 2] = 255; im.data[i + 3] = v < 0.18 ? 40 : 150 + v * 105; } g.putImageData(im, 0, 0); }
+let grainPat;
+// board: pre-rendered
+const board = mk();
+{ const b = board.getContext('2d'), g = b.createLinearGradient(0, 0, W, H); g.addColorStop(0, '#24342b'); g.addColorStop(1, '#17221c'); b.fillStyle = g; b.fillRect(0, 0, W, H);
+  const r = rng(11); for (let i = 0; i < 60; i++) { const x = r() * W, y = r() * H, rr = 80 + r() * 300, gg = b.createRadialGradient(x, y, 0, x, y, rr); gg.addColorStop(0, `rgba(230,240,230,${0.018 + r() * 0.03})`); gg.addColorStop(1, 'rgba(0,0,0,0)'); b.fillStyle = gg; b.fillRect(x - rr, y - rr, 2 * rr, 2 * rr); }
+  for (let i = 0; i < 26; i++) { b.save(); b.translate(r() * W, r() * H); b.rotate((r() - 0.5) * 0.6); b.fillStyle = `rgba(230,240,230,${0.015 + r() * 0.02})`; b.fillRect(-200, -30, 400 + r() * 300, 60); b.restore(); }
+  const im = b.getImageData(0, 0, W, H); for (let i = 0; i < im.data.length; i += 4) { const n = (r() - 0.5) * 14; im.data[i] += n; im.data[i + 1] += n; im.data[i + 2] += n; } b.putImageData(im, 0, 0);
+  const v = b.createRadialGradient(W / 2, H / 2, H * 0.3, W / 2, H / 2, H * 0.72); v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, 'rgba(0,0,0,0.5)'); b.fillStyle = v; b.fillRect(0, 0, W, H);
+  // wooden frame
+  const fw = 26, wood = b.createLinearGradient(0, 0, W, 0); wood.addColorStop(0, '#6b4424'); wood.addColorStop(0.5, '#8a5a32'); wood.addColorStop(1, '#5e3b1f');
+  b.fillStyle = wood; b.fillRect(0, 0, W, fw); b.fillRect(0, H - fw - 14, W, fw + 14); b.fillRect(0, 0, fw, H); b.fillRect(W - fw, 0, fw, H);
+  b.fillStyle = 'rgba(0,0,0,0.35)'; b.fillRect(fw, fw, W - 2 * fw, 6); b.fillRect(fw, fw, 6, H - 2 * fw);
+  b.fillStyle = '#f4f1e8'; b.fillRect(820, H - fw - 26, 70, 14); b.fillStyle = '#ffe27a'; b.fillRect(910, H - fw - 24, 50, 12); }
+
+// ---------- drawing ----------
+let tip = null;
+function drawItems(ctx, items, t, full) {
+  for (const it of items) {
+    const f = full ? 1 : cl((t - it.t0) / (it.t1 - it.t0)); if (f <= 0) continue;
+    if (it.text) {
+      ctx.save(); ctx.font = `${it.size}px Rama`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      const tw = ctx.measureText(it.text).width; const x0 = it.x - tw / 2 - 10;
+      ctx.beginPath(); ctx.rect(x0, it.y - it.size, (tw + 20) * f, it.size * 2); ctx.clip();
+      ctx.fillStyle = it.col; ctx.strokeStyle = it.col; ctx.lineWidth = 3; ctx.strokeText(it.text, it.x, it.y); ctx.fillText(it.text, it.x, it.y); ctx.restore();
+      if (f < 1 && !full) tip = [x0 + (tw + 20) * f, it.y + it.size * 0.2];
+      continue;
+    }
+    const p = it.pts; let tot = 0; const seg = [0]; for (let i = 1; i < p.length; i++) { tot += Math.hypot(p[i][0] - p[i - 1][0], p[i][1] - p[i - 1][1]); seg.push(tot); }
+    const lim = tot * f; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    const pass = (dx, dy, w, a) => { ctx.globalAlpha = a; ctx.strokeStyle = it.col; ctx.lineWidth = w; ctx.beginPath(); ctx.moveTo(p[0][0] + dx, p[0][1] + dy); let last = p[0];
+      for (let i = 1; i < p.length; i++) { if (seg[i] <= lim) { ctx.lineTo(p[i][0] + dx, p[i][1] + dy); last = p[i]; } else { const k = (lim - seg[i - 1]) / (seg[i] - seg[i - 1] || 1); last = [p[i - 1][0] + (p[i][0] - p[i - 1][0]) * k, p[i - 1][1] + (p[i][1] - p[i - 1][1]) * k]; ctx.lineTo(last[0] + dx, last[1] + dy); break; } }
+      ctx.stroke(); return last; };
+    const ww = it.w * 1.45; const last = pass(0, 0, ww, 0.95); pass(1.8, -1.4, ww * 0.55, 0.45); pass(-1.6, 1.7, ww * 0.45, 0.35); ctx.globalAlpha = 1;
+    if (f < 1 && !full) tip = last;
+  }
+}
+function chalkify(ctx) { ctx.save(); ctx.globalCompositeOperation = 'destination-in'; ctx.fillStyle = grainPat; ctx.fillRect(0, 0, W, H); ctx.restore(); }
+function drawScene(ctx, s, t, full) { ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; ctx.clearRect(0, 0, W, H); drawItems(ctx, s.items, t, full); chalkify(ctx); }
+
+function lyric(t) {
+  TX.setTransform(1, 0, 0, 1, 0, 0); TX.clearRect(0, 0, W, H);
+  const L = LY.find(l => t >= l[0] && t < l[1]); if (!L) return;
+  const [a, b, str, hl] = L, wdur = Math.min(0.7, (b - a) * 0.45), f = cl((t - a) / wdur), out = ease((b - t) / 0.2);
+  let size = hl === '*' ? 108 : 96; TX.font = `${size}px Rama`; while (TX.measureText(str).width > 960) { size -= 4; TX.font = `${size}px Rama`; }
+  const tw = TX.measureText(str).width, x0 = W / 2 - tw / 2, y = 1590;
+  TX.textBaseline = 'middle'; TX.textAlign = 'left';
+  let parts = [[str, hl === '*' ? C.y : C.w]]; if (hl && hl !== '*' && str.includes(hl)) { const i = str.indexOf(hl); parts = [[str.slice(0, i), C.w], [hl, C.y], [str.slice(i + hl.length), C.w]]; }
+  TX.save(); TX.beginPath(); TX.rect(x0 - 20, y - size * 1.2, (tw + 40) * f, size * 2.4); TX.clip();
+  let x = x0; for (const [s, c] of parts) { if (!s) continue; TX.fillStyle = c; TX.strokeStyle = c; TX.lineWidth = 3; TX.lineJoin = 'round'; TX.strokeText(s, x, y); TX.fillText(s, x, y); TX.globalAlpha = 0.35; TX.fillText(s, x + 1.5, y - 1); TX.globalAlpha = 1; x += TX.measureText(s).width; }
+  TX.restore();
+  // chalk underline for the chorus
+  if (hl === '*') { TX.strokeStyle = C.y; TX.lineWidth = 5; TX.beginPath(); TX.moveTo(x0, y + size * 0.75); TX.lineTo(x0 + tw * f, y + size * 0.75 + 4 * Math.sin(f * 6)); TX.stroke(); }
+  chalkify(TX);
+  X.globalAlpha = out; X.drawImage(txt, 0, 0); X.globalAlpha = 1;
+  if (f < 1) tip = tip || [x0 + (tw + 40) * f - 20, y + size * 0.3];
+}
+function chalkStick(p) {
+  if (!p) return; X.save(); X.translate(p[0], p[1]); X.rotate(-0.7);
+  X.shadowColor = 'rgba(0,0,0,0.5)'; X.shadowBlur = 12; X.shadowOffsetX = 8; X.shadowOffsetY = 10;
+  X.fillStyle = '#f7f4ea'; X.beginPath(); X.roundRect(-6, -2, 26, 110, 6); X.fill();
+  X.shadowColor = 'transparent'; X.fillStyle = 'rgba(0,0,0,0.12)'; X.fillRect(10, 4, 8, 100);
+  // fingers holding the chalk
+  X.fillStyle = '#c98f6a'; X.beginPath(); X.ellipse(8, 112, 34, 24, 0, 0, 7); X.fill(); X.beginPath(); X.ellipse(-10, 92, 16, 22, 0.3, 0, 7); X.fill();
+  X.fillStyle = '#b57a57'; X.beginPath(); X.ellipse(24, 100, 14, 20, -0.3, 0, 7); X.fill();
+  X.restore();
+}
+function eraser(x, y) {
+  X.save(); X.translate(x, y); X.rotate(0.12);
+  X.shadowColor = 'rgba(0,0,0,0.5)'; X.shadowBlur = 16; X.shadowOffsetY = 10;
+  X.fillStyle = '#8a5a32'; X.beginPath(); X.roundRect(-90, -55, 180, 70, 10); X.fill();
+  X.shadowColor = 'transparent'; X.fillStyle = '#d9d3c4'; X.fillRect(-90, 10, 180, 30); X.fillStyle = 'rgba(255,255,255,0.4)'; X.fillRect(-90, 34, 180, 6);
+  X.restore();
+}
+const dust = Array.from({ length: 60 }, (_, i) => { const r = rng(500 + i); return [r(), r(), r(), r()]; });
+
+window.render = function (t) {
+  tip = null; X.setTransform(1, 0, 0, 1, 0, 0); X.globalAlpha = 1;
+  X.drawImage(board, 0, 0);
+  const k = SC.findIndex(s => t >= s.t0 && t < s.t1); const i = k < 0 ? SC.length - 1 : k, s = SC[i];
+  // faint ghost of the previous scene (real boards never wipe perfectly)
+  if (i > 0) { drawScene(GXc, SC[i - 1], t, true); X.globalAlpha = 0.07; X.drawImage(ghost, 0, 0); X.globalAlpha = 1; }
+  drawScene(LX, s, t, false);
+  // eraser wipe during the last 0.5 s of each scene
+  const ew = 0.5;
+  if (i < SC.length - 1 && t > s.t1 - ew) {
+    const u = ease((t - (s.t1 - ew)) / ew), ex = -150 + u * (W + 300);
+    LX.save(); LX.globalCompositeOperation = 'destination-out'; LX.fillStyle = 'rgba(0,0,0,0.93)'; LX.fillRect(0, 0, ex, 1420); LX.restore();
+    X.drawImage(layer, 0, 0);
+    for (let j = 0; j < 5; j++) { const yy = 200 + j * 260 + 60 * Math.sin(u * 12 + j); eraser(ex, yy); }
+    X.fillStyle = 'rgba(240,240,230,0.5)';
+    dust.forEach(([a, b, c, d]) => { const dx = ex - 40 - a * 160, dy = 180 + b * 1200 + (u * 80) * c; X.globalAlpha = 0.25 * (1 - a); X.beginPath(); X.arc(dx, dy, 1.5 + d * 3, 0, 7); X.fill(); });
+    X.globalAlpha = 1; tip = null;
+  } else X.drawImage(layer, 0, 0);
+  lyric(t);
+  chalkStick(tip);
+  if (t < 0.3) { X.fillStyle = `rgba(0,0,0,${1 - ease(t / 0.3)})`; X.fillRect(0, 0, W, H); }
+  if (t > TOTAL - 0.7) { X.fillStyle = `rgba(0,0,0,${ease((t - (TOTAL - 0.7)) / 0.7)})`; X.fillRect(0, 0, W, H); }
+};
+window.__ready = document.fonts.load('80px Rama', 'ఉన్నంతలో').then(() => { grainPat = X.createPattern(grainC, 'repeat'); return true; });
+</script></body></html>
