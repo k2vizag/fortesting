@@ -1,0 +1,18 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<style>
+@font-face{font-family:TeluguCap;src:url('../../insurance/v2/fonts/TeluguCap800.ttf');}
+html,body{margin:0;width:1080px;height:1920px;overflow:hidden;background:#000;}
+#gl{position:absolute;left:0;top:0;width:1080px;height:1920px;}
+#flash{position:absolute;inset:0;background:#fff3dc;opacity:0;pointer-events:none;}
+#black{position:absolute;inset:0;background:#000;opacity:0;pointer-events:none;}
+#ly{position:absolute;left:40px;right:40px;top:1380px;text-align:center;font-family:TeluguCap;font-size:84px;line-height:1.25;
+  color:#fff8ec;text-shadow:0 0 18px rgba(0,0,0,.95),0 0 40px rgba(0,0,0,.7),0 0 34px rgba(255,190,90,.55);}
+#ly .hl{color:#ffc95a;}
+#ly.chorus{color:#ffc95a;font-size:96px;}
+</style>
+<script type="importmap">{"imports":{"three":"./node_modules/three/build/three.module.js","three/addons/":"./node_modules/three/examples/jsm/"}}</script>
+</head><body>
+<canvas id="gl"></canvas><div id="flash"></div><div id="ly"></div><div id="black"></div>
+<script type="module" src="./main.js"></script>
+</body></html>
