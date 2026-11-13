@@ -118,8 +118,8 @@ stickers = [stk(2, 5, "rupee", "red", "No money", "l"), stk(2, 10, "star", "yell
 cards = [{"a": round(STORY_END, 3), "b": round(MAIN_END, 3), "theme": "white", "type": "profile", "color": "orange", "icon": "heart",
           "kicker": "KATHA LO NEETHI", "title": "Manishi viluva", "pill": "Prathibha + Kashtam", "pillAt": 0.7,
           "desc": "Dabbulo kaadu &mdash; prathibhalo, kashtamlo untundhi!", "tiles": ["star", "hammer", "trophy"]}]
-data = {"total": round(TOTAL, 3), "main_end": round(MAIN_END, 3), "title": ["BHEEMA CHEKKA SHILPI", "DABBU KAADU, PRATHIBHA!"],
-        "board": {"phone": "7989615350"}, "cards": cards, "numbers": [], "stickers": stickers, "captions": caps}
+data = {"total": round(TOTAL, 3), "main_end": round(MAIN_END, 3), "title": [], "board": None,  # no title bars / call board (user request)
+        "cards": cards, "numbers": [], "stickers": stickers, "captions": caps}
 
 # ---------------------------------------------------------------- soft UI sfx (synthesised by audio.py) and comedy cues
 sfx = [{"t": s["a"], "k": "pop"} for s in stickers]

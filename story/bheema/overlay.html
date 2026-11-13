@@ -259,11 +259,11 @@ for(const c of D.captions){
   items.push({kind:'cap',a:c.a,b:c.b,n,lines,c});
 }
 // ---- title
-const TT=D.title||['',''];
+const TT=D.title||['',''];const HAS_T=!!(D.title&&D.title.length&&D.title[0]);
 const t1=el(`<div class="ttl" style="top:62px"><span style="background:#E53935;color:#fff;font-size:66px;padding:8px 34px 12px;border-radius:14px">${TT[0]}</span></div>`);
 const t2=el(`<div class="ttl" style="top:176px"><span style="background:#FFD60A;color:#111;font-size:58px;padding:6px 40px 10px;border-radius:14px;letter-spacing:3px">${TT[1]}</span></div>`);
 // ---- board
-const B=D.board;
+const B=D.board||{phone:''};const HAS_B=!!D.board;
 const bwrap=el(`<div class="abs" style="left:0;top:0;width:1080px;height:1920px;pointer-events:none;z-index:50"></div>`);
 const bsv=el(`<svg class="abs" width="1080" height="1920" style="left:0;top:0"><line id="s1" stroke="#e8e0cf" stroke-width="5"/><line id="s2" stroke="#e8e0cf" stroke-width="5"/><circle id="nail" r="11" fill="#cfcfcf" stroke="#222" stroke-width="3"/></svg>`,bwrap);
 const board=el(`<div class="board"><div class="in"><div class="t1" style="font-family:PX;font-size:40px">Call cheyandi</div><div class="t2">${B.phone}</div></div></div>`,bwrap);
@@ -313,7 +313,7 @@ function render(t){
   // board
   const me=D.main_end; let bx,by,bs,ang;
   const sw=3.5*Math.sin(2*Math.PI*t/2.6);
-  bwrap.style.display = t<me ? 'none' : 'block';
+  bwrap.style.display = (t<me || !HAS_B) ? 'none' : 'block';
   {const k=eBack((t-me-0.2)/0.6);bx=540;by=200-(1-clamp(k))*260;bs=1.55;ang=3.5*Math.sin(2*Math.PI*(t-me)/2.6)*clamp((t-me-0.6)/0.5);bwrap.style.opacity=clamp((t-me-0.2)/0.3)}
   const W=330*bs,H=150*bs,drop=70*bs;
   const bx0=bx-W/2, by0=by+drop;
@@ -324,7 +324,7 @@ function render(t){
   s2.setAttribute('x1',bx);s2.setAttribute('y1',by);s2.setAttribute('x2',bx0+W-55*bs);s2.setAttribute('y2',by0+18*bs);
   nl.setAttribute('cx',bx);nl.setAttribute('cy',by);
   // title
-  {const o=t<me?1:clamp(1-(t-me)/0.3); t1.style.opacity=t2.style.opacity=o;
+  {t1.style.display=t2.style.display=HAS_T?'flex':'none';const o=t<me?1:clamp(1-(t-me)/0.3); t1.style.opacity=t2.style.opacity=o;
    const k=eBack(t/0.5); t1.style.transform=`scale(${0.6+0.4*k})`; t2.style.transform=`scale(${0.6+0.4*eBack((t-0.12)/0.5)})`;}
   // end screen
   if(t>=me){E.wrap.style.display='block';const lt=t-me;
