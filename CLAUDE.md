@@ -19,5 +19,31 @@ user's message is short.
 - Google Drive links must be shared as "Anyone with the link"; if a download
   returns a sign-in page, ask the user to change sharing.
 - Do not commit video files over ~90 MB (GitHub rejects files over 100 MB).
-- Comedy SFX library: `sfx/comedy_ref1/` (18 named clips + README with timing
-  rules). Use it when the user asks for comedy sound effects or "SFX like the reference".
+
+## Sound effects (SFX) – standing workflow
+
+The user collects SFX from reference videos they like and wants them used in
+every new video. Library: `sfx/` (see `sfx/README.md`). Packs: `sfx/comedy_ref1/`, …
+
+**When the user sends a reference video "for its sound effects":**
+1. `python3 -I sfx/tools/extract_sfx.py <ref.mp4> <scratchpad>/pack <scratchpad>/work`
+   (pip install demucs transformers librosa if missing). This gives draft clips + events.json.
+2. Curate: drop weak/duplicate events (peak below about -33 dB, or ones that are just background music), merge
+   pieces of one sound, look at frames at each event, give clear names
+   (`NN_what_it_is.mp3`). Copy the result into the next free `sfx/<style>_refN/`.
+3. Write that pack's README.md: clip table (file, ref time, length, what it is, when it
+   is used) + timing patterns (relation to cuts, pauses, hit rate, level vs voice).
+   Use `sfx/comedy_ref1/README.md` as the template. Add the pack to `sfx/README.md`. Commit + push.
+
+**When editing any new video (always, unless the user says no SFX):**
+1. Look at what the edit already has (sticker pops, whooshes, card music, end-screen
+   music); separate it with demucs if needed. Don't stack new SFX on top of existing ones.
+2. Choose 6–10 cues from the packs, following the pack READMEs: put each sound on a camera cut / reaction
+   close-up (0–3 frames after the cut), on shocked/worried/"Avuna?" moments, fill
+   pauses > 1 s, a punch hit on "like"/"next video" lines, a deep thud before a
+   reveal. Vary the clips; prefer the user's most recent pack if they say so.
+3. Write `sfx/cues/<video_name>.txt` (`time clip gain_dB`), then
+   `sfx/tools/add_sfx.sh <in.mp4> <cues.txt> <out.mp4>` and check with
+   `python3 -I sfx/tools/check_levels.py <in.mp4> <cues.txt>`: keep each cue 9–12 dB under
+   the voice (a cue in a pause can be closer). Example: `sfx/cues/pollution_certificate.txt`.
+4. In the reply, list each cue (time, sound, moment) and say you haven't listened to the mix.

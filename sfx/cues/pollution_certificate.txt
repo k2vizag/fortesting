@@ -1,0 +1,9 @@
+# Pollution certificate – old number lekapothe? (approved by user)
+# time  clip                                     gain_dB   moment
+0.00  comedy_ref1/01_intro_news_music        -11
+7.85  comedy_ref1/02_reaction_music_sting    -2
+24.85 comedy_ref1/07_guitar_pluck            -6
+39.07 comedy_ref1/12_violin_squeak           -7
+55.25 comedy_ref1/17_deep_thud               -7
+60.17 comedy_ref1/13_ding_whistle            -3
+64.87 comedy_ref1/05_ding_boing              -4
