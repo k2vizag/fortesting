@@ -1,0 +1,11 @@
+# Pollution cheyalante challan kattalsindhena? (part 2) – comedy SFX
+# time  clip                                     gain_dB   moment
+9.00  comedy_ref1/17_deep_thud               -8    # "Shocking news!" card
+21.00 comedy_ref1/12_violin_squeak           -7    # cut to "Sir! Please sir!" begging
+25.15 comedy_ref1/03_chicken_cluck           -5    # after "juttu oodipothundhani helmet pettukoledhu sir!"
+26.95 comedy_ref1/05_ding_boing              -4    # "inka pelli kaaledhu sir!"
+32.00 comedy_ref1/07_guitar_pluck            -6    # cut to "Ippudu kattala?" shocked face
+48.00 comedy_ref1/09_beep                    -8    # "Katteshanu bro!" (paid)
+52.30 comedy_ref1/06_chicken_boing           -6    # "naa bodi juttu pothe poyindhi"
+56.00 comedy_ref1/11_wood_block_roll         -3    # "NAVIN 🤔 ee website lo pay chesaru?" thinking beat
+66.50 comedy_ref1/13_ding_whistle            -3    # "video ni like cheyandi"

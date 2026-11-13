@@ -18,7 +18,7 @@ def pcm(args):
 
 
 voice = pcm(["-i", video])
-rows = [l.split() for l in open(cues) if l.strip() and not l.startswith("#")]
+rows = [l.split("#")[0].split()[:3] for l in open(cues) if l.split("#")[0].strip()]
 for t, f, g in rows:
     clip = os.path.join(root, f)
     clip = clip if os.path.isfile(clip) else clip + ".mp3"

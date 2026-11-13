@@ -5,7 +5,7 @@
 #
 # cues.txt has one cue per line:  <seconds> <path to clip, relative to sfx/> <gain dB>
 #   7.85  comedy_ref1/02_reaction_music_sting  -2
-# The .mp3 extension is optional. Lines starting with # are ignored.
+# The .mp3 extension is optional. Anything after # is a comment.
 #
 # Level guide (pack clips are -16 LUFS; speech is about -14 LUFS):
 # aim for the SFX 9-12 dB under the voice. Short hits use about -3..-6 dB,
@@ -16,8 +16,9 @@ in=$1; cues=$2; out=$3
 dir=$(cd "$(dirname "$0")/.." && pwd)
 dur=$(ffprobe -v error -show_entries format=duration -of csv=p=0 "$in")
 args=(-i "$in"); fc=""; mix="[0:a]"; n=1
-while read -r t f g; do
-  [[ -z "${t:-}" || "$t" == \#* ]] && continue
+while read -r line; do
+  line=${line%%#*}; read -r t f g _ <<< "$line"
+  [[ -z "${t:-}" ]] && continue
   clip="$dir/$f"; [[ -f "$clip" ]] || clip="$clip.mp3"
   [[ -f "$clip" ]] || { echo "missing clip: $f" >&2; exit 1; }
   ms=$(awk "BEGIN{printf \"%d\", $t*1000}")
