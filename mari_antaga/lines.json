@@ -6,105 +6,335 @@
    "end": 2.76,
    "scene": 0,
    "text": "ఎండలను దండిస్తామా",
-   "en": "Do we punish the scorching sun?"
+   "en": "Do we punish the scorching sun?",
+   "w": [
+    [
+     "ఎండలను",
+     0.0
+    ],
+    [
+     "దండిస్తామా",
+     1.4
+    ]
+   ]
   },
   {
    "start": 2.76,
    "end": 4.42,
    "scene": 1,
    "text": "వానలను నిందిస్తామా",
-   "en": "Do we blame the rain?"
+   "en": "Do we blame the rain?",
+   "w": [
+    [
+     "వానలను",
+     2.76
+    ],
+    [
+     "నిందిస్తామా",
+     3.58
+    ]
+   ]
   },
   {
    "start": 4.42,
    "end": 8.48,
    "scene": 2,
    "text": "చలినెటో తరిమేస్తామా|చీ పొమ్మనీ",
-   "en": "Do we chase the cold away,|saying “go away”?"
+   "en": "Do we chase the cold away,|saying “go away”?",
+   "w": [
+    [
+     "చలినెటో",
+     4.42
+    ],
+    [
+     "తరిమేస్తామా",
+     5.6
+    ],
+    [
+     "|",
+     0
+    ],
+    [
+     "చీ",
+     6.5
+    ],
+    [
+     "పొమ్మనీ",
+     7.0
+    ]
+   ]
   },
   {
    "start": 8.48,
    "end": 10.88,
    "scene": 3,
    "text": "కస్సుమని కలహిస్తామా",
-   "en": "Do we fight the seasons in anger?"
+   "en": "Do we fight the seasons in anger?",
+   "w": [
+    [
+     "కస్సుమని",
+     8.48
+    ],
+    [
+     "కలహిస్తామా",
+     9.6
+    ]
+   ]
   },
   {
    "start": 10.88,
    "end": 12.98,
    "scene": 4,
    "text": "ఉస్సురని విలపిస్తామా",
-   "en": "Do we sit and sigh in sorrow?"
+   "en": "Do we sit and sigh in sorrow?",
+   "w": [
+    [
+     "ఉస్సురని",
+     10.88
+    ],
+    [
+     "విలపిస్తామా",
+     11.68
+    ]
+   ]
   },
   {
    "start": 12.98,
    "end": 17.2,
    "scene": 5,
    "text": "రోజులతో రాజీ పడమా|సర్లెమ్మనీ",
-   "en": "We make peace with the days,|saying “okay”"
+   "en": "We make peace with the days,|saying “okay”",
+   "w": [
+    [
+     "రోజులతో",
+     12.98
+    ],
+    [
+     "రాజీ",
+     13.76
+    ],
+    [
+     "పడమా",
+     14.26
+    ],
+    [
+     "|",
+     0
+    ],
+    [
+     "సర్లెమ్మనీ",
+     14.76
+    ]
+   ]
   },
   {
    "start": 17.2,
    "end": 21.4,
    "scene": 6,
    "text": "సాటి మనుషులతో మాత్రం",
-   "en": "But with our fellow human beings…"
+   "en": "But with our fellow human beings…",
+   "w": [
+    [
+     "సాటి",
+     17.36
+    ],
+    [
+     "మనుషులతో",
+     18.48
+    ],
+    [
+     "మాత్రం",
+     19.96
+    ]
+   ]
   },
   {
    "start": 21.4,
    "end": 25.4,
    "scene": 7,
    "text": "సాగనని ఎందుకు పంతం",
-   "en": "…why this stubbornness|not to get along?"
+   "en": "…why this stubbornness|not to get along?",
+   "w": [
+    [
+     "సాగనని",
+     21.64
+    ],
+    [
+     "ఎందుకు",
+     23.14
+    ],
+    [
+     "పంతం",
+     23.9
+    ]
+   ]
   },
   {
    "start": 25.4,
    "end": 29.1,
    "scene": 8,
    "text": "పూటకొక పేచీ పడుతూ",
-   "en": "Quarrelling every few hours —"
+   "en": "Quarrelling every few hours —",
+   "w": [
+    [
+     "పూటకొక",
+     25.62
+    ],
+    [
+     "పేచీ",
+     26.6
+    ],
+    [
+     "పడుతూ",
+     28.1
+    ]
+   ]
   },
   {
    "start": 29.1,
    "end": 33.9,
    "scene": 9,
    "text": "ఏం సాధిస్తామంటే|ఏం చెబుతాం",
-   "en": "If asked what we gain,|what answer do we have?"
+   "en": "If asked what we gain,|what answer do we have?",
+   "w": [
+    [
+     "ఏం",
+     29.18
+    ],
+    [
+     "సాధిస్తామంటే",
+     29.74
+    ],
+    [
+     "|",
+     0
+    ],
+    [
+     "ఏం",
+     32.2
+    ],
+    [
+     "చెబుతాం",
+     32.68
+    ]
+   ]
   },
   {
    "start": 33.9,
    "end": 38.0,
    "scene": 10,
    "text": "ఎక్కిళ్ళే పెట్టి ఏడుస్తుంటే|కష్టం పోతుందా",
-   "en": "Will sobbing and crying|make troubles go away?"
+   "en": "Will sobbing and crying|make troubles go away?",
+   "w": [
+    [
+     "ఎక్కిళ్ళే",
+     33.96
+    ],
+    [
+     "పెట్టి",
+     34.76
+    ],
+    [
+     "ఏడుస్తుంటే",
+     35.32
+    ],
+    [
+     "|",
+     0
+    ],
+    [
+     "కష్టం",
+     36.26
+    ],
+    [
+     "పోతుందా",
+     36.82
+    ]
+   ]
   },
   {
    "start": 38.0,
    "end": 42.1,
    "scene": 11,
    "text": "కదా మరెందుకు గోల",
-   "en": "It won’t — so why all this fuss?"
+   "en": "It won’t — so why all this fuss?",
+   "w": [
+    [
+     "కదా",
+     38.14
+    ],
+    [
+     "మరెందుకు",
+     39.26
+    ],
+    [
+     "గోల",
+     40.6
+    ]
+   ]
   },
   {
    "start": 42.1,
    "end": 44.0,
    "scene": 12,
    "text": "అయ్యయ్యో పాపం అంటే",
-   "en": "If people say “oh, poor thing”,"
+   "en": "If people say “oh, poor thing”,",
+   "w": [
+    [
+     "అయ్యయ్యో",
+     42.22
+    ],
+    [
+     "పాపం",
+     42.98
+    ],
+    [
+     "అంటే",
+     43.54
+    ]
+   ]
   },
   {
    "start": 44.0,
    "end": 46.2,
    "scene": 13,
    "text": "ఏదో లాభం వస్తుందా",
-   "en": "will we gain anything from it?"
+   "en": "will we gain anything from it?",
+   "w": [
+    [
+     "ఏదో",
+     44.0
+    ],
+    [
+     "లాభం",
+     44.5
+    ],
+    [
+     "వస్తుందా",
+     44.96
+    ]
+   ]
   },
   {
    "start": 46.2,
    "end": 50.0,
    "scene": 14,
    "text": "వృధా ప్రయాస పడాలా",
-   "en": "Should we struggle for nothing?"
+   "en": "Should we struggle for nothing?",
+   "w": [
+    [
+     "వృధా",
+     46.14
+    ],
+    [
+     "ప్రయాస",
+     47.2
+    ],
+    [
+     "పడాలా",
+     48.38
+    ]
+   ]
   }
  ]
 }

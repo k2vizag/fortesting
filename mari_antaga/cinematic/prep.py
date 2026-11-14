@@ -18,7 +18,7 @@ P = {
  'J': ((0,858,296,1048),  [(165,865,292,928)]),
  'K': ((322,868,642,1048),[(482,873,645,936)]),
  'L': ((666,858,941,1048),[(797,862,938,967),(800,926,822,966,'full')]),
- 'M': ((0,1058,286,1286), [(90,1060,240,1100),(138,1095,200,1126)]),
+ 'M': ((0,1058,262,1278), [(90,1060,240,1100),(138,1095,200,1126)]),
  'N': ((316,1058,580,1286),[(420,1060,605,1118),(388,1060,420,1098),(412,1074,448,1116,'full'),(524,1082,562,1126,'full')]),
  'O': ((610,1058,941,1286),[(708,1065,912,1104)]),
  'P': ((0,1292,941,1672), [(565,1315,885,1452)]),
@@ -57,7 +57,7 @@ clean = np.clip(tex, 0, 255).astype(np.uint8)
 cv2.imwrite(os.path.join(out,'_clean.png'), clean)
 pil = Image.fromarray(cv2.cvtColor(clean, cv2.COLOR_BGR2RGB))
 for k,((x0,y0,x1,y1),_) in P.items():
-    c = pil.crop((x0,y0,x1,y1)); W = 1400; H = round(c.height*W/c.width)
+    c = pil.crop((x0,y0,x1,y1)); W = 960; H = round(c.height*W/c.width)
     up = c.resize((W,H), Image.LANCZOS).filter(ImageFilter.UnsharpMask(radius=2.2, percent=90, threshold=2))
     up = ImageEnhance.Color(up).enhance(1.08)
     up.save(os.path.join(out,f'{k}.jpg'), quality=93)
