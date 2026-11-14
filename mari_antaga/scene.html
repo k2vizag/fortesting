@@ -323,12 +323,14 @@ function board(){
   <rect x="0" y="1888" width="1080" height="32" fill="#8a5d36"/><rect x="760" y="1876" width="70" height="14" rx="4" fill="#f4f1e8"/><rect x="850" y="1878" width="50" height="12" rx="4" fill="#ffd54f"/>`;
 }
 // lyric text block
-function lyric(text, mode){
+function lyric(text, mode, en){
   const parts=text.split('|'); const fs=parts.some(p=>p.length>17)?82:96; const y0=parts.length>1?250:300;
-  if (mode==='chalk') return `<g filter="url(#chalk)">`+parts.map((p,i)=>`<text x="540" y="${y0+i*(fs+30)}" font-family="TelB" font-size="${fs}" text-anchor="middle" fill="#fbf7ec">${p}</text>`).join('')+`</g>`;
-  return `<g>`+parts.map((p,i)=>`<text x="540" y="${y0+i*(fs+30)}" font-family="TelB" font-size="${fs}" text-anchor="middle" fill="#fff" stroke="#2a1a3a" stroke-width="12" stroke-linejoin="round" paint-order="stroke" style="filter:drop-shadow(0 6px 10px rgba(0,0,0,.35))">${p}</text>`).join('')+`</g>`;
+  const ep=(en||'').split('|').filter(Boolean); const efs=46, ey0=y0+(parts.length-1)*(fs+30)+efs+42;
+  if (mode==='chalk') return `<g filter="url(#chalk)">`+parts.map((p,i)=>`<text x="540" y="${y0+i*(fs+30)}" font-family="TelB" font-size="${fs}" text-anchor="middle" fill="#fbf7ec">${p}</text>`).join('')+
+     ep.map((p,i)=>`<text x="540" y="${ey0+i*(efs+14)}" font-family="PopB" font-size="${efs}" text-anchor="middle" fill="#ffe58a">${p}</text>`).join('')+`</g>`;
+  return `<g>`+parts.map((p,i)=>`<text x="540" y="${y0+i*(fs+30)}" font-family="TelB" font-size="${fs}" text-anchor="middle" fill="#fff" stroke="#2a1a3a" stroke-width="12" stroke-linejoin="round" paint-order="stroke" style="filter:drop-shadow(0 6px 10px rgba(0,0,0,.35))">${p}</text>`).join('')+
+     ep.map((p,i)=>`<text x="540" y="${ey0+i*(efs+14)}" font-family="PopB" font-size="${efs}" text-anchor="middle" fill="#fff6c8" stroke="#2a1a3a" stroke-width="8" stroke-linejoin="round" paint-order="stroke" style="filter:drop-shadow(0 4px 8px rgba(0,0,0,.35))">${p}</text>`).join('')+`</g>`;
 }
-
 // build both versions of every scene once; at render time toggle visibility/opacity
 const svg=document.getElementById('s');
 const built=[];
@@ -339,9 +341,9 @@ function build(){
     MODE='color'; const color=SCENES[ln.scene]();
     defsAll += DEFS.join('');
     body += `<g id="sc${i}" style="display:none">
-      <g id="ch${i}">${board()}<g filter="url(#chalk)">${chalk}</g><g id="ly${i}c" clip-path="url(#lc${i})">${lyric(ln.text,'chalk')}</g></g>
+      <g id="ch${i}">${board()}<g filter="url(#chalk)">${chalk}</g><g id="ly${i}c" clip-path="url(#lc${i})">${lyric(ln.text,'chalk',ln.en)}</g></g>
       <g id="co${i}" mask="url(#mk${i})"><g id="zo${i}"><g filter="url(#paint)">${color}</g><rect width="1080" height="1920" fill="url(#warm)"/></g>
-        <rect width="1080" height="1920" filter="url(#grain)" opacity=".35"/><rect width="1080" height="1920" fill="url(#vig)"/>${lyric(ln.text,'color')}</g>
+        <rect width="1080" height="1920" filter="url(#grain)" opacity=".35"/><rect width="1080" height="1920" fill="url(#vig)"/>${lyric(ln.text,'color',ln.en)}</g>
       <rect id="fl${i}" width="1080" height="1920" fill="#fffbe6" opacity="0"/>
     </g>`;
     defsAll += `<clipPath id="lc${i}"><rect id="lcr${i}" x="0" y="0" width="0" height="1920"/></clipPath>
@@ -362,7 +364,7 @@ window.render = function(t){
   // colour reveal begins at (end - colorDur); colour part = last ~38% of the line (min .7 s, max 1.7 s)
   const colorDur=Math.max(.7,Math.min(1.7,dur*.38)); const tc=dur-colorDur;
   const p=clamp(lt/(tc-.05));                       // chalk drawing progress
-  document.getElementById('lcr'+i).setAttribute('width', 1080*ease(clamp(p/0.45)));
+  document.getElementById('lcr'+i).setAttribute('width', 1080*ease(clamp(p/0.38)));
   const n=b.els.length||1;
   b.els.forEach((e,k)=>{ const st=.15+.6*(k/n); const q=clamp((p-st)/.22); e.style.strokeDashoffset=String(1-q); e.style.fillOpacity = String(.13*q); });
   b.txts.forEach(e=>{ const k=+e.dataset.k; const st=.15+.6*(k/(b.n||1)); e.style.opacity=String(clamp((p-st)/.2)); });
