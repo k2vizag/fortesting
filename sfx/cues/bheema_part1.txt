@@ -1,0 +1,3 @@
+# Bheema story part 1 – comedy SFX
+3.96 comedy_ref1/03_chicken_cluck -9   # mocking 'navvosthondi!'
+39.79 comedy_ref1/17_deep_thud -3   # 'Ayyo!' – the statue is broken
