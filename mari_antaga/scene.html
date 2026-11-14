@@ -1,0 +1,378 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<style>
+@font-face{font-family:Tel;src:url(../insurance/v2/fonts/RamaCap.ttf)}
+@font-face{font-family:PopB;src:url(../insurance/v2/fonts/PopB.ttf)}
+@font-face{font-family:TelB;src:url(../insurance/v2/fonts/TeluguCap800.ttf)}
+html,body{margin:0;background:#000;width:1080px;height:1920px;overflow:hidden}
+svg{display:block}
+</style></head><body>
+<svg id="s" width="1080" height="1920" viewBox="0 0 1080 1920" xmlns="http://www.w3.org/2000/svg"></svg>
+<script>
+// ---------------------------------------------------------------- timing
+const LINES = window.__LINES__;      // [{start,end,text,scene}]
+const TOTAL = window.__TOTAL__;
+let MODE = 'chalk';                  // 'chalk' | 'color' (set while building)
+
+// ---------------------------------------------------------------- helpers
+const A = o => Object.entries(o).filter(([k,v])=>v!==undefined&&v!==null).map(([k,v])=>`${k}="${v}"`).join(' ');
+let DRAWN = 0;                        // counter for draw order
+// el: one drawable shape.  c = chalk colour, f = paint fill, lw = limb width in paint mode
+function el(tag, attrs, o={}){
+  if (MODE==='chalk'){
+    const k = DRAWN++;
+    const a = Object.assign({}, attrs, {fill: o.hatch? o.c : 'none', 'fill-opacity': o.hatch? 0.13: undefined,
+      stroke: o.c||'#f4f1e8', 'stroke-width': o.csw||7.5, 'stroke-linecap':'round','stroke-linejoin':'round',
+      pathLength: 1, 'data-k': k, class:'d'});
+    if (o.nochalk) return '';
+    return `<${tag} ${A(a)}/>`;
+  } else {
+    const a = Object.assign({}, attrs);
+    if (o.lw){ a.fill='none'; a.stroke=o.f; a['stroke-width']=o.lw; a['stroke-linecap']='round'; a['stroke-linejoin']='round'; }
+    else { a.fill = o.f? o.f : 'none'; if (o.ol!==false && o.f){ a.stroke=o.ol||'rgba(60,40,30,.55)'; a['stroke-width']=o.osw||2.5; a['stroke-linejoin']='round'; }
+           if (!o.f){ a.stroke=o.s||'#3a2a20'; a['stroke-width']=o.ssw||4; a['stroke-linecap']='round'; } }
+    if (o.op) a.opacity=o.op;
+    if (o.nopaint) return '';
+    return `<${tag} ${A(a)}/>`;
+  }
+}
+const P=(d,o)=>el('path',{d},o), C=(cx,cy,r,o)=>el('circle',{cx,cy,r},o),
+      E=(cx,cy,rx,ry,o)=>el('ellipse',{cx,cy,rx,ry},o), L=(x1,y1,x2,y2,o)=>el('line',{x1,y1,x2,y2},o),
+      R=(x,y,width,height,o,rx=0)=>el('rect',{x,y,width,height,rx},o);
+const paint = s => MODE==='color'? s: '';
+const chalkOnly = s => MODE==='chalk'? s: '';
+const rad = d => d*Math.PI/180;
+let GID=0; const gid=()=> 'g'+(GID++);
+function lg(stops, x1=0,y1=0,x2=0,y2=1){ const id=gid(); DEFS.push(`<linearGradient id="${id}" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}">${stops.map(([o,c,a])=>`<stop offset="${o}" stop-color="${c}" stop-opacity="${a??1}"/>`).join('')}</linearGradient>`); return `url(#${id})`; }
+function rg(stops, cx=.5,cy=.5,r=.5){ const id=gid(); DEFS.push(`<radialGradient id="${id}" cx="${cx}" cy="${cy}" r="${r}">${stops.map(([o,c,a])=>`<stop offset="${o}" stop-color="${c}" stop-opacity="${a??1}"/>`).join('')}</radialGradient>`); return `url(#${id})`; }
+let DEFS=[];
+// seeded random
+let SEED=1; const rnd=()=>{SEED=(SEED*16807)%2147483647; return (SEED-1)/2147483646;};
+
+// ---------------------------------------------------------------- components
+const CH = {w:'#f6f3ea', y:'#ffe58a', o:'#ffb36b', b:'#9fd6ff', g:'#a8e6a1', p:'#ffb3c7', r:'#ff8a80', v:'#cdb4ff', br:'#e0b48a'};
+
+function sky(kind){ // paint-only backdrop
+  if (MODE!=='color') return '';
+  const K = {
+    summer:[['0','#3d8fd6'],['.55','#8cc8f0'],['1','#f6e7b8']],
+    rain:[['0','#53627a'],['.6','#8a9bb0'],['1','#b9c6cf']],
+    winter:[['0','#7fa9d6'],['.6','#c7dcef'],['1','#eef4fa']],
+    storm:[['0','#3b2a5c'],['.45','#b0507a'],['1','#ffb36b']],
+    autumn:[['0','#6aa5d8'],['.55','#f2d39a'],['1','#f7b26b']],
+    dawn:[['0','#7fb6e8'],['.5','#f8d7c4'],['1','#ffd27f']],
+    day:[['0','#4a9be0'],['.6','#a8d8f5'],['1','#e9f6fb']],
+    dusk:[['0','#2f3f7a'],['.5','#c1678f'],['1','#ffbf75']],
+    lilac:[['0','#6c6fb8'],['.55','#c7b5e6'],['1','#ffe0c2']],
+    gold:[['0','#5aa0dc'],['.5','#bfe0f2'],['1','#ffe7a6']],
+    sunset:[['0','#3a3f86'],['.4','#d4708f'],['.75','#ffad6b'],['1','#ffe3a1']],
+  }[kind];
+  return `<rect width="1080" height="1920" fill="${lg(K)}"/>`;
+}
+function glow(cx,cy,r,col,a=.55){ return paint(`<circle cx="${cx}" cy="${cy}" r="${r}" fill="${rg([[0,col,a],[1,col,0]])}"/>`); }
+function sun(cx,cy,r,o={}){
+  let s = glow(cx,cy,r*3.2,'#fff3b0',.7);
+  s += C(cx,cy,r,{c:CH.y, f: rg([[0,'#fffbe0'],[.6,'#ffe066'],[1,'#ffb300']]), ol:false, hatch:true});
+  const n=o.rays??12;
+  for(let i=0;i<n;i++){ const a=i*2*Math.PI/n; s+=L(cx+Math.cos(a)*(r+18),cy+Math.sin(a)*(r+18),cx+Math.cos(a)*(r+(i%2?50:75)),cy+Math.sin(a)*(r+(i%2?50:75)),{c:CH.y, nopaint:true}); }
+  return s;
+}
+function cloud(cx,cy,s=1,o={}){
+  const k=s; const d=`M${cx-130*k},${cy+40*k} A${45*k},${45*k} 0 0 1 ${cx-75*k},${cy-15*k} A${60*k},${60*k} 0 0 1 ${cx+15*k},${cy-55*k} A${55*k},${55*k} 0 0 1 ${cx+100*k},${cy-10*k} A${40*k},${40*k} 0 0 1 ${cx+135*k},${cy+40*k} Z`;
+  const f = o.dark? lg([[0,'#8d97a8'],[.7,'#5d6678'],[1,'#4a5263']]) : lg([[0,'#ffffff'],[.6,'#f7f9fc'],[1,'#c9d5e6']]);
+  let sh = paint(`<ellipse cx="${cx}" cy="${cy+40*k}" rx="${125*k}" ry="${10*k}" fill="${o.dark?'#3c4352':'#b7c4d8'}" opacity=".5"/>`);
+  return P(d,{c:o.dark?'#c9d2df':CH.w, f, ol:false, hatch:o.dark}) + sh;
+}
+function bigCumulus(cx,cy,s=1){ // paint-only Ghibli tower cloud
+  if (MODE!=='color') return '';
+  SEED=Math.floor(cx*7+cy); const rows=[[6,70,0,520],[5,85,-75,430],[3,95,-160,300],[2,85,-235,170],[1,75,-295,0]];
+  const g=rg([[0,'#ffffff'],[.7,'#f6f8fc'],[1,'#d3dceb']],.4,.3,.7); let c='';
+  rows.forEach(([n,r,dy,w])=>{ for(let i=0;i<n;i++){ const x=cx+(n>1?(i/(n-1)-.5)*w:0)*s+(rnd()-.5)*20*s; c+=`<circle cx="${x}" cy="${cy+dy*s+(rnd()-.5)*16*s}" r="${(r+rnd()*18)*s}" fill="${g}"/>`; } });
+  return `<g filter="url(#soft)"><ellipse cx="${cx}" cy="${cy+45*s}" rx="${330*s}" ry="${40*s}" fill="#c3cfe2"/>${c}<ellipse cx="${cx}" cy="${cy+40*s}" rx="${300*s}" ry="${28*s}" fill="#dbe3f0" opacity=".9"/></g>`;
+}
+function ground(y, kind='grass', wav=40){
+  const d=`M0,${y} C270,${y-wav} 540,${y+wav} 810,${y-wav*.5} S1080,${y} 1080,${y} L1080,1920 L0,1920 Z`;
+  const F = {grass: lg([[0,'#8bc34a'],[.4,'#5f9e36'],[1,'#3d6e22']]), snow: lg([[0,'#ffffff'],[1,'#c9dbeb']]),
+             wet: lg([[0,'#6f9a52'],[1,'#3c5a33']]), autumn: lg([[0,'#c9a43f'],[1,'#7a6a2a']]), dusk: lg([[0,'#5b7a45'],[1,'#2a3a2a']]),
+             gold: lg([[0,'#e8c35a'],[1,'#a77f2a']])}[kind];
+  return P(d,{c: kind==='snow'?CH.w:CH.g, f:F, ol:false});
+}
+function farHills(y, col='#79a8a0'){
+  if (MODE!=='color') return '';
+  return `<path d="M0,${y} Q180,${y-140} 380,${y-40} T760,${y-90} T1080,${y-30} L1080,${y+300} L0,${y+300}Z" fill="${col}" opacity=".85" filter="url(#soft)"/>`;
+}
+function grassTufts(y,n=14,col='#3f7d24'){
+  if (MODE!=='color') return ''; SEED=y+n; let s='';
+  for(let i=0;i<n;i++){ const x=rnd()*1080, yy=y+rnd()*300; s+=`<path d="M${x},${yy} l-8,-26 M${x},${yy} l2,-34 M${x},${yy} l12,-24" stroke="${col}" stroke-width="4" stroke-linecap="round" fill="none"/>`; }
+  return s;
+}
+function flowers(y,n=10){ if (MODE!=='color') return ''; SEED=y*3+n; let s=''; const cols=['#fff','#ffd54f','#f48fb1','#e1bee7'];
+  for(let i=0;i<n;i++){ const x=rnd()*1080, yy=y+40+rnd()*280; s+=`<circle cx="${x}" cy="${yy}" r="${6+rnd()*4}" fill="${cols[i%4]}"/><circle cx="${x}" cy="${yy}" r="2.5" fill="#f9a825"/>`; } return s; }
+function tree(x,y,s=1,o={}){
+  let r = P(`M${x-18*s},${y} L${x-12*s},${y-170*s} Q${x},${y-200*s} ${x+12*s},${y-170*s} L${x+18*s},${y} Z`,{c:CH.br, f:'#7a5230'});
+  if (o.bare){ r+=P(`M${x},${y-150*s} L${x-70*s},${y-260*s} M${x},${y-170*s} L${x+60*s},${y-280*s} M${x-35*s},${y-205*s} L${x-20*s},${y-300*s}`,{c:CH.br, f:null, s:'#6b4a2e', ssw:9*s}); return r; }
+  const cols = o.autumn? ['#c0632b','#e08a2e','#f2b33d'] : ['#2f6b2a','#3f8a32','#5aa83e'];
+  const blobs=[[0,-260,110],[-80,-220,80],[80,-215,85],[-40,-320,80],[50,-310,75]];
+  if (MODE==='chalk') r+=P(`M${x-150*s},${y-200*s} C${x-190*s},${y-300*s} ${x-90*s},${y-410*s} ${x},${y-390*s} C${x+110*s},${y-410*s} ${x+190*s},${y-300*s} ${x+150*s},${y-200*s} C${x+120*s},${y-150*s} ${x-110*s},${y-140*s} ${x-150*s},${y-200*s} Z`,{c:o.autumn?CH.o:CH.g, hatch:true});
+  else blobs.forEach(([dx,dy,rr],i)=> r+=`<circle cx="${x+dx*s}" cy="${y+dy*s}" r="${rr*s}" fill="${cols[i%3]}"/>`),
+       r+=`<circle cx="${x+30*s}" cy="${y-330*s}" r="${45*s}" fill="${o.autumn?'#ffd27a':'#8cc95a'}" opacity=".6"/>`;
+  return r;
+}
+function pine(x,y,s=1,snow=false){
+  let r=P(`M${x},${y-260*s} L${x-70*s},${y-120*s} L${x-35*s},${y-125*s} L${x-90*s},${y-20*s} L${x+90*s},${y-20*s} L${x+35*s},${y-125*s} L${x+70*s},${y-120*s} Z`,{c:CH.g, f: snow? lg([[0,'#e8f2f7'],[.3,'#2f5d4a'],[1,'#1f4033']]): '#2f6b3a', hatch:true});
+  r+=R(x-10*s,y-20*s,20*s,20*s,{c:CH.br,f:'#6b4a2e'}); return r;
+}
+function house(x,y,s=1,roof='#c0503a',wall='#f4e3c3'){
+  let r=R(x-110*s,y-170*s,220*s,170*s,{c:CH.w,f:wall});
+  r+=P(`M${x-140*s},${y-165*s} L${x},${y-290*s} L${x+140*s},${y-165*s} Z`,{c:CH.r,f:roof, hatch:true});
+  r+=R(x-30*s,y-100*s,60*s,100*s,{c:CH.br,f:'#8a5a34'});
+  r+=R(x+50*s,y-130*s,45*s,45*s,{c:CH.y,f:'#ffe7a0'}); r+=R(x-95*s,y-130*s,45*s,45*s,{c:CH.y,f:'#ffe7a0'});
+  return r;
+}
+function rain(x1,x2,y1,y2,n=40,col=CH.b){
+  SEED=Math.floor(x1+y1+n); let s='';
+  for(let i=0;i<n;i++){ const x=x1+rnd()*(x2-x1), y=y1+rnd()*(y2-y1); s+=L(x,y,x-14,y+46,{c:col, csw:4, f:null, s:'#d6ecff', ssw:3}); }
+  return s;
+}
+function snowflakes(n=30,y1=500,y2=1500){
+  SEED=77; let s='';
+  for(let i=0;i<n;i++){ const x=rnd()*1080, y=y1+rnd()*(y2-y1), r=8+rnd()*10;
+    if (MODE==='chalk') s+=P(`M${x-r},${y} L${x+r},${y} M${x},${y-r} L${x},${y+r} M${x-r*.7},${y-r*.7} L${x+r*.7},${y+r*.7} M${x-r*.7},${y+r*.7} L${x+r*.7},${y-r*.7}`,{c:CH.w,csw:3});
+    else s+=`<circle cx="${x}" cy="${y}" r="${r*.55}" fill="#fff" opacity=".9"/>`; }
+  return s;
+}
+function bolt(x,y,s=1){ return P(`M${x},${y} L${x-35*s},${y+90*s} L${x+5*s},${y+90*s} L${x-25*s},${y+190*s} L${x+45*s},${y+70*s} L${x+5*s},${y+70*s} L${x+30*s},${y} Z`,{c:CH.y,f:'#ffd400',hatch:true}); }
+function fire(x,y,s=1){
+  let r=P(`M${x-60*s},${y} L${x+60*s},${y-30*s} M${x-60*s},${y-30*s} L${x+60*s},${y}`,{c:CH.br,f:null,s:'#6b4a2e',ssw:16*s});
+  r+=glow(x,y-60*s,200*s,'#ffb74d',.6);
+  r+=P(`M${x},${y-20*s} C${x-70*s},${y-40*s} ${x-40*s},${y-110*s} ${x-10*s},${y-170*s} C${x},${y-120*s} ${x+30*s},${y-130*s} ${x+20*s},${y-190*s} C${x+80*s},${y-120*s} ${x+70*s},${y-40*s} ${x},${y-20*s} Z`,{c:CH.o,f:lg([[0,'#ffeb3b'],[.5,'#ff9800'],[1,'#e65100']],0,1,0,0),ol:false,hatch:true});
+  return r;
+}
+function bubble(x,y,w,h,text,o={}){ // speech bubble with text
+  let r=P(`M${x-w/2+30},${y-h/2} H${x+w/2-30} Q${x+w/2},${y-h/2} ${x+w/2},${y-h/2+30} V${y+h/2-30} Q${x+w/2},${y+h/2} ${x+w/2-30},${y+h/2} H${x+(o.tx??-20)+30} L${x+(o.tx??-20)},${y+h/2+50} L${x+(o.tx??-20)+5},${y+h/2} H${x-w/2+30} Q${x-w/2},${y+h/2} ${x-w/2},${y+h/2-30} V${y-h/2+30} Q${x-w/2},${y-h/2} ${x-w/2+30},${y-h/2} Z`,{c:o.c||CH.w,f:o.f||'#fffdf5'});
+  r+=txt(x,y+(o.fs||60)*.35,text,o.fs||60,o.tc||CH.y,o.tf||'#c62828');
+  return r;
+}
+function txt(x,y,t,fs,cc,pc,fam='TelB'){
+  const k=DRAWN++;
+  return `<text x="${x}" y="${y}" font-family="${fam}" font-size="${fs}" text-anchor="middle" fill="${MODE==='chalk'?cc:pc}" ${MODE==='chalk'?`class="t" data-k="${k}"`:''}>${t}</text>`;
+}
+function qmark(x,y,s=1,col='#7e57c2'){ return txt(x,y,'?',150*s,CH.y,col,'PopB'); }
+function clock(x,y,r){ let s=C(x,y,r,{c:CH.w,f:'#fffaf0',osw:6,ol:'#7a5230'}); for(let i=0;i<12;i++){const a=i*Math.PI/6; s+=L(x+Math.cos(a)*r*.8,y+Math.sin(a)*r*.8,x+Math.cos(a)*r*.92,y+Math.sin(a)*r*.92,{c:CH.w,csw:4,f:null,s:'#5d4037',ssw:5});}
+  s+=L(x,y,x,y-r*.65,{c:CH.r,f:null,s:'#3e2723',ssw:9})+L(x,y,x+r*.45,y+r*.2,{c:CH.r,f:null,s:'#3e2723',ssw:9}); return s; }
+function calendar(x,y,s=1,num='1',rot=0){
+  let r=`<g transform="rotate(${rot} ${x} ${y})">`;
+  r+=R(x-60*s,y-70*s,120*s,140*s,{c:CH.w,f:'#ffffff'},8*s)+R(x-60*s,y-70*s,120*s,38*s,{c:CH.r,f:'#e53935'},8*s);
+  r+=txt(x,y+50*s,num,64*s,CH.w,'#333','PopB')+'</g>'; return r;
+}
+function rainbow(cx,cy,r){ const cols=['#ef5350','#ffa726','#ffee58','#66bb6a','#42a5f5','#7e57c2'];
+  return cols.map((c,i)=>P(`M${cx-(r-i*22)},${cy} A${r-i*22},${r-i*22} 0 0 1 ${cx+(r-i*22)},${cy}`,{c:['#ff8a80','#ffcc80','#fff59d','#a5d6a7','#90caf9','#ce93d8'][i],f:null,s:c,ssw:22,op:.75})).join(''); }
+function tears(x,y,n=3){ let s=''; for(let i=0;i<n;i++) s+=P(`M${x},${y+i*38} q-10,18 0,26 q10,-8 0,-26 Z`,{c:CH.b,f:'#64b5f6',ol:false}); return s; }
+function sweat(x,y){ return P(`M${x},${y} q-12,22 0,32 q12,-10 0,-32 Z`,{c:CH.b,f:'#81d4fa',ol:false}); }
+function heatWaves(y){ let s=''; for(let i=0;i<4;i++){const x=180+i*230; s+=P(`M${x},${y} q20,-25 0,-50 q-20,-25 0,-50 q20,-25 0,-50`,{c:CH.o,f:null,s:'#ff9800',ssw:5,op:.5});} return s; }
+function leaves(n=10,autumn=true){ SEED=999; let s=''; for(let i=0;i<n;i++){ const x=80+rnd()*920,y=600+rnd()*700,a=rnd()*360;
+  s+=`<g transform="rotate(${a} ${x} ${y})">`+P(`M${x-18},${y} Q${x},${y-16} ${x+18},${y} Q${x},${y+16} ${x-18},${y} Z`,{c:CH.o,f:['#e65100','#f9a825','#c62828'][i%3],ol:false})+'</g>'; } return s; }
+function boulder(x,y,r){ return P(`M${x-r},${y} C${x-r*1.1},${y-r*1.3} ${x+r*.9},${y-r*1.5} ${x+r},${y-r*.2} C${x+r*1.05},${y+r*.3} ${x-r*.9},${y+r*.35} ${x-r},${y} Z`,{c:CH.w,f:rg([[0,'#b0a69a'],[1,'#6d625a']],.35,.3,.8),hatch:true}); }
+function wall(x,y,w,h){ let s=R(x-w/2,y-h,w,h,{c:CH.r,f:'#b5543a'}); for(let r=1;r<h/40;r++) s+=L(x-w/2,y-r*40,x+w/2,y-r*40,{c:CH.r,csw:3,f:null,s:'#f0d6c0',ssw:3});
+  for(let r=0;r<h/40;r++) for(let c=0;c<w/60;c++) s+=L(x-w/2+c*60+(r%2?30:0),y-r*40,x-w/2+c*60+(r%2?30:0),y-r*40-40,{c:CH.r,csw:3,f:null,s:'#f0d6c0',ssw:3}); return s; }
+function bowl(x,y,s=1){ return P(`M${x-80*s},${y} A${80*s},${60*s} 0 0 0 ${x+80*s},${y} Z`,{c:CH.br,f:lg([[0,'#d7a26a'],[1,'#8d5a2b']]),hatch:true}) + E(x,y,80*s,14*s,{c:CH.br,f:'#5d3a1a'}); }
+function umbrella(x,y,s=1,col='#e53935'){ // x,y = top of handle (where canopy centre is)
+  let r=P(`M${x-170*s},${y} Q${x-160*s},${y-150*s} ${x},${y-160*s} Q${x+160*s},${y-150*s} ${x+170*s},${y} Q${x+128*s},${y-28*s} ${x+85*s},${y} Q${x+42*s},${y-28*s} ${x},${y} Q${x-42*s},${y-28*s} ${x-85*s},${y} Q${x-128*s},${y-28*s} ${x-170*s},${y} Z`,{c:CH.r,f:lg([[0,'#ff7a6b'],[1,col]]),hatch:true});
+  r+=L(x,y,x,y+250*s,{c:CH.w,f:null,s:'#4e342e',ssw:8}); return r;
+}
+function scarfOf(x,y,s){ return P(`M${x-45*s},${y-292*s} Q${x},${y-270*s} ${x+45*s},${y-292*s} L${x+40*s},${y-275*s} L${x+30*s},${y-200*s} L${x+10*s},${y-205*s} L${x+15*s},${y-270*s} Q${x},${y-262*s} ${x-45*s},${y-275*s}Z`,{c:CH.r,f:'#d32f2f'}); }
+
+// person: feet at (x,y). arms: [upper,fore] angles in deg from straight-down, positive = outward. face: smile|sad|angry|cry|calm|shock
+function person(x,y,s=1,o={}){
+  const sh=o.shirt||'#4f86c6', pa=o.pants||'#3b4a6b', sk=o.skin||'#f1c7a0', hr=o.hair||'#2b1d16';
+  const sit=o.sit, dy= sit? 95*s:0; const dir=o.flip?-1:1;
+  let r='';
+  const X=v=>x+v*s*dir, Y=v=>y+v*s+dy;
+  // legs
+  if (sit){ r+=P(`M${X(-14)},${Y(-170)} L${X(70)},${Y(-175)} L${X(80)},${y}`,{c:CH.w,f:pa,lw:28*s}); r+=P(`M${X(14)},${Y(-170)} L${X(95)},${Y(-168)} L${X(105)},${y}`,{c:CH.w,f:pa,lw:28*s});
+       r+=E(x+(88)*s*dir,y-4,22*s,10*s,{c:CH.w,f:'#3e2723',ol:false})+E(x+(112)*s*dir,y-4,22*s,10*s,{c:CH.w,f:'#3e2723',ol:false}); }
+  else { const lg_=o.walk? [[-35,0],[40,0]]:[[-26,0],[26,0]];
+    r+=L(X(-14),Y(-170),X(lg_[0][0]),Y(-8),{c:CH.w,f:pa,lw:28*s})+L(X(14),Y(-170),X(lg_[1][0]),Y(-8),{c:CH.w,f:pa,lw:28*s});
+    r+=E(X(lg_[0][0]-8),Y(-4),24*s,11*s,{c:CH.w,f:'#3e2723',ol:false})+E(X(lg_[1][0]+8),Y(-4),24*s,11*s,{c:CH.w,f:'#3e2723',ol:false}); }
+  // torso
+  r+=P(`M${X(-52)},${Y(-285)} Q${X(0)},${Y(-305)} ${X(52)},${Y(-285)} L${X(46)},${Y(-160)} Q${X(0)},${Y(-150)} ${X(-46)},${Y(-160)} Z`,{c:o.cc||CH.b,f:sh,hatch:true});
+  if (o.scarf) r+=scarfOf(x,y+dy,s);
+  // arms
+  const sgOf=side=>side*dir;
+  const joint=(side,ang,tgt)=>{ const sx=X(side*46), sy=Y(-278); const sg=sgOf(side); const u=118*s, f=105*s;
+    if (tgt){ const tx=x+tgt[0]*s*dir, ty=Y(tgt[1]); let dx=tx-sx, dy2=ty-sy; let d=Math.hypot(dx,dy2); const md=(u+f)*.995; if(d>md){dx*=md/d;dy2*=md/d;d=md;}
+      const base=Math.atan2(dy2,dx), aa=Math.acos(Math.max(-1,Math.min(1,(u*u+d*d-f*f)/(2*u*d))));
+      const e1=[sx+u*Math.cos(base+aa), sy+u*Math.sin(base+aa)], e2=[sx+u*Math.cos(base-aa), sy+u*Math.sin(base-aa)];
+      const score=e=>sg*(e[0]-sx)+.3*(e[1]-sy); const e=score(e1)>score(e2)?e1:e2; return [e,[sx+dx,sy+dy2],[sx,sy]]; }
+    const [a1,a2]=ang; const ex=sx+Math.sin(rad(a1))*u*sg, ey=sy+Math.cos(rad(a1))*u; return [[ex,ey],[ex+Math.sin(rad(a2))*f*sg, ey+Math.cos(rad(a2))*f],[sx,sy]]; };
+  const arm=(side,ang,tgt)=>{ const [[ex,ey],[hx,hy],[sx,sy]]=joint(side,ang,tgt);
+    return P(`M${sx},${sy} L${ex},${ey} L${hx},${hy}`,{c:o.cc||CH.b,f:sh,lw:24*s}) + C(hx,hy,13*s,{c:CH.w,f:sk,ol:false}); };
+  const aL=o.armL||[12,8], aR=o.armR||[12,8];
+  // neck + head
+  r+=R(x-12*s,Y(-312),24*s,30*s,{c:CH.w,f:sk,ol:false,nochalk:true});
+  const hx=X(o.tilt||0), hy=Y(-360);
+  if (!o.armsFront){ r+=arm(-1,aL,o.hL)+arm(1,aR,o.hR); }
+  r+=C(hx,hy,58*s,{c:CH.w,f:sk});
+  r+=paint(`<circle cx="${hx-30*s}" cy="${hy+16*s}" r="${11*s}" fill="#ff8a80" opacity=".45"/><circle cx="${hx+30*s}" cy="${hy+16*s}" r="${11*s}" fill="#ff8a80" opacity=".45"/>`);
+  // hair
+  const hl=o.long;
+  r+=P(`M${hx-60*s},${hy+(hl?60:4)*s} C${hx-70*s},${hy-60*s} ${hx-20*s},${hy-78*s} ${hx+10*s},${hy-72*s} C${hx+55*s},${hy-68*s} ${hx+72*s},${hy-30*s} ${hx+60*s},${hy+(hl?60:2)*s} C${hx+50*s},${hy-20*s} ${hx+20*s},${hy-38*s} ${hx-5*s},${hy-30*s} C${hx-30*s},${hy-25*s} ${hx-50*s},${hy-10*s} ${hx-60*s},${hy+(hl?60:4)*s} Z`,{c:CH.br,f:hr,hatch:true});
+  // face
+  const fc=o.face||'smile', ey=hy+2*s;
+  if (fc==='cry'||fc==='sad'){ r+=P(`M${hx-30*s},${ey} q8,6 16,0 M${hx+14*s},${ey} q8,6 16,0`,{c:CH.w,csw:4,f:null,s:'#2b1d16',ssw:4}); }
+  else if (fc==='angry'){ r+=P(`M${hx-34*s},${ey-16*s} L${hx-12*s},${ey-8*s} M${hx+34*s},${ey-16*s} L${hx+12*s},${ey-8*s}`,{c:CH.r,csw:4,f:null,s:'#2b1d16',ssw:5})+C(hx-20*s,ey+2*s,5*s,{c:CH.w,f:'#2b1d16',ol:false})+C(hx+20*s,ey+2*s,5*s,{c:CH.w,f:'#2b1d16',ol:false}); }
+  else if (fc==='squint'){ r+=P(`M${hx-30*s},${ey} l14,-4 M${hx+16*s},${ey-4*s} l14,4`,{c:CH.w,csw:4,f:null,s:'#2b1d16',ssw:4}); }
+  else { r+=C(hx-20*s,ey,6*s,{c:CH.w,f:'#2b1d16',ol:false})+C(hx+20*s,ey,6*s,{c:CH.w,f:'#2b1d16',ol:false}); }
+  const m = {smile:`M${hx-16*s},${ey+26*s} Q${hx},${ey+40*s} ${hx+16*s},${ey+26*s}`, calm:`M${hx-12*s},${ey+30*s} Q${hx},${ey+36*s} ${hx+12*s},${ey+30*s}`,
+     sad:`M${hx-14*s},${ey+36*s} Q${hx},${ey+26*s} ${hx+14*s},${ey+36*s}`, cry:`M${hx-16*s},${ey+38*s} Q${hx},${ey+22*s} ${hx+16*s},${ey+38*s}`,
+     angry:`M${hx-16*s},${ey+34*s} Q${hx},${ey+26*s} ${hx+16*s},${ey+34*s}`, squint:`M${hx-14*s},${ey+30*s} Q${hx},${ey+34*s} ${hx+14*s},${ey+30*s}`,
+     shock:`M${hx-8*s},${ey+30*s} a8,10 0 1 0 16,0 a8,10 0 1 0 -16,0`}[fc];
+  r+=P(m,{c:CH.w,csw:4,f:null,s:'#5d2a1a',ssw:4});
+  if (fc==='cry') r+=tears(hx-26*s,ey+12*s,2)+tears(hx+26*s,ey+12*s,2);
+  if (o.armsFront){ r+=arm(-1,aL,o.hL)+arm(1,aR,o.hR); }
+  person.hand={L:joint(-1,aL,o.hL)[1], R:joint(1,aR,o.hR)[1]}; person.head=[hx,hy];
+  return r;
+}
+
+// ---------------------------------------------------------------- scenes (one per lyric line)
+const G=1560; // ground level
+const SCENES = [
+ // 1 ఎండలను దండిస్తామా – blazing sun
+ ()=> sky('summer')+bigCumulus(260,1080,.9)+sun(800,720,110)+farHills(1380,'#7fb08a')+ground(G,'grass')+grassTufts(G)+flowers(G,8)+
+      tree(150,G+40,.9)+heatWaves(1230)+person(560,1700,1.05,{hR:[30,-392],hL:[-55,-110],face:'squint',shirt:'#e8574a'})+sweat(640,1290)+sweat(480,1310),
+ // 2 వానలను నిందిస్తామా – rain
+ ()=>{ let s=sky('rain')+cloud(300,620,1.4,{dark:true})+cloud(760,700,1.6,{dark:true})+cloud(540,560,1.1,{dark:true})+rain(60,1020,760,1650,46)+
+      farHills(1400,'#6b8a7a')+ground(G,'wet')+E(320,1760,150,26,{c:CH.b,f:'#9fc3d9',op:.8})+E(820,1700,110,20,{c:CH.b,f:'#9fc3d9',op:.8});
+      const pp=person(540,1720,1.05,{hR:[60,-215],hL:[-55,-110],face:'sad',shirt:'#f2b632',pants:'#4a4a6a'}); const [hx,hy]=person.hand.R;
+      return s+pp+umbrella(hx,hy-240,1.1,'#c62828'); },
+ // 3 చలినెటో తరిమేస్తామా చీ పొమ్మనీ – cold winter
+ ()=> sky('winter')+farHills(1380,'#b8cfe0')+ground(G,'snow')+pine(150,1560,1.3,true)+pine(930,1520,1.1,true)+tree(820,1600,.8,{bare:true})+
+      snowflakes(34)+fire(300,1740,1)+person(600,1740,1.05,{hR:[260,-330],hL:[-50,-110],face:'angry',shirt:'#6d4c41',scarf:true})+
+      bubble(800,950,300,150,'చీ పో!',{tx:-80}),
+ // 4 కస్సుమని కలహిస్తామా – angry at the storm
+ ()=> sky('storm')+cloud(640,620,1.7,{dark:true})+bolt(600,720,1.3)+bolt(820,760,.9)+farHills(1380,'#6a4a6a')+ground(G,'dusk')+
+      person(400,1720,1.1,{hR:[70,-540],hL:[-70,-150],face:'angry',shirt:'#e53935'})+bubble(780,1120,280,140,'#@!',{tx:-60,fs:70}),
+ // 5 ఉస్సురని విలపిస్తామా – sigh, lament
+ ()=> sky('autumn')+bigCumulus(800,900,.7)+farHills(1400,'#c99a5b')+ground(G,'autumn')+tree(360,1650,1.5,{autumn:true})+leaves(14)+
+      person(520,1690,1.05,{sit:true,hR:[90,-185],hL:[70,-180],face:'sad',shirt:'#5c6bc0',tilt:-8,armsFront:true})+
+      bubble(820,1050,260,140,'హ్మ్…',{tx:-80,fs:64,tf:'#5d4037'}),
+ // 6 రోజులతో రాజీ పడమా సర్లెమ్మనీ – make peace with the days
+ ()=> sky('dawn')+sun(540,1320,140,{rays:16})+farHills(1400,'#8fb49a')+ground(G,'grass')+grassTufts(G)+flowers(G,12)+
+      calendar(180,760,1,'1',-15)+calendar(400,640,.9,'7',10)+calendar(680,620,.95,'15',-8)+calendar(900,800,.85,'30',14)+
+      person(540,1740,1.05,{hR:[130,-520],hL:[-130,-520],face:'smile',shirt:'#43a047'})+bubble(850,1080,260,140,'సర్లే!',{tx:-70}),
+ // 7 సాటి మనుషులతో మాత్రం – fellow humans
+ ()=> sky('day')+bigCumulus(540,860,1)+farHills(1380,'#86b38a')+ground(G,'grass')+grassTufts(G)+flowers(G,10)+
+      house(220,1520,.95,'#c0503a')+house(870,1500,.85,'#3f6fb5','#fbe9d0')+
+      person(380,1760,.95,{hR:[130,-470],hL:[-50,-110],face:'smile',shirt:'#e57373'})+person(710,1760,.95,{hR:[130,-470],hL:[-50,-110],face:'smile',shirt:'#4db6ac',long:true,flip:true}),
+ // 8 సాగనని ఎందుకు పంతం – stubborn, won't get along
+ ()=> sky('day')+bigCumulus(280,820,.7)+bigCumulus(820,780,.6)+farHills(1380,'#86b38a')+ground(G,'grass')+grassTufts(G)+wall(540,1660,150,520)+
+      person(290,1760,1,{hR:[-40,-235],hL:[40,-228],armsFront:true,face:'angry',shirt:'#e57373',flip:true})+
+      person(790,1760,1,{hR:[-40,-235],hL:[40,-228],armsFront:true,face:'angry',shirt:'#4db6ac',long:true}),
+ // 9 పూటకొక పేచీ పడుతూ – quarrel every hour
+ ()=> sky('dusk')+clock(540,720,140)+farHills(1400,'#5a6a7a')+ground(G,'dusk')+bolt(530,1080,1)+
+      person(280,1760,1,{hR:[210,-330],hL:[-50,-110],face:'angry',shirt:'#e57373'})+person(800,1760,1,{hR:[210,-330],hL:[-50,-110],face:'angry',shirt:'#4db6ac',long:true,flip:true})+
+      bubble(260,1040,230,120,'నువ్వే!',{tx:0,fs:52})+bubble(820,1040,230,120,'నువ్వే!',{tx:0,fs:52}),
+ // 10 ఏం సాధిస్తామంటే ఏం చెబుతాం – what do we achieve?
+ ()=> sky('lilac')+bigCumulus(540,880,.8)+farHills(1400,'#8b8ab8')+ground(G,'grass')+grassTufts(G)+
+      person(540,1740,1.1,{hR:[175,-250],hL:[-175,-250],face:'shock',shirt:'#ffb300'})+qmark(250,1050,1.1)+qmark(830,1000,1.4)+qmark(720,700,.8,'#e91e63')+qmark(360,720,.9,'#1e88e5'),
+ // 11 ఎక్కిళ్ళే పెట్టి ఏడుస్తుంటే కష్టం పోతుందా – crying won't remove trouble
+ ()=> sky('rain')+farHills(1400,'#6b8a7a')+ground(G,'wet')+cloud(500,900,1.1,{dark:true})+rain(370,650,980,1250,14)+
+      person(460,1700,1.05,{sit:true,hR:[90,-185],hL:[70,-180],armsFront:true,face:'cry',shirt:'#7986cb'})+
+      boulder(850,1700,120)+txt(850,1640,'కష్టం',46,CH.w,'#fff'),
+ // 12 కదా మరెందుకు గోల – then why the fuss?
+ ()=> sky('day')+sun(860,640,90)+cloud(320,740,1.2)+farHills(1380,'#86b38a')+ground(G,'grass')+grassTufts(G)+flowers(G,10)+
+      bubble(260,1030,260,140,'గోల',{tx:60,fs:60})+P('M150,950 L370,1110 M370,950 L150,1110',{c:CH.r,csw:9,f:null,s:'#d32f2f',ssw:14})+
+      person(640,1740,1.1,{hR:[150,-420],hL:[-50,-110],face:'calm',shirt:'#26a69a'}),
+ // 13 అయ్యయ్యో పాపం అంటే – "oh, poor thing"
+ ()=> sky('gold')+bigCumulus(700,820,.7)+farHills(1400,'#9ab07a')+ground(G,'grass')+grassTufts(G)+house(900,1470,.7,'#8d6e63')+
+      person(300,1740,1,{sit:true,hR:[90,-185],hL:[70,-180],armsFront:true,face:'sad',shirt:'#90a4ae',tilt:-10})+
+      person(650,1760,.92,{hR:[30,-330],hL:[-50,-110],face:'sad',shirt:'#f06292',long:true,flip:true})+person(870,1770,.85,{hR:[-25,-335],hL:[-50,-110],face:'sad',shirt:'#ffb74d',flip:true})+
+      bubble(620,1040,360,140,'అయ్యయ్యో!',{tx:20,fs:58}),
+ // 14 ఏదో లాభం వస్తుందా – will any gain come?
+ ()=> sky('gold')+sun(220,700,80)+bigCumulus(780,860,.7)+farHills(1400,'#b8a060')+ground(G,'gold')+grassTufts(G,16,'#9a7a2a')+
+      person(540,1740,1.1,{hR:[70,-235],hL:[-70,-235],armsFront:true,face:'sad',shirt:'#8d6e63'})+bowl(540,1740-1.1*245,1)+qmark(760,1300,.9,'#e65100')+txt(840,1050,'లాభం?',72,CH.y,'#e65100'),
+ // 15 వృధా ప్రయాస పడాలా – wasted effort?
+ ()=> sky('sunset')+rainbow(540,1500,520)+farHills(1420,'#7a5a7a')+
+      P(`M0,1880 L1080,1300 L1080,1920 L0,1920 Z`,{c:CH.g,f:lg([[0,'#7cb342'],[1,'#33691e']]),ol:false})+grassTufts(1700,10)+
+      boulder(718,1500,130)+person(462,1640,1.05,{hR:[160,-262],hL:[140,-245],face:'squint',shirt:'#ef6c00',walk:true})+sweat(400,1220),
+];
+
+// ---------------------------------------------------------------- static defs + board
+const BASE_DEFS = `
+<filter id="chalk" x="-5%" y="-5%" width="110%" height="110%">
+ <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" seed="3" result="n"/>
+ <feDisplacementMap in="SourceGraphic" in2="n" scale="5" xChannelSelector="R" yChannelSelector="G" result="d"/>
+ <feTurbulence type="fractalNoise" baseFrequency="1.4" numOctaves="1" seed="9" result="g"/>
+ <feColorMatrix in="g" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -1.5 1.45" result="ga"/>
+ <feComposite in="d" in2="ga" operator="in"/>
+</filter>
+<filter id="soft"><feGaussianBlur stdDeviation="3"/></filter>
+<filter id="paint" x="0" y="0" width="100%" height="100%">
+ <feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="2" seed="5" result="n"/>
+ <feDisplacementMap in="SourceGraphic" in2="n" scale="7" xChannelSelector="R" yChannelSelector="G"/>
+</filter>
+<filter id="grain"><feTurbulence type="fractalNoise" baseFrequency="0.75" numOctaves="2" seed="2"/><feColorMatrix values="0 0 0 0 .5  0 0 0 0 .45  0 0 0 0 .4  0 0 0 .5 0"/></filter>
+<filter id="boardTex"><feTurbulence type="fractalNoise" baseFrequency="0.012 0.03" numOctaves="3" seed="11"/><feColorMatrix values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .09 0"/></filter>
+<radialGradient id="vig" cx=".5" cy=".5" r=".75"><stop offset=".6" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".45"/></radialGradient>
+<radialGradient id="warm" cx=".5" cy=".25" r=".8"><stop offset="0" stop-color="#fff5d6" stop-opacity=".22"/><stop offset="1" stop-color="#fff5d6" stop-opacity="0"/></radialGradient>
+`;
+function board(){
+  return `<rect width="1080" height="1920" fill="#22382d"/><rect width="1080" height="1920" filter="url(#boardTex)"/>
+  <ellipse cx="300" cy="500" rx="380" ry="160" fill="#fff" opacity=".035" filter="url(#soft)"/><ellipse cx="760" cy="1350" rx="420" ry="200" fill="#fff" opacity=".03" filter="url(#soft)"/>
+  <rect x="14" y="14" width="1052" height="1892" fill="none" stroke="#7a5230" stroke-width="28"/><rect x="28" y="28" width="1024" height="1864" fill="none" stroke="#4e3220" stroke-width="4"/>
+  <rect x="0" y="1888" width="1080" height="32" fill="#8a5d36"/><rect x="760" y="1876" width="70" height="14" rx="4" fill="#f4f1e8"/><rect x="850" y="1878" width="50" height="12" rx="4" fill="#ffd54f"/>`;
+}
+// lyric text block
+function lyric(text, mode){
+  const parts=text.split('|'); const fs=parts.some(p=>p.length>17)?82:96; const y0=parts.length>1?250:300;
+  if (mode==='chalk') return `<g filter="url(#chalk)">`+parts.map((p,i)=>`<text x="540" y="${y0+i*(fs+30)}" font-family="TelB" font-size="${fs}" text-anchor="middle" fill="#fbf7ec">${p}</text>`).join('')+`</g>`;
+  return `<g>`+parts.map((p,i)=>`<text x="540" y="${y0+i*(fs+30)}" font-family="TelB" font-size="${fs}" text-anchor="middle" fill="#fff" stroke="#2a1a3a" stroke-width="12" stroke-linejoin="round" paint-order="stroke" style="filter:drop-shadow(0 6px 10px rgba(0,0,0,.35))">${p}</text>`).join('')+`</g>`;
+}
+
+// build both versions of every scene once; at render time toggle visibility/opacity
+const svg=document.getElementById('s');
+const built=[];
+function build(){
+  let defsAll=BASE_DEFS, body='';
+  LINES.forEach((ln,i)=>{
+    DEFS=[]; DRAWN=0; MODE='chalk'; const chalk=SCENES[ln.scene](); const nCh=DRAWN;
+    MODE='color'; const color=SCENES[ln.scene]();
+    defsAll += DEFS.join('');
+    body += `<g id="sc${i}" style="display:none">
+      <g id="ch${i}">${board()}<g filter="url(#chalk)">${chalk}</g><g id="ly${i}c" clip-path="url(#lc${i})">${lyric(ln.text,'chalk')}</g></g>
+      <g id="co${i}" mask="url(#mk${i})"><g id="zo${i}"><g filter="url(#paint)">${color}</g><rect width="1080" height="1920" fill="url(#warm)"/></g>
+        <rect width="1080" height="1920" filter="url(#grain)" opacity=".35"/><rect width="1080" height="1920" fill="url(#vig)"/>${lyric(ln.text,'color')}</g>
+      <rect id="fl${i}" width="1080" height="1920" fill="#fffbe6" opacity="0"/>
+    </g>`;
+    defsAll += `<clipPath id="lc${i}"><rect id="lcr${i}" x="0" y="0" width="0" height="1920"/></clipPath>
+      <mask id="mk${i}"><rect width="1080" height="1920" fill="#000"/><circle id="mkc${i}" cx="540" cy="1150" r="0" fill="#fff" filter="url(#soft)"/></mask>`;
+    built.push({n:nCh});
+  });
+  svg.innerHTML = `<defs>${defsAll}</defs>`+body;
+  built.forEach((b,i)=>{ b.els=[...document.querySelectorAll(`#ch${i} .d`)]; b.txts=[...document.querySelectorAll(`#ch${i} .t`)];
+    b.els.forEach(e=>{ e.style.strokeDasharray='1 1'; }); });
+}
+const clamp=v=>Math.max(0,Math.min(1,v)), ease=v=>v<.5?2*v*v:1-Math.pow(-2*v+2,2)/2;
+let cur=-1;
+window.render = function(t){
+  let i = LINES.findIndex(l=>t<l.end); if(i<0) i=LINES.length-1;
+  const ln=LINES[i], b=built[i];
+  if (i!==cur){ if(cur>=0) document.getElementById('sc'+cur).style.display='none'; document.getElementById('sc'+i).style.display=''; cur=i; }
+  const dur=ln.end-ln.start, lt=t-ln.start;
+  // colour reveal begins at (end - colorDur); colour part = last ~38% of the line (min .7 s, max 1.7 s)
+  const colorDur=Math.max(.7,Math.min(1.7,dur*.38)); const tc=dur-colorDur;
+  const p=clamp(lt/(tc-.05));                       // chalk drawing progress
+  document.getElementById('lcr'+i).setAttribute('width', 1080*ease(clamp(p/0.45)));
+  const n=b.els.length||1;
+  b.els.forEach((e,k)=>{ const st=.15+.6*(k/n); const q=clamp((p-st)/.22); e.style.strokeDashoffset=String(1-q); e.style.fillOpacity = String(.13*q); });
+  b.txts.forEach(e=>{ const k=+e.dataset.k; const st=.15+.6*(k/(b.n||1)); e.style.opacity=String(clamp((p-st)/.2)); });
+  const rv=clamp((lt-tc)/.45);                       // colour reveal
+  const mk=document.getElementById('mkc'+i); mk.setAttribute('r', Math.max(1,1500*ease(rv))); document.getElementById('co'+i).style.display= rv>0?'':'none';
+  const fl=document.getElementById('fl'+i); const fo= rv>0&&rv<1? .32*Math.sin(Math.PI*rv):0; fl.style.display= fo>0?'':'none'; fl.setAttribute('opacity', fo.toFixed(3));
+  const z=1+0.05*clamp((lt-tc)/colorDur);
+  document.getElementById('zo'+i).setAttribute('transform',`translate(540 1100) scale(${z}) translate(-540 -1100)`);
+  // tiny fade-in from black at scene start (except first)
+  document.getElementById('sc'+i).style.opacity = String(i===0?1:clamp(lt/.12)*.5+.5);
+};
+document.fonts.load('80px TelB','అ').then(()=>document.fonts.load('80px PopB','?')).then(()=>{ build(); window.__ready=true; });
+</script></body></html>
