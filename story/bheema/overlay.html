@@ -61,6 +61,9 @@ html,body{margin:0;padding:0;width:1080px;height:1920px;background:transparent;o
 .board .t2{font-family:PX;font-size:46px;color:#111;line-height:1.15;letter-spacing:1px}
 .ttl{position:absolute;left:0;right:0;display:flex;justify-content:center;z-index:45}
 .ttl span{display:inline-block;font-family:PX;white-space:nowrap;box-shadow:0 8px 20px rgba(0,0,0,.35)}
+.mtx{position:absolute;left:0;right:0;text-align:center;font-family:PX;color:#fff;letter-spacing:14px;white-space:nowrap;
+  text-shadow:0 0 30px rgba(255,190,90,.65),0 6px 0 rgba(0,0,0,.45);pointer-events:none;z-index:30}
+.mtx.sub{font-family:PB;letter-spacing:6px;color:#FFD27A}
 /* end */
 .btn{position:absolute;height:96px;border-radius:48px;display:flex;align-items:center;justify-content:center;font-family:PX;font-size:44px;color:#fff}
 </style></head>
@@ -258,6 +261,8 @@ for(const c of D.captions){
   const lines=c.lines.map(l=>el(`<div class="${l.cls}">${l.t}</div>`,n));
   items.push({kind:'cap',a:c.a,b:c.b,n,lines,c});
 }
+// ---- cinematic texts (music breaks)
+for(const m of (D.texts||[])){const n=el(`<div class="mtx ${m.sub?'sub':''}" style="top:${m.y}px;font-size:${m.size}px;display:none">${m.t}</div>`);items.push({kind:'mtx',a:m.a,b:m.b,n})}
 // ---- title
 const TT=D.title||['',''];const HAS_T=!!(D.title&&D.title.length&&D.title[0]);
 const t1=el(`<div class="ttl" style="top:62px"><span style="background:#E53935;color:#fff;font-size:66px;padding:8px 34px 12px;border-radius:14px">${TT[0]}</span></div>`);
@@ -271,7 +276,7 @@ const board=el(`<div class="board"><div class="in"><div class="t1" style="font-f
 const E={};
 E.wrap=el(`<div class="abs" style="inset:0;z-index:40;display:none;background:radial-gradient(circle at 50% 45%,#1d1f3a,#07070f 70%)"></div>`);
 E.yt=el(`<div class="abs" style="left:390px;top:640px;width:300px;height:210px;border-radius:60px;background:linear-gradient(180deg,#FF3B3B,#D10000);display:flex;align-items:center;justify-content:center;box-shadow:0 20px 60px rgba(255,0,0,.35)"><div style="width:0;height:0;border-left:90px solid #fff;border-top:56px solid transparent;border-bottom:56px solid transparent;margin-left:18px"></div></div>`,E.wrap);
-E.tx=el(`<div class="abs" style="left:0;right:0;top:920px;text-align:center;font-family:PX;font-size:84px;line-height:1.15;color:#fff;text-shadow:0 6px 0 rgba(0,0,0,.4)">Like &amp; Subscribe cheyandi</div>`,E.wrap);
+E.tx=el(`<div class="abs" style="left:0;right:0;top:920px;text-align:center;font-family:PX;font-size:84px;line-height:1.15;color:#fff;text-shadow:0 6px 0 rgba(0,0,0,.4)">${D.end_text||'Like &amp; Subscribe cheyandi'}</div>`,E.wrap);
 E.like=el(`<div class="btn" style="left:150px;top:1110px;width:330px;background:#1E6BFF">👍 LIKE</div>`,E.wrap);
 E.sub=el(`<div class="btn" style="left:520px;top:1110px;width:410px;background:#E62117">SUBSCRIBE</div>`,E.wrap);
 E.cur=el(`<div class="abs" style="left:0;top:0;width:60px;height:60px">${'<svg viewBox="0 0 24 24" width="60" height="60"><path d="M4 2l14 10-6 1 4 8-3 1-4-8-5 4z" fill="#fff" stroke="#000" stroke-width="1.2"/></svg>'}</div>`,E.wrap);
@@ -291,6 +296,9 @@ function render(t){
       n.style.display='block';const x=lt/0.35;
       n.style.opacity=Math.min(clamp(x*2),clamp(rem/0.2));
       n.style.transform=`translateX(${(1-eOut(x))*-120}px) scale(${0.6+0.4*eBack(x)}) rotate(-6deg)`;
+    } else if(it.kind==='mtx'){const n=it.n; if(!on){n.style.display='none';continue}
+      n.style.display='block'; const x=lt/0.6; n.style.opacity=Math.min(clamp(x),clamp(rem/0.4));
+      n.style.transform=`scale(${1.12-0.12*eOut(x)+0.02*lt})`; n.style.letterSpacing=(n.classList.contains('sub')?6:14)+8*(1-eOut(x))+'px';
     } else if(it.kind==='stk'){const n=it.n; if(!on){n.style.display='none';continue}
       n.style.display='flex';const x=lt/0.4;
       const out=clamp(rem/0.2);
