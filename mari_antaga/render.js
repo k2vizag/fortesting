@@ -10,7 +10,7 @@ const data = JSON.parse(fs.readFileSync(path.join(__dirname, 'lines.json'), 'utf
   await page.addInitScript(d => { window.__LINES__ = d.lines; window.__TOTAL__ = d.total; }, data);
   page.on('pageerror', e => console.error('PAGE ERROR', e.message));
   page.on('console', m => console.log('console:', m.text()));
-  await page.goto('file://' + path.resolve(__dirname, 'scene.html'));
+  await page.goto('file://' + path.resolve(__dirname, process.env.PAGE || 'scene.html'));
   await page.waitForFunction(() => window.__ready === true);
   if (mode === 'preview') {
     for (const t of arg.split(',').map(Number)) {
@@ -19,7 +19,7 @@ const data = JSON.parse(fs.readFileSync(path.join(__dirname, 'lines.json'), 'utf
     }
   } else {
     const fps = 30, N = Math.round(data.total * fps);
-    const out = path.join(work, 'mari_antaga.mp4');
+    const out = path.join(work, process.env.OUT || 'mari_antaga.mp4');
     const ff = spawn('ffmpeg', ['-v', 'error', '-y', '-f', 'image2pipe', '-framerate', String(fps), '-c:v', 'mjpeg', '-i', '-',
       '-i', arg, '-map', '0:v', '-map', '1:a', '-af', 'loudnorm=I=-14:TP=-1.5:LRA=11',
       '-c:v', 'libx264', '-preset', 'medium', '-crf', '18', '-pix_fmt', 'yuv420p', '-r', String(fps),
