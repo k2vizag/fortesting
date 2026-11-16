@@ -16,7 +16,7 @@ def source(files):   # average identity over several photos of the same person
     src = fs[0]; e = np.mean([f.normed_embedding for f in fs], 0); src.embedding = e / np.linalg.norm(e) * np.linalg.norm(fs[0].embedding)
     return src
 MALE = source(["13cfe65a-image.jpg", "09e70d6e-image.jpg", "4ece7045-image.jpg"])   # biggest face in each selfie = the user
-FEMALE = source(["b2805a1c-image.jpg", "6bbbf1de-image.jpg", "adc158f9-image.jpg"])  # Diwali photos
+FEMALE = source(["4771e5fb-image.jpg", "4c97b472-image.jpg", "40b14343-image.jpg", "6bbbf1de-image.jpg"])  # daylight hilltop + front-facing photos
 T512 = np.array([[192.98138, 239.94708], [318.90277, 240.1936], [256.63416, 314.01935], [201.26117, 371.41043], [313.08905, 371.15118]], np.float32)
 def restore(img, face, fid=0.7):
     M = cv2.estimateAffinePartial2D(face.kps.astype(np.float32), T512)[0]
@@ -38,6 +38,15 @@ TARGETS = {"peanut": (U + "95fc2b4b-image.png", MALE), "pot": (HQ + "pot.png", M
            "moonman": (U + "f34ab5e4-image.png", MALE),
            "f_lachimi": (HQ + "f_lachimi.png", FEMALE), "f_white": (HQ + "f_white.png", FEMALE), "f_purple": (U + "0e74cace-image.png", FEMALE),
            "pasupu": (U + "d408a773-image.png", FEMALE), "f_yellow": (HQ + "f_yellow.png", FEMALE), "f_moon": (U + "73f382a6-image.png", FEMALE)}
+EYES = list(range(33, 43)) + list(range(87, 97))   # 106-point landmarks of both eyes
+def keep_eyes(orig, out, face, a=0.85):
+    """inswapper renders soft grey eyes; blend the song photo's own crisp eyes back in (eye area only)."""
+    H, W = orig.shape[:2]; mk = np.zeros((H, W), np.float32); L = face.landmark_2d_106
+    ew = np.linalg.norm(L[35] - L[39]) if False else (face.bbox[2] - face.bbox[0]) * 0.05
+    for idx in (range(33, 43), range(87, 97)):
+        cv2.fillConvexPoly(mk, cv2.convexHull(L[list(idx)].astype(np.int32)), 1.0)
+    r = max(3, int(ew)); mk = cv2.dilate(mk, np.ones((r, r), np.uint8)); mk = cv2.GaussianBlur(mk, (0, 0), r * 0.8)[:, :, None] * a
+    return (orig.astype(np.float32) * mk + out.astype(np.float32) * (1 - mk)).clip(0, 255).astype(np.uint8)
 import sys
 for name, (path, src) in TARGETS.items():
     if len(sys.argv) > 1 and name not in sys.argv[1:]: continue
@@ -46,4 +55,5 @@ for name, (path, src) in TARGETS.items():
     f = big(fs); img = swapper.get(img, f, src, paste_back=True)
     f2 = big(app.get(img)) if app.get(img) else f
     img = restore(img, f2)
+    if src is FEMALE: img = keep_eyes(cv2.imread(path), img, f)
     cv2.imwrite(S + f"swap/{name}.png", img); print(name, "ok", img.shape[1], "x", img.shape[0], flush=True)

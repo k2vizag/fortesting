@@ -43,11 +43,11 @@ const S=D.shots.map(s=>{
 const XF=0.7;   // crossfade length
 function shotAt(t){let i=0;for(let k=0;k<S.length;k++) if(t>=S[k].a) i=k; return i}
 function show(s,o,t,enter){
-  // smooth zoom of the whole box (photo is never cropped): 0.95 -> 1.0 over the shot
-  const p=clamp((t-s.a+XF/2)/(s.b-s.a+XF)), z=lerp(0.95,1.0,sm(p));
+  // visible smooth zoom of the whole box (photo is never cropped): 0.86 -> 1.0 over the shot
+  const p=clamp((t-s.a+XF/2)/(s.b-s.a+XF)), z=lerp(0.86,1.0,0.6*p+0.4*sm(p));
   const ez=enter===undefined?0:enter;   // extra for entering/leaving
   s.box.style.opacity=o; s.box.style.transform=`translateY(${ez*30}px) scale(${z-ez*0.03})`;
-  s.bg.style.opacity=o; s.bg.style.transform=`scale(${1.05+0.06*p})`;}
+  s.bg.style.opacity=o; s.bg.style.transform=`scale(${1.05+0.12*p})`;}
 // soft golden sparkles
 const cv=$('fx'),cx=cv.getContext('2d'); let seed=7; const rnd=()=>(seed=(seed*16807)%2147483647)/2147483647;
 const P=[...Array(55)].map(()=>({x:rnd()*1080,y:rnd()*2100,r:2+rnd()*6,v:25+rnd()*50,ph:rnd()*6.3,w:20+rnd()*40}));
