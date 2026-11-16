@@ -44,7 +44,7 @@ const XF=0.7;   // crossfade length
 function shotAt(t){let i=0;for(let k=0;k<S.length;k++) if(t>=S[k].a) i=k; return i}
 function show(s,o,t,enter){
   // visible smooth zoom of the whole box (photo is never cropped): 0.86 -> 1.0 over the shot
-  const p=clamp((t-s.a+XF/2)/(s.b-s.a+XF)), z=lerp(0.86,1.0,0.6*p+0.4*sm(p));
+  const p=clamp((t-s.a+(s.xf||XF)/2)/(s.b-s.a+(s.xf||XF))), z=lerp(s.z0||0.86,1.0,0.6*p+0.4*sm(p));
   const ez=enter===undefined?0:enter;   // extra for entering/leaving
   s.box.style.opacity=o; s.box.style.transform=`translateY(${ez*30}px) scale(${z-ez*0.03})`;
   s.bg.style.opacity=o; s.bg.style.transform=`scale(${1.05+0.12*p})`;}
@@ -66,7 +66,7 @@ function setLine(i){LI=i;const L=D.lines[i];const c=$('cur');c.innerHTML='';WORD
 function render(t){
   const i=shotAt(t), s=S[i], n=S[i+1];
   S.forEach(x=>{x.box.style.opacity=0;x.bg.style.opacity=0});
-  if(n && t>n.a-XF){const k=sm((t-(n.a-XF))/XF); show(s,1-k,t,-k*0.0); s.box.style.opacity=1-k; show(n,k,t,1-k);
+  if(n && t>n.a-(n.xf||XF)){const X=n.xf||XF, k=sm((t-(n.a-X))/X); show(s,1-k,t,-k*0.0); s.box.style.opacity=1-k; show(n,k,t,1-k);
     s.box.style.opacity=1-k; s.bg.style.opacity=1-k;}
   else show(s,1,t);
   particles(t, s.her?0.55:0.3);
