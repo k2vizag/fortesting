@@ -19,3 +19,7 @@ user's message is short.
 - Google Drive links must be shared as "Anyone with the link"; if a download
   returns a sign-in page, ask the user to change sharing.
 - Do not commit video files over ~90 MB (GitHub rejects files over 100 MB).
+
+## Chalkboard lyrics videos
+If the user asks for a "chalkboard" / "chalk" lyrics video (song + lyrics),
+follow **prompts/chalk_lyrics_prompt.md** – pipeline in `lyric_chalk/`.

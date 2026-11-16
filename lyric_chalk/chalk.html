@@ -1,0 +1,217 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<style>
+@font-face{font-family:Rama;src:url('../insurance/v2/fonts/RamaCap.ttf');}
+@font-face{font-family:TE9;src:url('../insurance/v2/fonts/TeluguCap900.ttf');}
+@font-face{font-family:PB;src:url('../insurance/v2/fonts/PopB.ttf');}
+html,body{margin:0;background:#000;}canvas{display:block;}
+</style></head><body><canvas id="c" width="1080" height="1920"></canvas>
+<script src="prims.js"></script>
+<script>
+// Chalkboard lyric video – "Chal Chalo Chalo". Data in window.__DATA__ = {total, font:'te'|'en', title, lines:[{a,b,t,scene}]}
+// window.render(t) draws one frame.
+const D = window.__DATA__;
+const W = 1080, H = 1920, TOTAL = D.total;
+const cv = document.getElementById('c'), X = cv.getContext('2d');
+const mk = () => { const c = document.createElement('canvas'); c.width = W; c.height = H; return c; };
+const layer = mk(), ghost = mk(), txt = mk();
+const LX = layer.getContext('2d'), GXc = ghost.getContext('2d'), TX = txt.getContext('2d');
+
+// ---------- extra drawing helpers ----------
+function crown(x, y, s, col = C.y) { return [S(P([[x - s, y], [x - s, y - s * 0.9], [x - s * 0.5, y - s * 0.4], [x, y - s * 1.1], [x + s * 0.5, y - s * 0.4], [x + s, y - s * 0.9], [x + s, y], [x - s, y]]), col, 6)]; }
+function castle(x, y, s, col = C.w) { const w = s, h = s * 0.8; const st = [];
+  st.push(S(P([[x - w, y], [x - w, y - h], [x - w * 0.8, y - h], [x - w * 0.8, y - h - 30], [x - w * 0.6, y - h - 30], [x - w * 0.6, y - h], [x - w * 0.2, y - h], [x - w * 0.2, y - h - 30], [x + w * 0.2, y - h - 30], [x + w * 0.2, y - h], [x + w * 0.6, y - h], [x + w * 0.6, y - h - 30], [x + w * 0.8, y - h - 30], [x + w * 0.8, y - h], [x + w, y - h], [x + w, y]]), col, 7));
+  st.push(S(P([[x - w * 0.18, y], [x - w * 0.18, y - h * 0.4], [x, y - h * 0.52], [x + w * 0.18, y - h * 0.4], [x + w * 0.18, y]]), col, 6));
+  st.push(S(L(x, y - h - 30, x, y - h - 120), col, 5)); st.push(S(P([[x, y - h - 120], [x + 70, y - h - 100], [x, y - h - 80]]), C.r, 6)); return st; }
+function sword(x1, y1, x2, y2, col = C.b) { const a = Math.atan2(y2 - y1, x2 - x1), nx = -Math.sin(a) * 26, ny = Math.cos(a) * 26, gx = x1 + (x2 - x1) * 0.18, gy = y1 + (y2 - y1) * 0.18;
+  return [S(L(x1, y1, x2, y2), col, 8), S(L(gx - nx, gy - ny, gx + nx, gy + ny), C.o, 8)]; }
+function shield(x, y, s, col = C.o) { return [S(P([[x - s, y - s], [x + s, y - s], [x + s, y], [x, y + s * 1.2], [x - s, y], [x - s, y - s]]), col, 7), S(L(x, y - s, x, y + s * 1.1), col, 4), S(L(x - s, y - s * 0.35, x + s, y - s * 0.35), col, 4)]; }
+function halo(x, y, r, col = C.y) { const st = [S(E(x, y, r, r * 0.3), col, 6)]; for (let i = 0; i < 12; i++) { const a = i / 12 * Math.PI * 2; st.push(S(L(x + Math.cos(a) * (r + 30), y + 40 + Math.sin(a) * (r + 30), x + Math.cos(a) * (r + 80), y + 40 + Math.sin(a) * (r + 80)), col, 4)); } return st; }
+function tree(x, y, s, col = C.g) { return [S(L(x, y, x, y - s), C.o, 9), S(Ci(x, y - s - s * 0.35, s * 0.4), col, 7), S(Ci(x - s * 0.3, y - s - s * 0.1, s * 0.28), col, 6), S(Ci(x + s * 0.3, y - s - s * 0.1, s * 0.28), col, 6)]; }
+function cloud(x, y, s, col = C.w, w = 6) { return [S(B([x - s, y], [x - s * 1.3, y - s * 0.7], [x - s * 0.3, y - s * 0.9], [x - s * 0.2, y - s * 0.4]), col, w), S(B([x - s * 0.25, y - s * 0.5], [x, y - s * 1.2], [x + s * 0.9, y - s * 1.0], [x + s * 0.6, y - s * 0.3]), col, w), S(B([x + s * 0.6, y - s * 0.35], [x + s * 1.3, y - s * 0.4], [x + s * 1.2, y + s * 0.2], [x + s * 0.7, y]), col, w), S(L(x - s, y, x + s * 0.7, y), col, w)]; }
+function bolt(x, y, s, col = C.y) { return [S(P([[x, y], [x - s * 0.4, y + s], [x, y + s], [x - s * 0.3, y + s * 2]]), col, 7)]; }
+function drop(x, y, s, col = C.b) { return [S(B([x, y - s], [x - s * 0.9, y + s * 0.2], [x - s * 0.5, y + s * 0.9], [x, y + s * 0.9]), col, 5), S(B([x, y + s * 0.9], [x + s * 0.5, y + s * 0.9], [x + s * 0.9, y + s * 0.2], [x, y - s]), col, 5)]; }
+function flame(x, y, s, col = C.o) { return [S(B([x - s * 0.5, y], [x - s * 0.8, y - s * 0.8], [x - s * 0.1, y - s], [x, y - s * 1.8]), col, 6), S(B([x, y - s * 1.8], [x + s * 0.3, y - s], [x + s * 0.8, y - s * 0.8], [x + s * 0.5, y]), col, 6), S(B([x - s * 0.2, y], [x - s * 0.3, y - s * 0.5], [x, y - s * 0.6], [x, y - s]), C.y, 4)]; }
+function arrow(x1, y1, x2, y2, col = C.y, w = 7) { const a = Math.atan2(y2 - y1, x2 - x1), h = 34; return [S(L(x1, y1, x2, y2), col, w), S(P([[x2 - h * Math.cos(a - 0.5), y2 - h * Math.sin(a - 0.5)], [x2, y2], [x2 - h * Math.cos(a + 0.5), y2 - h * Math.sin(a + 0.5)]]), col, w)]; }
+function road(col = C.w) { return [S(B([300, 1420], [420, 1200], [700, 1100], [560, 900]), col, 7), S(B([780, 1420], [640, 1200], [880, 1060], [620, 900]), col, 7), S(L(560, 900, 620, 900), col, 4)]; }
+function kite(x, y, s, col = C.p) { return [S(P([[x, y - s], [x + s * 0.7, y], [x, y + s * 1.2], [x - s * 0.7, y], [x, y - s]]), col, 7), S(L(x, y - s, x, y + s * 1.2), col, 4), S(L(x - s * 0.7, y, x + s * 0.7, y), col, 4), S(B([x, y + s * 1.2], [x - 30, y + s * 1.6], [x + 30, y + s * 2], [x - 10, y + s * 2.4]), C.y, 4)]; }
+function book(x, y, s, col = C.w) { return [S(P([[x, y], [x - s, y - s * 0.15], [x - s, y - s * 1.1], [x, y - s * 0.95], [x + s, y - s * 1.1], [x + s, y - s * 0.15], [x, y]]), col, 7), S(L(x, y, x, y - s * 0.95), col, 5), ...[0.35, 0.55, 0.75].flatMap(k => [S(L(x - s * 0.8, y - s * (k + 0.05), x - s * 0.15, y - s * k), col, 3), S(L(x + s * 0.15, y - s * k, x + s * 0.8, y - s * (k + 0.05)), col, 3)])]; }
+function clock(x, y, r, col = C.w) { return [S(Ci(x, y, r), col, 7), S(L(x, y, x, y - r * 0.65), col, 7), S(L(x, y, x + r * 0.45, y + r * 0.2), col, 7)]; }
+function trophy(x, y, s, col = C.y) { return [S(P([[x - s, y - s * 1.6], [x + s, y - s * 1.6], [x + s * 0.8, y - s * 0.7], [x, y - s * 0.4], [x - s * 0.8, y - s * 0.7], [x - s, y - s * 1.6]]), col, 7), S(L(x, y - s * 0.4, x, y - s * 0.1), col, 7), S(P([[x - s * 0.5, y], [x + s * 0.5, y], [x + s * 0.4, y - s * 0.12], [x - s * 0.4, y - s * 0.12], [x - s * 0.5, y]]), col, 7), S(E(x - s * 1.05, y - s * 1.25, s * 0.3, s * 0.3, Math.PI * 0.5, Math.PI * 1.5), col, 5), S(E(x + s * 1.05, y - s * 1.25, s * 0.3, s * 0.3, -Math.PI * 0.5, Math.PI * 0.5), col, 5)]; }
+function rock(x, y, s, col = C.v) { return [S(P([[x - s, y], [x - s * 0.9, y - s * 0.7], [x - s * 0.3, y - s * 1.1], [x + s * 0.5, y - s * 0.95], [x + s, y - s * 0.3], [x + s * 0.8, y], [x - s, y]]), col, 8), S(L(x - s * 0.2, y - s * 0.7, x + s * 0.2, y - s * 0.4), col, 4)]; }
+function bubble(x, y, w2, h2, col = C.w) { return [S(E(x, y, w2, h2), col, 6), S(P([[x - w2 * 0.3, y + h2 * 0.9], [x - w2 * 0.5, y + h2 * 1.5], [x - w2 * 0.05, y + h2 * 0.98]]), col, 6)]; }
+function shirt(x, y, s, col = C.b) { return [S(P([[x - s * 0.35, y - s], [x - s, y - s * 0.7], [x - s * 0.8, y - s * 0.35], [x - s * 0.55, y - s * 0.45], [x - s * 0.55, y + s * 0.5], [x + s * 0.55, y + s * 0.5], [x + s * 0.55, y - s * 0.45], [x + s * 0.8, y - s * 0.35], [x + s, y - s * 0.7], [x + s * 0.35, y - s], [x, y - s * 0.75], [x - s * 0.35, y - s]]), col, 7), S(L(x, y - s * 0.75, x, y + s * 0.5), col, 3)]; }
+function bug(x, y, s, col = C.w) { return [S(E(x, y, s, s * 0.6), col, 5), S(Ci(x + s * 1.1, y, s * 0.35), col, 5), ...[-0.5, 0, 0.5].flatMap(k => [S(L(x + k * s, y - s * 0.5, x + k * s - 10, y - s), col, 3), S(L(x + k * s, y + s * 0.5, x + k * s - 10, y + s), col, 3)])]; }
+const EN = { 'తీపి': 'Theepi', 'చేదు': 'Chedhu', 'ఉప్పు': 'Uppu', 'తేలిక': 'Thelika', 'చూద్దాం!': 'Choodhaam!', 'హో..రు!': 'Ho..ru!', 'పోరాటం': 'Poraatam', 'మడత': 'Madatha', 'ఉవ్వా!': 'Uvvaa!', 'కష్టం': 'Kashtam', 'కొత్తేం కాదు': 'Kotthem kaadhu', 'అనుభవం': 'Anubhavam' };
+function tx(x, y, s, size, col = C.w) { if (D.font === 'en' && EN[s]) { s = EN[s]; size *= 0.8; } return [T(x, y, s, size, col)]; }
+
+// ---------- scene library (coordinates: drawing area ~ y 560..1420) ----------
+const LIB = {
+  raja: () => [[G(castle(540, 1150, 330)), 0, .45], [G(man(540, 1400, 230, 'hips', C.w, 'smile'), crown(540, 1230, 40)), .45, .8], [G(star(260, 640, 24), star(820, 620, 20)), .8, .95]],
+  rama: () => [[G(castle(250, 1000, 160), S(L(80, 1400, 1000, 1400))), 0, .35], [G(man(700, 1400, 260, 'walk', C.w, 'smile'), S(B([780, 1180], [880, 1080], [880, 1260], [780, 1200]), C.o, 6), S(L(780, 1180, 780, 1200), C.o, 3)), .35, .7],
+    [G(tree(930, 1400, 150), tree(470, 1400, 110), sun(860, 650, 60, C.y, 10, 40)), .7, .95]],
+  veera: () => [[G(man(540, 1400, 300, 'up', C.w, 'smile'), sword(590, 1110, 640, 880)), 0, .45], [G(shield(450, 1220, 60)), .45, .65], [G(S(L(150, 1400, 950, 1400)), cross(220, 1350, 30, C.r, 6), cross(860, 1350, 30, C.r, 6), star(300, 760, 24), star(800, 700, 26)), .65, .95]],
+  deva: () => [[G(man(540, 1380, 300, 'stand', C.w, 'smile'), halo(540, 1060, 70)), 0, .55], [G(sword(250, 1390, 400, 1390, C.b), S(B([400, 1390], [450, 1350], [470, 1400], [520, 1380]), C.w, 3)), .55, .75], [G(S(E(860, 860, 50, 50), C.w, 5), S(L(860, 810, 860, 910), C.w, 4), bird(820, 680, 30), bird(250, 700, 30)), .75, .95]],
+  chal: () => [[G(road()), 0, .35], [G(man(470, 1360, 230, 'run'), S(L(260, 1200, 340, 1200), C.w, 4), S(L(250, 1250, 330, 1250), C.w, 4)), .35, .7], [G(rect(620, 700, 300, 110, C.y, 6), tx(770, 755, 'LIFE →', 60, C.y)), .7, .95]],
+  chapter: () => [[G(book(540, 1250, 260)), 0, .4], [G(tx(410, 1080, 'NEW', 54, C.y), tx(670, 1080, 'Ch.', 54, C.y)), .4, .55], [G(bubble(720, 720, 210, 100), tx(720, 720, 'Hello!', 72, C.p)), .55, .8], [G(man(260, 820, 160, 'up', C.w, 'smile')), .8, .97]],
+  daari: () => [[G(S(P([[80, 1000], [300, 700], [460, 860], [650, 560], [1000, 1000]]))), 0, .3], [G(S(B([200, 1420], [700, 1300], [300, 1120], [600, 950]), C.o, 7), S(B([600, 950], [800, 860], [560, 760], [650, 600]), C.o, 5)), .3, .6], [G(S(L(650, 600, 650, 470), C.w, 5), S(P([[650, 470], [740, 500], [650, 530]]), C.r, 7), man(330, 1380, 170, 'walk')), .6, .95]],
+  challenge: () => [[G(S(L(80, 1400, 1000, 1400)), rect(380, 1300, 30, 100, C.o, 6), rect(680, 1300, 30, 100, C.o, 6)), 0, .3], [G(man(540, 1250, 230, 'jump', C.w, 'smile'), S(B([300, 1380], [380, 1100], [600, 1100], [700, 1250]), C.y, 4)), .3, .7], [G(tx(540, 700, 'CHALLENGE', 72, C.p), tick(860, 700, 34)), .7, .95]],
+  sweetbitter: () => [[G(S(E(330, 950, 90, 60), C.p, 7), S(P([[240, 950], [170, 900], [170, 1000], [240, 950]]), C.p, 6), S(P([[420, 950], [490, 900], [490, 1000], [420, 950]]), C.p, 6), tx(330, 1100, 'తీపి', 64, C.p)), 0, .45],
+    [G(S(E(760, 950, 60, 130), C.g, 7), S(L(720, 880, 800, 900), C.g, 3), S(L(720, 960, 800, 980), C.g, 3), S(L(720, 1020, 790, 1040), C.g, 3), tx(760, 1150, 'చేదు', 64, C.g)), .45, .85], [G(tx(545, 950, '+', 90, C.y)), .85, .97]],
+  zindagi: () => [[G(rect(330, 700, 420, 380, C.w, 7), S(L(330, 790, 750, 790), C.w, 5), ...[0, 1, 2, 3].flatMap(i => [0, 1, 2].map(j => S(Ci(400 + i * 95, 860 + j * 80, 10), C.w, 4)))), 0, .5], [G(man(540, 1400, 220, 'hips', C.w, 'smile'), tx(820, 1180, '?!', 80, C.y)), .5, .95]],
+  guarantee: () => [[G(cloud(450, 760, 170), bolt(500, 790, 120)), 0, .45], [G(man(540, 1400, 240, 'think', C.w, 'sad'), S(L(380, 820, 380, 900), C.b, 3), S(L(620, 820, 620, 900), C.b, 3), S(L(720, 840, 720, 920), C.b, 3)), .45, .8], [G(rect(700, 1140, 260, 100, C.r, 5), tx(830, 1190, 'No ✓', 54, C.r)), .8, .97]],
+  parugu: () => [[G(S(L(80, 1400, 1000, 1400)), man(260, 1400, 180, 'sit', C.w, 'sad')), 0, .4], [G(arrow(400, 1250, 560, 1250)), .4, .55], [G(man(780, 1400, 240, 'run', C.w, 'smile'), S(L(600, 1220, 660, 1220), C.w, 4), S(L(590, 1270, 650, 1270), C.w, 4)), .55, .95]],
+  kshanam: () => [[G(clock(540, 820, 150, C.y)), 0, .4], [G(man(540, 1400, 260, 'up', C.w, 'smile'), heart(540, 1110, 40)), .4, .8], [G(star(260, 700, 24), star(830, 650, 24), star(860, 1000, 18)), .8, .97]],
+  tears: () => [[G(S(Ci(540, 900, 210)), S(E(470, 860, 30, 18), C.w, 5), S(E(610, 860, 30, 18), C.w, 5), S(E(540, 1020, 70, 40, Math.PI + 0.3, 2 * Math.PI - 0.3), C.w, 6)), 0, .45], [G(drop(470, 950, 26), drop(460, 1040, 22), drop(610, 950, 26)), .45, .7], [G(rect(780, 1180, 100, 170, C.w, 6), S(L(780, 1230, 880, 1230), C.w, 4), tx(830, 1290, 'ఉప్పు', 40, C.y)), .7, .97]],
+  teeya: () => [[G(drop(300, 950, 80, C.b), cross(300, 960, 110, C.r, 8)), 0, .35], [G(rect(620, 860, 150, 150, C.w, 6), tx(695, 1080, 'Sugar', 46, C.w)), .35, .6], [G(man(560, 1400, 200, 'hold', C.w, 'sad'), arrow(300, 1200, 900, 1200, C.y, 5)), .6, .95]],
+  heavy: () => [[G(S(L(80, 1400, 1000, 1400)), man(540, 1400, 250, 'hold', C.w, 'sad')), 0, .45], [G(rock(540, 1110, 170)), .45, .75], [G(tx(830, 760, 'KG', 70, C.r), arrow(830, 820, 830, 960, C.r)), .75, .95]],
+  light: () => [[G(man(540, 1400, 250, 'hold', C.w, 'smile'), rock(540, 1150, 110, C.v)), 0, .4], [G(S(L(500, 1060, 420, 760), C.w, 3), S(L(580, 1060, 680, 740), C.w, 3), S(E(420, 690, 60, 75), C.p, 7), S(E(680, 670, 60, 75), C.y, 7)), .4, .8], [G(tx(860, 900, 'తేలిక', 54, C.g)), .8, .97]],
+  edhure: () => [[G(man(540, 1400, 300, 'hips', C.w, 'smile'), crown(540, 1060, 40)), 0, .4], [G(arrow(150, 900, 380, 1040, C.r), arrow(930, 900, 700, 1040, C.r), arrow(160, 1250, 380, 1200, C.r)), .4, .7], [G(shield(540, 760, 70, C.y)), .7, .95]],
+  nippu: () => [[G(S(L(80, 1400, 1000, 1400)), ...[180, 330, 480, 630, 780, 930].map(x => flame(x, 1400, 50))), 0, .45], [G(man(540, 1300, 260, 'walk', C.w, 'smile')), .45, .8], [G(sun(840, 680, 60, C.o, 10, 40)), .8, .97]],
+  thadakha: () => [[G(S(E(330, 980, 160, 200), C.v, 7), S(Ci(280, 920, 18), C.v, 6), S(Ci(380, 920, 18), C.v, 6), S(P([[260, 1060], [300, 1040], [330, 1070], [360, 1040], [400, 1060]]), C.v, 5), S(P([[230, 800], [260, 740], [290, 790]]), C.v, 6), S(P([[370, 790], [400, 740], [430, 800]]), C.v, 6)), 0, .45],
+    [G(man(780, 1400, 260, 'hips', C.w, 'smile')), .45, .75], [G(tx(560, 720, 'చూద్దాం!', 64, C.y)), .75, .95]],
+  gadapa: () => [[G(rect(330, 820, 420, 560, C.w, 7), S(P([[290, 830], [540, 600], [790, 830]]), C.w, 7), rect(480, 1150, 120, 230, C.o, 6)), 0, .45], [G(cloud(800, 720, 110, C.v), bolt(830, 750, 80, C.y)), .45, .7], [G(man(890, 1400, 170, 'think', C.w, 'sad'), S(L(80, 1400, 1000, 1400))), .7, .95]],
+  padda: () => [[G(S(L(80, 1400, 1000, 1400)), man(250, 1400, 170, 'sit', C.w, 'sad'), drop(310, 1170, 14)), 0, .4], [G(arrow(400, 1300, 560, 1180, C.y)), .4, .55], [G(man(760, 1400, 280, 'up', C.w, 'smile'), star(860, 1050, 24)), .55, .95]],
+  ugra: () => [[G(...[300, 450, 600, 750].map((x, i) => flame(x, 1400, 70 + (i % 2) * 30, i % 2 ? C.r : C.o))), 0, .4], [G(man(540, 1380, 300, 'jump', C.w, 'smile')), .4, .75], [G(tx(540, 720, 'హో..రు!', 80, C.r)), .75, .95]],
+  kaana: () => [[G(S(Ci(420, 900, 170), C.w, 8), S(L(540, 1020, 700, 1180), C.o, 18)), 0, .4], [G(man(420, 990, 140, 'stand', C.w, 'none')), .4, .6], [G(cross(420, 900, 90, C.r, 9), tx(780, 760, '0', 140, C.y)), .6, .95]],
+  jeevitham: () => [[G(S(L(80, 1400, 1000, 1400)), man(540, 1400, 260, 'up', C.w, 'smile')), 0, .4], [G(trophy(610, 1120, 60)), .4, .7], [G(star(250, 750, 24), star(850, 740, 26), star(780, 960, 18), tx(300, 1000, 'పోరాటం', 54, C.y)), .7, .95]],
+  shirt: () => [[G(shirt(540, 980, 240)), 0, .45], [G(S(P([[300, 1180], [780, 1180]]), C.w, 4), S(P([[330, 1220], [750, 1220]]), C.w, 4)), .45, .6], [G(tx(540, 1330, 'మడత', 60, C.y), star(820, 720, 20)), .6, .95]],
+  almarah: () => [[G(rect(330, 640, 420, 760, C.o, 8), S(L(540, 640, 540, 1400), C.o, 6), S(Ci(510, 1020, 10), C.o, 5), S(Ci(570, 1020, 10), C.o, 5)), 0, .45], [G(S(L(330, 640, 430, 740), C.w, 3), S(L(380, 640, 330, 690), C.w, 3), S(E(330, 640, 70, 70, 0, Math.PI / 2), C.w, 3), S(E(330, 640, 40, 40, 0, Math.PI / 2), C.w, 3)), .45, .7], [G(cross(850, 900, 60, C.r, 9)), .7, .95]],
+  paper: () => [[G(rect(340, 700, 400, 520, C.w, 7)), 0, .45], [G(S(L(820, 760, 920, 1000), C.b, 14), S(L(820, 760, 806, 740), C.y, 6)), .45, .7], [G(tx(540, 960, '?', 140, C.p)), .7, .95]],
+  chedalu: () => [[G(rect(340, 700, 400, 520, C.w, 7), S(Ci(460, 840, 34), C.w, 5), S(Ci(630, 980, 44), C.w, 5), S(Ci(480, 1110, 28), C.w, 5)), 0, .45], [G(bug(560, 820, 26, C.y), bug(420, 990, 26, C.y), bug(650, 1150, 26, C.y)), .45, .95]],
+  phalitham: () => [[G(tx(540, 960, '0', 360, C.w)), 0, .45], [G(cross(540, 960, 200, C.r, 12)), .45, .7], [G(man(860, 1400, 170, 'think', C.w, 'sad')), .7, .95]],
+  baby: () => [[G(S(E(540, 1150, 220, 120), C.w, 7), S(Ci(540, 950, 110), C.w, 7), S(E(540, 1000, 30, 22), C.w, 5), S(L(500, 930, 520, 920), C.w, 5), S(L(560, 920, 580, 930), C.w, 5)), 0, .5], [G(drop(470, 990, 16), drop(610, 990, 16), tx(800, 780, 'ఉవ్వా!', 70, C.y)), .5, .95]],
+  kotthem: () => [[G(man(540, 1400, 280, 'hips', C.w, 'smile')), 0, .4], [G(rock(250, 1400, 90, C.v), rock(830, 1400, 80, C.v), tx(250, 1220, 'కష్టం', 44, C.v)), .4, .7], [G(tx(540, 760, 'కొత్తేం కాదు', 70, C.y)), .7, .95]],
+  komma: () => [[G(tree(540, 1400, 420)), 0, .45], [G(kite(620, 920, 70, C.p), S(L(400, 900, 700, 940), C.o, 6)), .45, .75], [G(cross(860, 760, 40, C.r, 8)), .75, .95]],
+  gaalipatam: () => [[G(cloud(260, 800, 90), cloud(820, 640, 80)), 0, .3], [G(kite(620, 760, 90, C.y), S(B([620, 960], [500, 1150], [420, 1250], [380, 1320]), C.w, 3)), .3, .6], [G(man(330, 1400, 200, 'up', C.w, 'smile'), bird(860, 900, 30), bird(780, 960, 22)), .6, .95]],
+  plusminus: () => [[G(tx(330, 900, '+', 260, C.g), tx(760, 900, '−', 260, C.r)), 0, .45], [G(book(540, 1340, 160, C.y), tx(540, 1150, 'అనుభవం', 60, C.y)), .45, .95]],
+  nerchuko: () => [[G(...[0, 1, 2, 3, 4].map(i => S(P([[150 + i * 160, 1400 - i * 120], [310 + i * 160, 1400 - i * 120], [310 + i * 160, 1280 - i * 120]]), C.w, 6))), 0, .45], [G(man(560, 1150, 200, 'walk', C.w, 'smile'), book(470, 1080, 40, C.y)), .45, .8], [G(star(920, 650, 26)), .8, .95]],
+  gelupu: () => [[G(road(C.o)), 0, .4], [G(trophy(590, 880, 70)), .4, .65], [G(man(420, 1400, 220, 'up', C.w, 'smile'), star(260, 700, 24), star(820, 700, 24)), .65, .95]],
+};
+
+// ---------- scenes from data ----------
+const SC = [];
+D.scenes.forEach((s, k) => { R = rng(k * 97 + 5); const d = s.b - s.a, groups = LIB[s.key]();
+  const items = []; groups.forEach(([g, f0, f1]) => items.push(...seq(g, s.a + d * f0 + 0.05, s.a + d * f1)));
+  SC.push({ t0: s.a, t1: s.b, items }); });
+
+// ---------- chalk texture ----------
+const grainC = document.createElement('canvas'); grainC.width = 512; grainC.height = 512;
+{ const g = grainC.getContext('2d'), im = g.createImageData(512, 512), r = rng(3);
+  for (let i = 0; i < im.data.length; i += 4) { const v = r(); im.data[i] = im.data[i + 1] = im.data[i + 2] = 255; im.data[i + 3] = v < 0.18 ? 40 : 150 + v * 105; } g.putImageData(im, 0, 0); }
+let grainPat;
+const board = mk();
+{ const b = board.getContext('2d'), g = b.createLinearGradient(0, 0, W, H); g.addColorStop(0, '#24342b'); g.addColorStop(1, '#17221c'); b.fillStyle = g; b.fillRect(0, 0, W, H);
+  const r = rng(11); for (let i = 0; i < 60; i++) { const x = r() * W, y = r() * H, rr = 80 + r() * 300, gg = b.createRadialGradient(x, y, 0, x, y, rr); gg.addColorStop(0, `rgba(230,240,230,${0.018 + r() * 0.03})`); gg.addColorStop(1, 'rgba(0,0,0,0)'); b.fillStyle = gg; b.fillRect(x - rr, y - rr, 2 * rr, 2 * rr); }
+  for (let i = 0; i < 26; i++) { b.save(); b.translate(r() * W, r() * H); b.rotate((r() - 0.5) * 0.6); b.fillStyle = `rgba(230,240,230,${0.015 + r() * 0.02})`; b.fillRect(-200, -30, 400 + r() * 300, 60); b.restore(); }
+  const im = b.getImageData(0, 0, W, H); for (let i = 0; i < im.data.length; i += 4) { const n = (r() - 0.5) * 14; im.data[i] += n; im.data[i + 1] += n; im.data[i + 2] += n; } b.putImageData(im, 0, 0);
+  const v = b.createRadialGradient(W / 2, H / 2, H * 0.3, W / 2, H / 2, H * 0.72); v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, 'rgba(0,0,0,0.5)'); b.fillStyle = v; b.fillRect(0, 0, W, H);
+  const fw = 26, wood = b.createLinearGradient(0, 0, W, 0); wood.addColorStop(0, '#6b4424'); wood.addColorStop(0.5, '#8a5a32'); wood.addColorStop(1, '#5e3b1f');
+  b.fillStyle = wood; b.fillRect(0, 0, W, fw); b.fillRect(0, H - fw - 14, W, fw + 14); b.fillRect(0, 0, fw, H); b.fillRect(W - fw, 0, fw, H);
+  b.fillStyle = 'rgba(0,0,0,0.35)'; b.fillRect(fw, fw, W - 2 * fw, 6); b.fillRect(fw, fw, 6, H - 2 * fw);
+  b.fillStyle = '#f4f1e8'; b.fillRect(820, H - fw - 26, 70, 14); b.fillStyle = '#ffe27a'; b.fillRect(910, H - fw - 24, 50, 12);
+  // chalk divider under the lyric area
+  b.strokeStyle = 'rgba(244,241,232,0.35)'; b.lineWidth = 4; b.setLineDash([26, 14]); b.beginPath(); b.moveTo(120, 500); b.lineTo(960, 503); b.stroke(); b.setLineDash([]); }
+
+// ---------- drawing ----------
+let tip = null;
+function drawItems(ctx, items, t, full) {
+  for (const it of items) {
+    const f = full ? 1 : cl((t - it.t0) / (it.t1 - it.t0)); if (f <= 0) continue;
+    if (it.text) {
+      ctx.save(); ctx.font = `${it.size}px ${/[ఀ-౿]/.test(it.text) ? 'Rama' : 'PB'}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      const tw = ctx.measureText(it.text).width; const x0 = it.x - tw / 2 - 10;
+      ctx.beginPath(); ctx.rect(x0, it.y - it.size, (tw + 20) * f, it.size * 2); ctx.clip();
+      ctx.fillStyle = it.col; ctx.strokeStyle = it.col; ctx.lineWidth = 3; ctx.strokeText(it.text, it.x, it.y); ctx.fillText(it.text, it.x, it.y); ctx.restore();
+      if (f < 1 && !full) tip = [x0 + (tw + 20) * f, it.y + it.size * 0.2];
+      continue;
+    }
+    const p = it.pts; let tot = 0; const seg = [0]; for (let i = 1; i < p.length; i++) { tot += Math.hypot(p[i][0] - p[i - 1][0], p[i][1] - p[i - 1][1]); seg.push(tot); }
+    const lim = tot * f; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    const pass = (dx, dy, w, a) => { ctx.globalAlpha = a; ctx.strokeStyle = it.col; ctx.lineWidth = w; ctx.beginPath(); ctx.moveTo(p[0][0] + dx, p[0][1] + dy); let last = p[0];
+      for (let i = 1; i < p.length; i++) { if (seg[i] <= lim) { ctx.lineTo(p[i][0] + dx, p[i][1] + dy); last = p[i]; } else { const k = (lim - seg[i - 1]) / (seg[i] - seg[i - 1] || 1); last = [p[i - 1][0] + (p[i][0] - p[i - 1][0]) * k, p[i - 1][1] + (p[i][1] - p[i - 1][1]) * k]; ctx.lineTo(last[0] + dx, last[1] + dy); break; } }
+      ctx.stroke(); return last; };
+    const ww = it.w * 1.45; const last = pass(0, 0, ww, 0.95); pass(1.8, -1.4, ww * 0.55, 0.45); pass(-1.6, 1.7, ww * 0.45, 0.35); ctx.globalAlpha = 1;
+    if (f < 1 && !full) tip = last;
+  }
+}
+function chalkify(ctx) { ctx.save(); ctx.globalCompositeOperation = 'destination-in'; ctx.fillStyle = grainPat; ctx.fillRect(0, 0, W, H); ctx.restore(); }
+function drawScene(ctx, s, t, full) { ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; ctx.clearRect(0, 0, W, H); drawItems(ctx, s.items, t, full); chalkify(ctx); }
+
+// ---------- lyrics: top area, medium size, words fill yellow-orange as sung ----------
+const FONT = D.font === 'te' ? 'Rama' : 'PB', FS = D.font === 'te' ? 80 : 64, MAXW = 900, LH = D.font === 'te' ? 112 : 92;
+function layout(str, fs = FS) { TX.font = `${fs}px ${FONT}`; const ws = str.split(' '), rows = [[]]; let w = 0; const sp = TX.measureText(' ').width;
+  ws.forEach(word => { const ww = TX.measureText(word).width; if (rows[rows.length - 1].length && w + sp + ww > MAXW) { rows.push([]); w = 0; } const r = rows[rows.length - 1]; w += (r.length ? sp : 0) + ww; r.push(word); });
+  // balance two rows
+  if (rows.length >= 2 && ws.length > 2) { let best = null; for (let k = 1; k < ws.length; k++) { const a = TX.measureText(ws.slice(0, k).join(' ')).width, b = TX.measureText(ws.slice(k).join(' ')).width; if (a <= MAXW && b <= MAXW) { const d = Math.abs(a - b); if (!best || d < best[0]) best = [d, k]; } } if (best) return [ws.slice(0, best[1]), ws.slice(best[1])]; }
+  return rows; }
+let LINES = []; const buildLines = () => LINES = D.lines.map(l => { let fs = FS, rows = layout(l.t); while (rows.length > 2 && fs > FS * 0.75) { fs -= 2; rows = layout(l.t, fs); } const tot = l.t.replace(/ /g, '').length; let acc = 0; const words = [];
+  rows.forEach((r, ri) => r.forEach(w => { words.push({ w, ri, f0: acc / tot, f1: (acc + w.length) / tot }); acc += w.length; })); return { ...l, rows, words, fs }; });
+function lyric(t) {
+  TX.setTransform(1, 0, 0, 1, 0, 0); TX.clearRect(0, 0, W, H);
+  let li = -1; for (let k = 0; k < LINES.length; k++) if (t >= LINES[k].a - 0.15) li = k;
+  const L = LINES[li]; if (!L || t > L.b + 0.6) return;
+  const nx = LINES[li + 1], end = nx ? Math.min(L.b + 0.6, nx.a - 0.15) : L.b + 0.6;
+  const inA = ease((t - (L.a - 0.15)) / 0.3), out = ease((end - t) / 0.2);
+  TX.font = `${L.fs}px ${FONT}`; TX.textBaseline = 'middle'; TX.textAlign = 'left';
+  const sp = TX.measureText(' ').width, n = L.rows.length, y0 = 300 - (n - 1) * LH / 2;
+  const p = cl((t - L.a) / Math.max(L.b - L.a - 0.1, 0.3));
+  L.rows.forEach((r, ri) => { const rw = TX.measureText(r.join(' ')).width; let x = W / 2 - rw / 2; const y = y0 + ri * LH;
+    L.words.filter(w => w.ri === ri).forEach((w, k) => { const ww = TX.measureText(w.w).width, fill = cl((p - w.f0) / Math.max(w.f1 - w.f0, 1e-3));
+      const g = TX.createLinearGradient(x, 0, x + ww, 0), fp = fill;
+      if (fp <= 0) { g.addColorStop(0, C.w); g.addColorStop(1, C.w); }
+      else if (fp >= 1) { g.addColorStop(0, '#FFE45C'); g.addColorStop(1, '#FF9A1F'); }
+      else { g.addColorStop(0, '#FFE45C'); g.addColorStop(Math.max(fp - 0.05, 0), '#FFB020'); g.addColorStop(fp, '#FF8A00'); g.addColorStop(Math.min(fp + 0.001, 1), C.w); g.addColorStop(1, C.w); }
+      TX.fillStyle = g; TX.strokeStyle = g; TX.lineWidth = 3; TX.lineJoin = 'round'; TX.strokeText(w.w, x, y); TX.fillText(w.w, x, y);
+      TX.globalAlpha = 0.3; TX.fillText(w.w, x + 1.5, y - 1); TX.globalAlpha = 1; x += ww + sp; }); });
+  // chalk-writing reveal of the line
+  const rev = cl((t - (L.a - 0.15)) / 0.45);
+  if (rev < 1) { TX.save(); TX.globalCompositeOperation = 'destination-in'; TX.fillStyle = '#000'; TX.fillRect(0, 0, 60 + (W - 60) * ease(rev), H); TX.restore(); tip = [60 + (W - 60) * ease(rev) - 40, y0 + 20]; }
+  chalkify(TX);
+  X.globalAlpha = Math.min(inA, out); X.drawImage(txt, 0, 0); X.globalAlpha = 1;
+}
+function chalkStick(p) {
+  if (!p) return; X.save(); X.translate(p[0], p[1]); X.rotate(-0.7);
+  X.shadowColor = 'rgba(0,0,0,0.5)'; X.shadowBlur = 12; X.shadowOffsetX = 8; X.shadowOffsetY = 10;
+  X.fillStyle = '#f7f4ea'; X.beginPath(); X.roundRect(-6, -2, 26, 110, 6); X.fill();
+  X.shadowColor = 'transparent'; X.fillStyle = 'rgba(0,0,0,0.12)'; X.fillRect(10, 4, 8, 100);
+  X.fillStyle = '#c98f6a'; X.beginPath(); X.ellipse(8, 112, 34, 24, 0, 0, 7); X.fill(); X.beginPath(); X.ellipse(-10, 92, 16, 22, 0.3, 0, 7); X.fill();
+  X.fillStyle = '#b57a57'; X.beginPath(); X.ellipse(24, 100, 14, 20, -0.3, 0, 7); X.fill();
+  X.restore();
+}
+function eraser(x, y) {
+  X.save(); X.translate(x, y); X.rotate(0.12);
+  X.shadowColor = 'rgba(0,0,0,0.5)'; X.shadowBlur = 16; X.shadowOffsetY = 10;
+  X.fillStyle = '#8a5a32'; X.beginPath(); X.roundRect(-90, -55, 180, 70, 10); X.fill();
+  X.shadowColor = 'transparent'; X.fillStyle = '#d9d3c4'; X.fillRect(-90, 10, 180, 30); X.fillStyle = 'rgba(255,255,255,0.4)'; X.fillRect(-90, 34, 180, 6);
+  X.restore();
+}
+const dust = Array.from({ length: 60 }, (_, i) => { const r = rng(500 + i); return [r(), r(), r(), r()]; });
+// small chalk song tag in the bottom-left of the drawing area
+function tag() { if (!D.title) return; X.save(); X.font = '40px PB'; X.fillStyle = 'rgba(244,241,232,0.55)'; X.textAlign = 'center'; X.fillText('♪ ' + D.title + ' ♪', W / 2, 1520); X.restore(); }
+
+window.render = function (t) {
+  tip = null; X.setTransform(1, 0, 0, 1, 0, 0); X.globalAlpha = 1;
+  X.drawImage(board, 0, 0); tag();
+  const k = SC.findIndex(s => t >= s.t0 && t < s.t1); const i = k < 0 ? (t < SC[0].t0 ? -1 : SC.length - 1) : k, s = SC[i];
+  if (i > 0) { drawScene(GXc, SC[i - 1], t, true); X.globalAlpha = 0.04; X.drawImage(ghost, 0, 0); X.globalAlpha = 1; }
+  if (s) {
+    drawScene(LX, s, t, false);
+    const ew = 0.5;
+    if (i < SC.length - 1 && t > s.t1 - ew) {
+      const u = ease((t - (s.t1 - ew)) / ew), ex = -150 + u * (W + 300);
+      LX.save(); LX.globalCompositeOperation = 'destination-out'; LX.fillStyle = 'rgba(0,0,0,0.93)'; LX.fillRect(0, 520, ex, 1000); LX.restore();
+      X.drawImage(layer, 0, 0);
+      for (let j = 0; j < 4; j++) { const yy = 640 + j * 230 + 50 * Math.sin(u * 12 + j); eraser(ex, yy); }
+      X.fillStyle = 'rgba(240,240,230,0.5)';
+      dust.forEach(([a, b, c, d]) => { const dx = ex - 40 - a * 160, dy = 600 + b * 850 + (u * 80) * c; X.globalAlpha = 0.25 * (1 - a); X.beginPath(); X.arc(dx, dy, 1.5 + d * 3, 0, 7); X.fill(); });
+      X.globalAlpha = 1; tip = null;
+    } else X.drawImage(layer, 0, 0);
+  }
+  lyric(t);
+  chalkStick(tip);
+  if (t < 0.3) { X.fillStyle = `rgba(0,0,0,${1 - ease(t / 0.3)})`; X.fillRect(0, 0, W, H); }
+  if (t > TOTAL - 0.7) { X.fillStyle = `rgba(0,0,0,${ease((t - (TOTAL - 0.7)) / 0.7)})`; X.fillRect(0, 0, W, H); }
+};
+window.__ready = Promise.all([document.fonts.load('80px Rama', 'చలో'), document.fonts.load('64px PB', 'Chalo')]).then(() => { grainPat = X.createPattern(grainC, 'repeat'); buildLines(); return true; });
+</script></body></html>
