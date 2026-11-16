@@ -1,4 +1,4 @@
-"""Swap the male / female faces in the song photos with the user's own photos (inswapper_128) + GFPGAN v1.4 face restore.
+"""Swap the male / female faces in the song photos with the user's own photos (inswapper_128) + CodeFormer face restore (sharp natural eyes; GFPGAN left grey/blurred eyes).
 Writes <scratchpad>/song/swap/<name>.png ; build.py uses these when present."""
 import os, cv2, numpy as np, torch, insightface
 from insightface.app import FaceAnalysis
@@ -8,7 +8,8 @@ S = "/tmp/claude-0/-home-user-fortesting/31472ba1-8ea5-51fc-a7e6-64ea60291e16/sc
 os.makedirs(S + "swap", exist_ok=True)
 app = FaceAnalysis(name="buffalo_l", providers=["CPUExecutionProvider"]); app.prepare(ctx_id=-1, det_size=(640, 640))
 swapper = insightface.model_zoo.get_model(S + "model/inswapper_128.onnx", providers=["CPUExecutionProvider"])
-gfp = ModelLoader().load_from_file(S + "model/GFPGANv1.4.pth").eval()
+import spandrel_extra_arches; spandrel_extra_arches.install()
+cf = ModelLoader().load_from_file(S + "model/codeformer.pth").eval()   # github.com/sczhou/CodeFormer v0.1.0
 big = lambda fs: max(fs, key=lambda f: (f.bbox[2] - f.bbox[0]) * (f.bbox[3] - f.bbox[1]))
 def source(files):   # average identity over several photos of the same person
     fs = [big(app.get(cv2.imread(U + f))) for f in files]
@@ -17,14 +18,14 @@ def source(files):   # average identity over several photos of the same person
 MALE = source(["13cfe65a-image.jpg", "09e70d6e-image.jpg", "4ece7045-image.jpg"])   # biggest face in each selfie = the user
 FEMALE = source(["b2805a1c-image.jpg", "6bbbf1de-image.jpg", "adc158f9-image.jpg"])  # Diwali photos
 T512 = np.array([[192.98138, 239.94708], [318.90277, 240.1936], [256.63416, 314.01935], [201.26117, 371.41043], [313.08905, 371.15118]], np.float32)
-def restore(img, face, w=0.6):
+def restore(img, face, fid=0.7):
     M = cv2.estimateAffinePartial2D(face.kps.astype(np.float32), T512)[0]
     crop = cv2.warpAffine(img, M, (512, 512), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_REFLECT)
     x = torch.from_numpy(crop[:, :, ::-1].copy()).permute(2, 0, 1).float().unsqueeze(0) / 255
-    with torch.no_grad(): y = gfp((x - 0.5) / 0.5)
+    with torch.no_grad(): y = cf.model((x - 0.5) / 0.5, weight=fid)   # fidelity: higher = closer to the swapped face
     y = y[0] if isinstance(y, (tuple, list)) else y
     y = ((y.clamp(-1, 1) + 1) / 2)[0].permute(1, 2, 0).numpy()[:, :, ::-1] * 255
-    out = cv2.addWeighted(y.astype(np.float32), w, crop.astype(np.float32), 1 - w, 0)
+    out = y.astype(np.float32)
     Mi = cv2.invertAffineTransform(M); H, W = img.shape[:2]
     back = cv2.warpAffine(out, Mi, (W, H), flags=cv2.INTER_LINEAR)
     # blend only inside the real face outline (106 landmarks), so profile faces don't get a ghost face beside them
