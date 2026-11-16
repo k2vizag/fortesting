@@ -1,0 +1,243 @@
+{
+ "total": 59.6,
+ "font": "en",
+ "lines": [
+  {
+   "a": 0.0,
+   "b": 2.88,
+   "t": "Yerushanaga kosam mattini thavvithe.."
+  },
+  {
+   "a": 2.88,
+   "b": 5.52,
+   "t": "Ekanga thagilina lanke bindhelaaga"
+  },
+  {
+   "a": 5.52,
+   "b": 8.4,
+   "t": "Entha sakkagunnaave.. Lachchimi,"
+  },
+  {
+   "a": 8.4,
+   "b": 10.86,
+   "t": "Entha sakkagunnaave"
+  },
+  {
+   "a": 10.86,
+   "b": 13.72,
+   "t": "Sinthasettu ekki siguru koyyabothe.."
+  },
+  {
+   "a": 13.72,
+   "b": 16.42,
+   "t": "Chethiki andhina sandhamaamalaaga"
+  },
+  {
+   "a": 16.42,
+   "b": 19.34,
+   "t": "Entha sakkagunnaave.. Lachchimi,"
+  },
+  {
+   "a": 19.34,
+   "b": 21.18,
+   "t": "Entha sakkagunnaave"
+  },
+  {
+   "a": 21.4,
+   "b": 24.62,
+   "t": "Mallepoola maddhe muddhabanthilaaga"
+  },
+  {
+   "a": 24.62,
+   "b": 27.26,
+   "t": "Entha sakkagunnaave.."
+  },
+  {
+   "a": 27.26,
+   "b": 30.3,
+   "t": "Matthaidhuva mello pasukukommulaaga"
+  },
+  {
+   "a": 30.3,
+   "b": 32.78,
+   "t": "Entha sakkagunnaave.."
+  },
+  {
+   "a": 32.78,
+   "b": 35.22,
+   "t": "Sukkala seera kattukunna vennelalaaga"
+  },
+  {
+   "a": 35.22,
+   "b": 37.48,
+   "t": "Entha sakkagunnaave.."
+  },
+  {
+   "a": 37.48,
+   "b": 40.36,
+   "t": "Yerushanaga kosam mattini thavvithe.."
+  },
+  {
+   "a": 40.36,
+   "b": 43.0,
+   "t": "Ekanga thagilina lanke bindhelaaga"
+  },
+  {
+   "a": 43.0,
+   "b": 45.879999999999995,
+   "t": "Entha sakkagunnaave.. Lachchimi,"
+  },
+  {
+   "a": 45.879999999999995,
+   "b": 48.339999999999996,
+   "t": "Entha sakkagunnaave"
+  },
+  {
+   "a": 48.339999999999996,
+   "b": 51.199999999999996,
+   "t": "Sinthasettu ekki siguru koyyabothe.."
+  },
+  {
+   "a": 51.199999999999996,
+   "b": 53.9,
+   "t": "Chethiki andhina sandhamaamalaaga"
+  },
+  {
+   "a": 53.9,
+   "b": 56.81999999999999,
+   "t": "Entha sakkagunnaave.. Lachchimi,"
+  },
+  {
+   "a": 56.81999999999999,
+   "b": 59.4,
+   "t": "Entha sakkagunnaave"
+  }
+ ],
+ "shots": [
+  {
+   "a": 0.0,
+   "src": "file:///tmp/claude-0/-home-user-fortesting/31472ba1-8ea5-51fc-a7e6-64ea60291e16/scratchpad/song/img/peanut.jpg",
+   "fy": 45,
+   "zin": 1,
+   "b": 2.88
+  },
+  {
+   "a": 2.88,
+   "src": "file:///tmp/claude-0/-home-user-fortesting/31472ba1-8ea5-51fc-a7e6-64ea60291e16/scratchpad/song/img/pot.jpg",
+   "fy": 40,
+   "zin": 1,
+   "b": 5.52
+  },
+  {
+   "a": 5.52,
+   "src": "file:///tmp/claude-0/-home-user-fortesting/31472ba1-8ea5-51fc-a7e6-64ea60291e16/scratchpad/song/img/f_lachimi.jpg",
+   "fy": 15,
+   "zin": 0,
+   "b": 10.86
+  },
+  {
+   "a": 10.86,
+   "src": "file:///tmp/claude-0/-home-user-fortesting/31472ba1-8ea5-51fc-a7e6-64ea60291e16/scratchpad/song/img/moonman.jpg",
+   "fy": 20,
+   "zin": 1,
+   "b": 16.42
+  },
+  {
+   "a": 16.42,
+   "src": "file:///tmp/claude-0/-home-user-fortesting/31472ba1-8ea5-51fc-a7e6-64ea60291e16/scratchpad/song/img/f_moon.jpg",
+   "fy": 15,
+   "zin": 0,
+   "b": 21.4
+  },
+  {
+   "a": 21.4,
+   "src": "file:///tmp/claude-0/-home-user-fortesting/31472ba1-8ea5-51fc-a7e6-64ea60291e16/scratchpad/song/img/jasmine.jpg",
+   "fy": 50,
+   "zin": 1,
+   "b": 24.62
+  },
+  {
+   "a": 24.62,
+   "src": "file:///tmp/claude-0/-home-user-fortesting/31472ba1-8ea5-51fc-a7e6-64ea60291e16/scratchpad/song/img/f_purple.jpg",
+   "fy": 20,
+   "zin": 0,
+   "b": 27.26
+  },
+  {
+   "a": 27.26,
+   "src": "file:///tmp/claude-0/-home-user-fortesting/31472ba1-8ea5-51fc-a7e6-64ea60291e16/scratchpad/song/img/pasupu.jpg",
+   "fy": 35,
+   "zin": 1,
+   "b": 30.3
+  },
+  {
+   "a": 30.3,
+   "src": "file:///tmp/claude-0/-home-user-fortesting/31472ba1-8ea5-51fc-a7e6-64ea60291e16/scratchpad/song/img/f_yellow.jpg",
+   "fy": 15,
+   "zin": 0,
+   "b": 32.78
+  },
+  {
+   "a": 32.78,
+   "src": "file:///tmp/claude-0/-home-user-fortesting/31472ba1-8ea5-51fc-a7e6-64ea60291e16/scratchpad/song/img/moonsaree.jpg",
+   "fy": 30,
+   "zin": 1,
+   "b": 35.22
+  },
+  {
+   "a": 35.22,
+   "src": "file:///tmp/claude-0/-home-user-fortesting/31472ba1-8ea5-51fc-a7e6-64ea60291e16/scratchpad/song/img/f_white.jpg",
+   "fy": 15,
+   "zin": 0,
+   "b": 37.48
+  },
+  {
+   "a": 37.48,
+   "src": "file:///tmp/claude-0/-home-user-fortesting/31472ba1-8ea5-51fc-a7e6-64ea60291e16/scratchpad/song/img/peanut.jpg",
+   "fy": 45,
+   "zin": 1,
+   "b": 40.36
+  },
+  {
+   "a": 40.36,
+   "src": "file:///tmp/claude-0/-home-user-fortesting/31472ba1-8ea5-51fc-a7e6-64ea60291e16/scratchpad/song/img/pot.jpg",
+   "fy": 40,
+   "zin": 1,
+   "b": 43.0
+  },
+  {
+   "a": 43.0,
+   "src": "file:///tmp/claude-0/-home-user-fortesting/31472ba1-8ea5-51fc-a7e6-64ea60291e16/scratchpad/song/img/f_lachimi.jpg",
+   "fy": 15,
+   "zin": 0,
+   "b": 48.339999999999996
+  },
+  {
+   "a": 48.339999999999996,
+   "src": "file:///tmp/claude-0/-home-user-fortesting/31472ba1-8ea5-51fc-a7e6-64ea60291e16/scratchpad/song/img/moonman.jpg",
+   "fy": 20,
+   "zin": 1,
+   "b": 53.9
+  },
+  {
+   "a": 53.9,
+   "src": "file:///tmp/claude-0/-home-user-fortesting/31472ba1-8ea5-51fc-a7e6-64ea60291e16/scratchpad/song/img/f_moon.jpg",
+   "fy": 15,
+   "zin": 0,
+   "b": 59.6
+  }
+ ],
+ "images": [
+  "file:///tmp/claude-0/-home-user-fortesting/31472ba1-8ea5-51fc-a7e6-64ea60291e16/scratchpad/song/img/f_lachimi.jpg",
+  "file:///tmp/claude-0/-home-user-fortesting/31472ba1-8ea5-51fc-a7e6-64ea60291e16/scratchpad/song/img/f_moon.jpg",
+  "file:///tmp/claude-0/-home-user-fortesting/31472ba1-8ea5-51fc-a7e6-64ea60291e16/scratchpad/song/img/f_purple.jpg",
+  "file:///tmp/claude-0/-home-user-fortesting/31472ba1-8ea5-51fc-a7e6-64ea60291e16/scratchpad/song/img/f_white.jpg",
+  "file:///tmp/claude-0/-home-user-fortesting/31472ba1-8ea5-51fc-a7e6-64ea60291e16/scratchpad/song/img/f_yellow.jpg",
+  "file:///tmp/claude-0/-home-user-fortesting/31472ba1-8ea5-51fc-a7e6-64ea60291e16/scratchpad/song/img/jasmine.jpg",
+  "file:///tmp/claude-0/-home-user-fortesting/31472ba1-8ea5-51fc-a7e6-64ea60291e16/scratchpad/song/img/moonman.jpg",
+  "file:///tmp/claude-0/-home-user-fortesting/31472ba1-8ea5-51fc-a7e6-64ea60291e16/scratchpad/song/img/moonsaree.jpg",
+  "file:///tmp/claude-0/-home-user-fortesting/31472ba1-8ea5-51fc-a7e6-64ea60291e16/scratchpad/song/img/pasupu.jpg",
+  "file:///tmp/claude-0/-home-user-fortesting/31472ba1-8ea5-51fc-a7e6-64ea60291e16/scratchpad/song/img/peanut.jpg",
+  "file:///tmp/claude-0/-home-user-fortesting/31472ba1-8ea5-51fc-a7e6-64ea60291e16/scratchpad/song/img/pot.jpg"
+ ]
+}
