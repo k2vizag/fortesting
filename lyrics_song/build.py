@@ -1,7 +1,15 @@
 """Lyric video data: Telugu-script and English-letter (transliterated) versions -> data_te.json / data_en.json
-Full-screen photos, beat-synced Ken Burns, varied transitions, glass lyric card at the top."""
-import json, numpy as np
-I = "/tmp/claude-0/-home-user-fortesting/31472ba1-8ea5-51fc-a7e6-64ea60291e16/scratchpad/song/img/"
+Whole photo (never cropped) in a centred box over a blurred copy, smooth zoom + crossfades, glass lyric card at the top."""
+import json
+from PIL import Image
+U = "/root/.claude/uploads/31472ba1-8ea5-51fc-a7e6-64ea60291e16/"
+HQ = "/tmp/claude-0/-home-user-fortesting/31472ba1-8ea5-51fc-a7e6-64ea60291e16/scratchpad/song/hq/"
+# full-size originals; small screenshots are cropped + AI-upscaled by upscale.py; pot photo: burned-in caption cropped off
+SRC = {"peanut": U + "95fc2b4b-image.png", "moonman": U + "f34ab5e4-image.png", "jasmine": U + "b6f2920c-image.png",
+       "f_moon": U + "73f382a6-image.png", "moonsaree": U + "28c9b7ac-image.png", "pasupu": U + "d408a773-image.png",
+       "f_purple": U + "0e74cace-image.png", "pot": HQ + "pot.png",
+       "f_lachimi": HQ + "f_lachimi.png", "f_yellow": HQ + "f_yellow.png", "f_white": HQ + "f_white.png", "tamarind": HQ + "tamarind.png"}
+im = Image.open(U + "7400b341-image.png"); im.crop((0, 0, im.width, 1520)).convert("RGB").save(HQ + "pot.png")
 TOTAL = 59.6
 BEATS = [0.19, 0.91, 1.53, 2.23, 2.93, 3.6, 4.27, 4.97, 5.64, 6.32, 7.01, 7.64, 8.36, 9.06, 9.73, 10.43, 11.1, 11.77, 12.45, 13.12,
          13.84, 14.49, 15.19, 15.86, 16.53, 17.23, 17.9, 18.58, 19.27, 19.95, 20.64, 21.32, 21.99, 22.69, 23.36, 24.03, 24.73, 25.4,
@@ -28,15 +36,12 @@ L = [
 # second round (song repeats lines 1-2 + chorus); vary transitions so it doesn't feel copied
 REP = {"fade": "leak", "zoom": "whip", "whip": "zoom"}
 L += [(a + 37.48, b + 37.48, te, en, (s[0], s[1], s[2], REP.get(s[3], s[3]), s[4], s[5])) for a, b, te, en, s in L[:8]]
-# push the photo down (px) so faces sit below the lyric card; a blurred copy fills the top behind the card
-DY = {"peanut": 230, "pot": 200, "tamarind": 80, "moonman": 130, "moonsaree": 120, "pasupu": 300, "jasmine": 0,
-      "f_lachimi": 320, "f_white": 260, "f_purple": 320, "f_yellow": 320, "f_moon": 260}
 lines = {"te": [], "en": []}; shots = []
-snap = lambda t: min(BEATS, key=lambda b: abs(b - t)) if min(abs(b - t) for b in BEATS) < 0.2 else t
 for a, b, te, en, (img, fx, fy, tr, her, punch) in L:
     lines["te"].append({"a": a, "b": b, "t": te}); lines["en"].append({"a": a, "b": b, "t": en})
-    shots.append({"a": round(snap(a), 2) if a > 0 else 0, "src": "file://" + I + img + ".jpg", "fx": fx, "fy": fy, "dy": DY.get(img, 0),
-                  "tr": tr, "her": her, "punch": punch})
+    if shots and shots[-1]["img"] == img: continue          # same photo continues (no cut)
+    w, h = Image.open(SRC[img]).size
+    shots.append({"a": a, "img": img, "src": "file://" + SRC[img], "w": w, "h": h, "her": her})
 for k, s in enumerate(shots): s["b"] = shots[k + 1]["a"] if k + 1 < len(shots) else TOTAL
 lines["te"][-1]["b"] = lines["en"][-1]["b"] = 59.4
 for lang in ("te", "en"):
