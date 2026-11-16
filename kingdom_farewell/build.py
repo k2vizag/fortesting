@@ -30,8 +30,8 @@ SHOTS = [
     ("c03", 3.0, 5.6, 43.9),     # Chintu holds his hand, looks up
     ("c08", 5.0, 6.6, 45.89),    # soldiers salute   ('దండాలయ్యా…')
     ("c05", 7.0, 10.0, 48.51),   # the people fold their hands
-    ("c10", 0.0, 3.6, 51.74),    # walking away with Chintu ('మాతో నువ్వుండాలయ్యా')
-    ("c10", 5.6, 9.6, END),      # the palace left behind – fade out
+    ("c03", 0.0, 3.0, 51.74),    # walks out towards us, palace behind (leaving, not going in) ('మాతో నువ్వుండాలయ్యా')
+    ("c05", 4.0, 7.0, END),      # walks out towards us, the palace behind him – fade out
 ]
 XF = 0.35
 ins, fc = [], []
