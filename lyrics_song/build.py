@@ -42,17 +42,18 @@ L = [
 REP = {"fade": "leak", "zoom": "whip", "whip": "zoom"}
 L += [(a + 37.48, b + 37.48, te, en, (s[0], s[1], s[2], REP.get(s[3], s[3]), s[4], s[5])) for a, b, te, en, s in L[:8]]
 lines = {"te": [], "en": []}; shots = []
-# repeated lyrics (2nd round): the user's real photos of her, 2-3 per line, no male photos (prepared by real.py)
+# repeated lyrics (2nd round): the user's real photos of her, each shown once, evenly spread (~2.8 s each), no male photos
 RD = HQ.replace("/hq/", "/real/")
-REAL = [["4771e5fb", "0d4b2cdd"], ["4c97b472", "13cfe65a"], ["6bbbf1de", "40b14343"], ["adc158f9", "4ece7045"],
-        ["b2805a1c", "4349b72b", "f39692e2"], ["4771e5fb", "13cfe65a"], ["0d4b2cdd", "6bbbf1de"], ["40b14343", "adc158f9"]]
+REAL = ["6bbbf1de", "4c97b472", "4ece7045", "40b14343", "f39692e2", "4349b72b", "b2805a1c", "4771e5fb"]   # one of each look (similar Diwali shots dropped)
+R0 = 37.48
 for i, (a, b, te, en, (img, fx, fy, tr, her, punch)) in enumerate(L):
     lines["te"].append({"a": a, "b": b, "t": te}); lines["en"].append({"a": a, "b": b, "t": en})
     if i >= 14:
-        ps = REAL[i - 14]; e = b if i < len(L) - 1 else TOTAL
-        for j, p in enumerate(ps):
-            w, h = Image.open(RD + p + ".jpg").size
-            shots.append({"a": a + (e - a) * j / len(ps), "img": p, "src": "file://" + RD + p + ".jpg", "w": w, "h": h, "her": 1, "xf": 0.35, "z0": 0.9})
+        if i == 14:
+            for j, p in enumerate(REAL):
+                w, h = Image.open(RD + p + ".jpg").size
+                shots.append({"a": round(R0 + (TOTAL - R0) * j / len(REAL), 2), "img": p, "src": "file://" + RD + p + ".jpg",
+                              "w": w, "h": h, "her": 1, "xf": 0.6, "z0": 0.88})
         continue
     if shots and shots[-1]["img"] == img: continue          # same photo continues (no cut)
     w, h = Image.open(SRC[img]).size
