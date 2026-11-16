@@ -1,0 +1,61 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<style>
+@font-face{font-family:TE9;src:url(../insurance/v2/fonts/TeluguCap900.ttf)}
+@font-face{font-family:TE8;src:url(../insurance/v2/fonts/TeluguCap800.ttf)}
+@font-face{font-family:PX;src:url(../insurance/v2/fonts/PopX.ttf)}
+@font-face{font-family:PB;src:url(../insurance/v2/fonts/PopB.ttf)}
+html,body{margin:0;width:1080px;height:1920px;overflow:hidden;background:#000}
+.abs{position:absolute}
+.bg{position:absolute;inset:-60px;background-size:cover;background-position:center;filter:blur(38px) brightness(.45) saturate(1.2)}
+.pic{position:absolute;left:0;top:560px;width:1080px;height:1360px;overflow:hidden}
+.pic img{position:absolute;left:0;top:0;width:1080px;height:1920px;object-fit:cover;transform-origin:50% 30%}
+.fadeT{position:absolute;left:0;right:0;top:560px;height:90px;background:linear-gradient(rgba(0,0,0,.55),rgba(0,0,0,0))}
+.panel{position:absolute;left:0;right:0;top:0;height:560px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:26px}
+.ln{position:relative;white-space:nowrap;line-height:1.35;padding:0 10px}
+.cur{font-size:96px}
+.nxt{font-size:52px;color:rgba(255,255,255,.55)}
+.base{color:#fff;text-shadow:0 4px 0 rgba(0,0,0,.45),0 0 22px rgba(0,0,0,.7)}
+.fill{position:absolute;left:0;top:0;overflow:hidden;white-space:nowrap;padding:0 10px}
+.fill span{background:linear-gradient(180deg,#FFF06A 0%,#FFC21A 45%,#FF7A00 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.te{font-family:TE9}.en{font-family:PX;letter-spacing:.5px}
+.nxt.en{font-family:PB}
+</style></head><body>
+<div class="bg" id="bgA"></div><div class="bg" id="bgB"></div>
+<div class="pic"><img id="imA"><img id="imB"></div><div class="fadeT"></div>
+<div class="panel"><div class="ln cur" id="cur"><span class="base" id="cb"></span><div class="fill" id="cf"><span id="cfs"></span></div></div>
+<div class="ln nxt" id="nxt"></div></div>
+<script>
+const D=window.__DATA__; const F=D.font; const IMG=D.images;
+document.querySelectorAll('.ln').forEach(e=>e.classList.add(F));
+const $=id=>document.getElementById(id);
+const clamp=x=>Math.max(0,Math.min(1,x));
+const ease=x=>x<.5?2*x*x:1-Math.pow(-2*x+2,2)/2;
+// image segments: [{a,b,src,fy}]
+function segAt(t){let i=0;for(let k=0;k<D.shots.length;k++) if(t>=D.shots[k].a) i=k; return i}
+function setImg(el,bg,s,lt,dur){ if(el.dataset.src!==s.src){el.src=s.src;el.dataset.src=s.src;bg.style.backgroundImage=`url(${s.src})`}
+  const p=clamp(lt/Math.max(dur,0.1)); const z=1.0+0.08*(s.zin?p:1-p);
+  el.style.objectPosition=`50% ${s.fy}%`; el.style.transform=`scale(${z}) translateY(${(s.pan||0)*p}px)`;}
+let lastLine=-1;
+function fit(el,max){el.style.transform='';const w=el.scrollWidth; return w>max? max/w:1}
+function render(t){
+  const i=segAt(t), s=D.shots[i], XF=0.35;
+  const n=D.shots[i+1];
+  setImg($('imA'),$('bgA'),s,t-s.a,s.b-s.a); $('imA').style.opacity=1; $('bgA').style.opacity=1;
+  if(n && t>n.a-XF){const k=ease(clamp((t-(n.a-XF))/XF)); setImg($('imB'),$('bgB'),n,0,n.b-n.a); $('imB').style.opacity=k;$('bgB').style.opacity=k;}
+  else {$('imB').style.opacity=0;$('bgB').style.opacity=0;}
+  // lyrics
+  let li=-1; for(let k=0;k<D.lines.length;k++) if(t>=D.lines[k].a-0.15) li=k;
+  if(li!==lastLine){lastLine=li;
+    const L=D.lines[li]; $('cb').textContent=L?L.t:''; $('cfs').textContent=L?L.t:'';
+    const N=D.lines[li+1]; $('nxt').textContent=N?N.t:'';
+    const c=$('cur'); c.style.transform=''; const sc=fit(c,1010); c.dataset.sc=sc;
+    const x=$('nxt'); x.style.transform=''; x.style.transform=`scale(${fit(x,1000)})`;}
+  const L=D.lines[li]; const c=$('cur');
+  if(L){const p=clamp((t-L.a)/(L.b-L.a)); $('cf').style.width=(c.scrollWidth*p)+'px';
+    const ap=clamp((t-L.a+0.15)/0.25); c.style.opacity=ap; c.style.transform=`scale(${c.dataset.sc*(0.92+0.08*ease(ap))})`;}
+  else {c.style.opacity=0}
+}
+window.render=render;
+window.__ready=Promise.all([document.fonts.ready,...IMG.map(u=>new Promise(r=>{const im=new Image();im.onload=r;im.onerror=r;im.src=u}))]).then(()=>true);
+</script></body></html>
