@@ -1,33 +1,45 @@
-"""Lyric video data: Telugu-script and English-letter (transliterated) versions -> data_te.json / data_en.json"""
-import json, sys
+"""Lyric video data: Telugu-script and English-letter (transliterated) versions -> data_te.json / data_en.json
+Full-screen photos, beat-synced Ken Burns, varied transitions, glass lyric card at the top."""
+import json, numpy as np
 I = "/tmp/claude-0/-home-user-fortesting/31472ba1-8ea5-51fc-a7e6-64ea60291e16/scratchpad/song/img/"
 TOTAL = 59.6
-# (start, end, telugu, english letters, image, focus-y %, zoom-in?)   timings from the song audio
+BEATS = [0.19, 0.91, 1.53, 2.23, 2.93, 3.6, 4.27, 4.97, 5.64, 6.32, 7.01, 7.64, 8.36, 9.06, 9.73, 10.43, 11.1, 11.77, 12.45, 13.12,
+         13.84, 14.49, 15.19, 15.86, 16.53, 17.23, 17.9, 18.58, 19.27, 19.95, 20.64, 21.32, 21.99, 22.69, 23.36, 24.03, 24.73, 25.4,
+         26.1, 26.77, 27.45, 28.14, 28.82, 29.49, 30.19, 30.86, 31.53, 32.23, 32.9, 33.6, 34.27, 34.95, 35.64, 36.32, 36.99, 37.69,
+         38.36, 39.06, 39.73, 40.43, 41.1, 41.77, 42.47, 43.12, 43.82, 44.49, 45.19, 45.84, 46.53, 47.23, 47.9, 48.58, 49.27, 49.95,
+         50.62, 51.32, 51.99, 52.69, 53.36, 54.06, 54.73, 55.4, 56.1, 56.75, 57.45, 58.14, 58.82, 59.49]   # librosa, ~89 bpm
+# (start, end, telugu, english letters, shot) ; shot = (image, focus-x %, focus-y %, transition, her?, punch-in?)
 L = [
- (0.00, 2.88, "యేరుశనగ కోసం మట్టిని తవ్వితే..", "Yerushanaga kosam mattini thavvithe..", "peanut", 45, 1),
- (2.88, 5.52, "ఏకంగ తగిలిన లంకె బిందెలాగ", "Ekanga thagilina lanke bindhelaaga", "pot", 40, 1),
- (5.52, 8.40, "ఎంత సక్కగున్నావే.. లచ్చిమి,", "Entha sakkagunnaave.. Lachchimi,", "f_lachimi", 15, 0),
- (8.40, 10.86, "ఎంత సక్కగున్నావే", "Entha sakkagunnaave", None, 0, 0),
- (10.86, 13.72, "సింతసెట్టు ఎక్కి సిగురు కొయ్యబోతె..", "Sinthasettu ekki siguru koyyabothe..", "moonman", 20, 1),
- (13.72, 16.42, "చేతికి అందిన సందమామలాగ", "Chethiki andhina sandhamaamalaaga", None, 0, 0),
- (16.42, 19.34, "ఎంత సక్కగున్నావే.. లచ్చిమి,", "Entha sakkagunnaave.. Lachchimi,", "f_moon", 15, 0),
- (19.34, 21.18, "ఎంత సక్కగున్నావే", "Entha sakkagunnaave", None, 0, 0),
- (21.40, 24.62, "మల్లెపూల మద్దె ముద్దబంతిలాగ", "Mallepoola maddhe muddhabanthilaaga", "jasmine", 50, 1),
- (24.62, 27.26, "ఎంత సక్కగున్నావే..", "Entha sakkagunnaave..", "f_purple", 20, 0),
- (27.26, 30.30, "మత్తైదువ మెళ్లో పసుకుకొమ్ములాగ", "Matthaidhuva mello pasukukommulaaga", "pasupu", 35, 1),
- (30.30, 32.78, "ఎంత సక్కగున్నావే..", "Entha sakkagunnaave..", "f_yellow", 15, 0),
- (32.78, 35.22, "సుక్కల సీర కట్టుకున్న వెన్నెలలాగ", "Sukkala seera kattukunna vennelalaaga", "moonsaree", 30, 1),
- (35.22, 37.48, "ఎంత సక్కగున్నావే..", "Entha sakkagunnaave..", "f_white", 15, 0),
+ (0.00, 2.88, "యేరుశనగ కోసం మట్టిని తవ్వితే..", "Yerushanaga kosam mattini thavvithe..", ("peanut", 50, 40, "fade", 0, 0)),
+ (2.88, 5.52, "ఏకంగ తగిలిన లంకె బిందెలాగ", "Ekanga thagilina lanke bindhelaaga", ("pot", 45, 55, "zoom", 0, 0)),
+ (5.52, 8.40, "ఎంత సక్కగున్నావే.. లచ్చిమి,", "Entha sakkagunnaave.. Lachchimi,", ("f_lachimi", 40, 30, "flash", 1, 0)),
+ (8.40, 10.86, "ఎంత సక్కగున్నావే", "Entha sakkagunnaave", ("f_lachimi", 42, 26, "punch", 1, 1)),
+ (10.86, 13.72, "సింతసెట్టు ఎక్కి సిగురు కొయ్యబోతె..", "Sinthasettu ekki siguru koyyabothe..", ("tamarind", 72, 40, "whip", 0, 0)),
+ (13.72, 16.42, "చేతికి అందిన సందమామలాగ", "Chethiki andhina sandhamaamalaaga", ("moonman", 55, 35, "zoom", 0, 0)),
+ (16.42, 19.34, "ఎంత సక్కగున్నావే.. లచ్చిమి,", "Entha sakkagunnaave.. Lachchimi,", ("f_white", 50, 30, "flash", 1, 0)),
+ (19.34, 21.18, "ఎంత సక్కగున్నావే", "Entha sakkagunnaave", ("f_white", 52, 22, "punch", 1, 1)),
+ (21.40, 24.62, "మల్లెపూల మద్దె ముద్దబంతిలాగ", "Mallepoola maddhe muddhabanthilaaga", ("jasmine", 50, 50, "leak", 0, 0)),
+ (24.62, 27.26, "ఎంత సక్కగున్నావే..", "Entha sakkagunnaave..", ("f_purple", 45, 25, "flash", 1, 0)),
+ (27.26, 30.30, "మత్తైదువ మెళ్లో పసుకుకొమ్ములాగ", "Matthaidhuva mello pasukukommulaaga", ("pasupu", 50, 45, "whip", 0, 0)),
+ (30.30, 32.78, "ఎంత సక్కగున్నావే..", "Entha sakkagunnaave..", ("f_yellow", 45, 25, "flash", 1, 0)),
+ (32.78, 35.22, "సుక్కల సీర కట్టుకున్న వెన్నెలలాగ", "Sukkala seera kattukunna vennelalaaga", ("moonsaree", 50, 40, "zoom", 0, 0)),
+ (35.22, 37.48, "ఎంత సక్కగున్నావే..", "Entha sakkagunnaave..", ("f_moon", 45, 30, "flash", 1, 0)),
 ]
-L += [(a + 37.48, b + 37.48, *r) for a, b, *r in L[:8]]   # second round: lines 1-2 + chorus, as in the song
+# second round (song repeats lines 1-2 + chorus); vary transitions so it doesn't feel copied
+REP = {"fade": "leak", "zoom": "whip", "whip": "zoom"}
+L += [(a + 37.48, b + 37.48, te, en, (s[0], s[1], s[2], REP.get(s[3], s[3]), s[4], s[5])) for a, b, te, en, s in L[:8]]
+# push the photo down (px) so faces sit below the lyric card; a blurred copy fills the top behind the card
+DY = {"peanut": 230, "pot": 200, "tamarind": 80, "moonman": 130, "moonsaree": 120, "pasupu": 300, "jasmine": 0,
+      "f_lachimi": 320, "f_white": 260, "f_purple": 320, "f_yellow": 320, "f_moon": 260}
 lines = {"te": [], "en": []}; shots = []
-for a, b, te, en, img, fy, zin in L:
+snap = lambda t: min(BEATS, key=lambda b: abs(b - t)) if min(abs(b - t) for b in BEATS) < 0.2 else t
+for a, b, te, en, (img, fx, fy, tr, her, punch) in L:
     lines["te"].append({"a": a, "b": b, "t": te}); lines["en"].append({"a": a, "b": b, "t": en})
-    if img: shots.append({"a": a, "src": "file://" + I + img + ".jpg", "fy": fy, "zin": zin})
+    shots.append({"a": round(snap(a), 2) if a > 0 else 0, "src": "file://" + I + img + ".jpg", "fx": fx, "fy": fy, "dy": DY.get(img, 0),
+                  "tr": tr, "her": her, "punch": punch})
 for k, s in enumerate(shots): s["b"] = shots[k + 1]["a"] if k + 1 < len(shots) else TOTAL
 lines["te"][-1]["b"] = lines["en"][-1]["b"] = 59.4
-imgs = sorted({s["src"] for s in shots})
-for lang, font in [("te", "te"), ("en", "en")]:
-    json.dump({"total": TOTAL, "font": font, "lines": lines[lang], "shots": shots, "images": imgs},
+for lang in ("te", "en"):
+    json.dump({"total": TOTAL, "font": lang, "lines": lines[lang], "shots": shots, "beats": BEATS},
               open(f"data_{lang}.json", "w"), ensure_ascii=False, indent=1)
 print(len(lines["te"]), "lines", len(shots), "shots")
