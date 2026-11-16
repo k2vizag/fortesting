@@ -18,17 +18,17 @@ html,body{margin:0;width:1080px;height:1920px;overflow:hidden;background:#000}
 #flash{position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at 50% 45%,#fff8e6 0%,#ffe2a8 45%,rgba(255,200,120,.0) 100%);opacity:0}
 #leak{position:absolute;inset:-200px;pointer-events:none;opacity:0;mix-blend-mode:screen;
   background:radial-gradient(circle at 30% 40%,rgba(255,140,40,.95) 0%,rgba(255,80,120,.6) 30%,rgba(255,80,120,0) 60%)}
-#card{position:absolute;left:44px;right:44px;top:80px;min-height:330px;border-radius:40px;padding:34px 34px 30px;
+#card{position:absolute;left:0;right:0;margin:0 auto;width:fit-content;max-width:980px;top:90px;border-radius:30px;padding:18px 36px 20px;
   background:rgba(10,8,20,.48);backdrop-filter:blur(16px) saturate(1.3);
   box-shadow:0 18px 50px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.18);
   border:1.5px solid rgba(255,215,120,.35);display:flex;flex-direction:column;align-items:center;justify-content:center}
 #bar{position:absolute;left:50%;top:-3px;width:180px;height:6px;margin-left:-90px;border-radius:3px;background:linear-gradient(90deg,#FFB020,#FF5E7E)}
-#cur{display:flex;flex-wrap:wrap;justify-content:center;column-gap:.28em;row-gap:0;text-align:center;line-height:1.32}
+#cur{display:flex;flex-wrap:nowrap;justify-content:center;column-gap:.28em;row-gap:0;text-align:center;line-height:1.32}
 #cur .w{display:inline-block;color:transparent;-webkit-background-clip:text;background-clip:text;
   filter:drop-shadow(0 4px 0 rgba(0,0,0,.45)) drop-shadow(0 0 14px rgba(0,0,0,.5));white-space:nowrap;padding:0 2px}
-#nxt{margin-top:18px;color:rgba(255,255,255,.55);text-align:center;white-space:nowrap}
-.te #cur{font-family:TE9;font-size:90px}.te #nxt{font-family:TE8;font-size:46px}
-.en #cur{font-family:PX;font-size:76px}.en #nxt{font-family:PB;font-size:42px}
+#nxt{display:none;margin-top:18px;color:rgba(255,255,255,.55);text-align:center;white-space:nowrap}
+.te #cur{font-family:TE9;font-size:64px}.te #nxt{font-family:TE8;font-size:46px}
+.en #cur{font-family:PX;font-size:54px}.en #nxt{font-family:PB;font-size:42px}
 </style></head><body>
 <div id="stage"></div><div id="topshade"></div><canvas id="fx" width="1080" height="1920"></canvas>
 <div id="leak"></div><div id="flash"></div><div id="vig"></div>
@@ -70,7 +70,7 @@ function setLine(i){LI=i;const L=D.lines[i],N=D.lines[i+1];const c=$('cur');c.in
     ws.forEach(w=>{const sp=document.createElement('span');sp.className='w';sp.textContent=w;c.appendChild(sp);
       WORDS.push({sp,f0:acc/tot,f1:(acc+w.length)/tot});acc+=w.length;});}
   $('nxt').textContent=N?N.t:'';
-  c.style.transform='';const ov=c.scrollWidth/(1080-88-68); c.dataset.s=ov>1?1/ov:1;}
+  c.style.transform='';const ov=c.scrollWidth/(980-72); c.dataset.s=ov>1?1/ov:1;}
 let TIME=0;
 function render(t){TIME=t;
   // ----- images + transitions
