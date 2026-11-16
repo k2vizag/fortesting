@@ -36,24 +36,24 @@ L = [
  (27.26, 30.30, "మత్తైదువ మెళ్లో పసుకుకొమ్ములాగ", "Matthaidhuva mello pasukukommulaaga", ("pasupu", 50, 45, "whip", 0, 0)),
  (30.30, 32.78, "ఎంత సక్కగున్నావే..", "Entha sakkagunnaave..", ("f_yellow", 45, 25, "flash", 1, 0)),
  (32.78, 35.22, "సుక్కల సీర కట్టుకున్న వెన్నెలలాగ", "Sukkala seera kattukunna vennelalaaga", ("moonsaree", 50, 40, "zoom", 0, 0)),
- (35.22, 37.48, "ఎంత సక్కగున్నావే..", "Entha sakkagunnaave..", ("f_moon", 45, 30, "flash", 1, 0)),
+ (35.22, 38.20, "ఎంత సక్కగున్నావే..", "Entha sakkagunnaave..", ("f_moon", 45, 30, "flash", 1, 0)),
 ]
-# second round (song repeats lines 1-2 + chorus); vary transitions so it doesn't feel copied
+# second round (song repeats lines 1-2 + chorus) – starts at 38.20 s (chroma match of the music against the first round); vary transitions so it doesn't feel copied
 REP = {"fade": "leak", "zoom": "whip", "whip": "zoom"}
-L += [(a + 37.48, b + 37.48, te, en, (s[0], s[1], s[2], REP.get(s[3], s[3]), s[4], s[5])) for a, b, te, en, s in L[:8]]
+L += [(a + 38.20, b + 38.20, te, en, (s[0], s[1], s[2], REP.get(s[3], s[3]), s[4], s[5])) for a, b, te, en, s in L[:8]]
 lines = {"te": [], "en": []}; shots = []
 # repeated lyrics (2nd round): the user's real photos of her, each shown once, evenly spread (~2.8 s each), no male photos
 RD = HQ.replace("/hq/", "/real/")
-REAL = ["6bbbf1de", "4c97b472", "4ece7045", "40b14343", "f39692e2", "4349b72b", "b2805a1c", "4771e5fb"]   # one of each look (similar Diwali shots dropped)
-R0 = 37.48
+REAL = ["6bbbf1de", "4c97b472", "40b14343", "f39692e2", "4349b72b", "b2805a1c", "4771e5fb"]   # one of each look (similar Diwali shots + beach crop dropped)
+R0 = 38.20   # real photos start exactly when "యేరుశనగ" starts again
 for i, (a, b, te, en, (img, fx, fy, tr, her, punch)) in enumerate(L):
     lines["te"].append({"a": a, "b": b, "t": te}); lines["en"].append({"a": a, "b": b, "t": en})
     if i >= 14:
         if i == 14:
             for j, p in enumerate(REAL):
                 w, h = Image.open(RD + p + ".jpg").size
-                shots.append({"a": round(R0 + (TOTAL - R0) * j / len(REAL), 2), "img": p, "src": "file://" + RD + p + ".jpg",
-                              "w": w, "h": h, "her": 1, "xf": 0.6, "z0": 0.88})
+                shots.append({"a": round(R0 + 0.4 + (TOTAL - R0 - 0.4) * j / len(REAL), 2), "img": p, "src": "file://" + RD + p + ".jpg",
+                              "w": w, "h": h, "her": 1, "xf": 0.4 if j == 0 else 0.6, "z0": 0.88})
         continue
     if shots and shots[-1]["img"] == img: continue          # same photo continues (no cut)
     w, h = Image.open(SRC[img]).size
