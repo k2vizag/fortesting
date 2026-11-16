@@ -2,25 +2,23 @@
 @font-face{font-family:CD;src:url(fonts/CinzelDecorative-Black.ttf)}
 @font-face{font-family:CZ;src:url(fonts/Cinzel%5Bwght%5D.ttf)}
 html,body{margin:0;width:1080px;height:1920px;background:transparent;overflow:hidden}
-#w{position:absolute;left:0;right:0;top:760px;display:flex;flex-direction:column;align-items:center}
+#w{position:absolute;left:0;right:0;top:740px;display:flex;flex-direction:column;align-items:center}
 #tbc{font-family:CZ;font-weight:700;font-size:44px;letter-spacing:14px;color:#f3e2b8;text-shadow:0 0 18px rgba(255,200,120,.45),0 3px 8px rgba(0,0,0,.8)}
 .orn{display:flex;align-items:center;gap:18px;margin:26px 0}
 .orn i{display:block;height:3px;width:260px;background:linear-gradient(90deg,rgba(212,170,80,0),#e9c76b,rgba(212,170,80,0))}
 .orn b{display:block;width:18px;height:18px;transform:rotate(45deg);background:linear-gradient(135deg,#fff3c4,#c8962e);box-shadow:0 0 14px rgba(255,210,120,.8)}
-#p2{position:relative;font-family:CD;font-size:200px;line-height:1;letter-spacing:6px;
+#p2{position:relative;text-align:center;font-family:CD;font-size:104px;line-height:1.15;letter-spacing:6px;
   background:linear-gradient(180deg,#fff6d6 0%,#f4d27a 30%,#c9922c 55%,#8a5a14 72%,#e8c06a 100%);-webkit-background-clip:text;background-clip:text;color:transparent;
   filter:drop-shadow(0 6px 0 rgba(60,30,0,.65)) drop-shadow(0 0 30px rgba(255,190,90,.55))}
-#sh{position:absolute;inset:0;font-family:CD;font-size:200px;line-height:1;letter-spacing:6px;color:transparent;
+#sh{position:absolute;inset:0;text-align:center;font-family:CD;font-size:104px;line-height:1.15;letter-spacing:6px;color:transparent;
   background:linear-gradient(105deg,rgba(255,255,255,0) 40%,rgba(255,255,255,.95) 50%,rgba(255,255,255,0) 60%);background-size:300% 100%;
   -webkit-background-clip:text;background-clip:text}
-</style></head><body><div id="w"><div id="tbc">TO BE CONTINUED…</div><div class="orn"><i></i><b></b><i></i></div>
-<div id="p2">PART 2<div id="sh">PART 2</div></div><div class="orn"><i></i><b></b><i></i></div></div>
+</style></head><body><div id="w"><div class="orn"><i></i><b></b><i></i></div>
+<div id="p2">TO BE<br>CONTINUED…<div id="sh">TO BE<br>CONTINUED…</div></div><div class="orn"><i></i><b></b><i></i></div></div>
 <script>
 const c=x=>Math.max(0,Math.min(1,x)), eo=x=>1-Math.pow(1-c(x),3);
 window.render=t=>{ // t = seconds since the title starts
   const W=document.getElementById('w'); W.style.opacity=c(t/0.5);
-  document.getElementById('tbc').style.letterSpacing=(30-16*eo(t/1.2))+'px';
-  document.getElementById('tbc').style.opacity=c(t/0.6);
   const p=document.getElementById('p2'); const k=eo((t-0.25)/0.9);
   p.style.opacity=c((t-0.25)/0.5); p.style.transform=`translateY(${(1-k)*40}px) scale(${1.25-0.25*k})`;
   document.querySelectorAll('.orn i').forEach(e=>e.style.width=(260*eo((t-0.4)/0.8))+'px');

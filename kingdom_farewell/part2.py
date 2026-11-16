@@ -1,4 +1,4 @@
-"""'TO BE CONTINUED… PART 2' movie-style title at 57 s (render title frames with title.js first), hold to 59 s, soft deep boom."""
+"""'TO BE CONTINUED…' movie-style title at 57 s (render title frames with title.js first), hold to 59 s, soft deep boom."""
 import subprocess, numpy as np, soundfile as sf
 S = "/tmp/claude-0/-home-user-fortesting/31472ba1-8ea5-51fc-a7e6-64ea60291e16/scratchpad/emo"
 T0, END, SR = 57.0, 59.0, 48000
