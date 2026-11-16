@@ -1,7 +1,7 @@
-"""'TO BE CONTINUED… PART 2' movie-style title at 57 s (render title frames with title.js first), hold to 60 s, soft deep boom."""
+"""'TO BE CONTINUED… PART 2' movie-style title at 57 s (render title frames with title.js first), hold to 59 s, soft deep boom."""
 import subprocess, numpy as np, soundfile as sf
 S = "/tmp/claude-0/-home-user-fortesting/31472ba1-8ea5-51fc-a7e6-64ea60291e16/scratchpad/emo"
-T0, END, SR = 57.0, 60.0, 48000
+T0, END, SR = 57.0, 59.0, 48000
 src = "../veer_kingdom_farewell_full.mp4"
 d = float(subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", src], capture_output=True, text=True).stdout)
 # deep cinematic boom (sine sweep + soft noise tail)
