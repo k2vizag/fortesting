@@ -1,5 +1,16 @@
 # K2 Vizag video editing – standing instructions
 
+## Which style? (the user starts the message with the type)
+| Message starts with | Style file / pipeline |
+|---|---|
+| "Shop video:" (or a raw shop/talking video with no type) | **prompts/video_edit_prompt.md** – `insurance/v2/` |
+| "Funny shop video:" | captions + emoji stickers, original audio, no trim – `xerox_vs_print/plan6.py`, `non_telugu_customers/` (overlay_fun.html) |
+| "Story video:" (AI clips + script) | pick best take per scene, fix wrong-speaker lip-sync, captions with speaker tags – `veer_story/` |
+| "Lyrics video:" | **prompts/lyrics_video_prompt.md** – `lyrics_song/` |
+If the type is unclear, decide from the material (raw talking footage → shop
+video; song + lyrics + photos → lyrics video) and say which style you used.
+
+## Shop videos
 When the user uploads or links a raw video (or asks to "edit this video"),
 edit it into YouTube Shorts following **prompts/video_edit_prompt.md**
 exactly. That file is the user's approved style; apply every point even if the
