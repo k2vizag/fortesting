@@ -4,7 +4,8 @@ S = "/tmp/claude-0/-home-user-fortesting/31472ba1-8ea5-51fc-a7e6-64ea60291e16/sc
 R, W = S + "/raw", S + "/work"; os.makedirs(W, exist_ok=True)
 SP, END = 1.1, 4.0
 # scene clips chosen (better take per scene):
-#  1 c738447e  2 a6ae9954  3+4 7e77685c (0-10 / 10-20; has the complete scene-4 dialogue)  5 b607df99 (has Krishna's reply)  6 1d49aee6
+#  1 c738447e  2 a6ae9954  3+4 7e77685c (0-10 / 10-20; has the complete scene-4 dialogue)  5 b607df99 (complete dialogue; Drive take 1rjW… drops lines and repeats one)
+#  6 = Drive take 1nXt… 0-5.6 (Krishna's full YouTube line) + 1d49aee6 3.35-9.6 (Veer's question on Veer, Krishna's answer on Krishna)
 # video pieces: (clip, in, out, zoom) ; audio pieces: (clip, in, out)
 V, A = [], []
 # Scene 1 fix: king's 2nd sentence (3.58-5.08) played over Veer's moving lips -> keep the king on screen
@@ -12,7 +13,7 @@ V, A = [], []
 # Also drop the 0.5 s pause 3.1-3.5.
 A += [("c738447e", 0, 3.1), ("c738447e", 3.5, 10.0)]
 V += [("c738447e", 0, 2.66, 1.0), ("c738447e", 0.62, 2.64, 1.08), ("c738447e", 3.0, 6.9, 1.0), ("c738447e", 7.0, 8.02, 1.0)]
-for c, a, b in [("a6ae9954", 0, 10), ("7e77685c", 0, 10), ("7e77685c", 10, 20.0), ("b607df99", 0, 10), ("1d49aee6", 0, 10)]:
+for c, a, b in [("a6ae9954", 0, 10), ("7e77685c", 0, 10), ("7e77685c", 10, 20.0), ("b607df99", 0, 10), ("d1nXt", 0, 5.6), ("1d49aee6", 3.35, 9.6)]:
     A.append((c, a, b)); V.append((c, a, b, 1.0))
 assert abs(sum(b - a for _, a, b, _ in V) - sum(b - a for _, a, b in A)) < 0.02
 fc, ins = [], []
