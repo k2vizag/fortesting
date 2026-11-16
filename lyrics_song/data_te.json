@@ -117,7 +117,7 @@
   {
    "a": 0.0,
    "img": "peanut",
-   "src": "file:///root/.claude/uploads/31472ba1-8ea5-51fc-a7e6-64ea60291e16/95fc2b4b-image.png",
+   "src": "file:///tmp/claude-0/-home-user-fortesting/31472ba1-8ea5-51fc-a7e6-64ea60291e16/scratchpad/song/swap/peanut.png",
    "w": 941,
    "h": 1672,
    "her": 0,
@@ -126,7 +126,7 @@
   {
    "a": 2.88,
    "img": "pot",
-   "src": "file:///tmp/claude-0/-home-user-fortesting/31472ba1-8ea5-51fc-a7e6-64ea60291e16/scratchpad/song/hq/pot.png",
+   "src": "file:///tmp/claude-0/-home-user-fortesting/31472ba1-8ea5-51fc-a7e6-64ea60291e16/scratchpad/song/swap/pot.png",
    "w": 941,
    "h": 1520,
    "her": 0,
@@ -135,7 +135,7 @@
   {
    "a": 5.52,
    "img": "f_lachimi",
-   "src": "file:///tmp/claude-0/-home-user-fortesting/31472ba1-8ea5-51fc-a7e6-64ea60291e16/scratchpad/song/hq/f_lachimi.png",
+   "src": "file:///tmp/claude-0/-home-user-fortesting/31472ba1-8ea5-51fc-a7e6-64ea60291e16/scratchpad/song/swap/f_lachimi.png",
    "w": 1244,
    "h": 1944,
    "her": 1,
@@ -144,7 +144,7 @@
   {
    "a": 10.86,
    "img": "tamarind",
-   "src": "file:///tmp/claude-0/-home-user-fortesting/31472ba1-8ea5-51fc-a7e6-64ea60291e16/scratchpad/song/hq/tamarind.png",
+   "src": "file:///tmp/claude-0/-home-user-fortesting/31472ba1-8ea5-51fc-a7e6-64ea60291e16/scratchpad/song/swap/tamarind.png",
    "w": 1364,
    "h": 1808,
    "her": 0,
@@ -153,7 +153,7 @@
   {
    "a": 13.72,
    "img": "moonman",
-   "src": "file:///root/.claude/uploads/31472ba1-8ea5-51fc-a7e6-64ea60291e16/f34ab5e4-image.png",
+   "src": "file:///tmp/claude-0/-home-user-fortesting/31472ba1-8ea5-51fc-a7e6-64ea60291e16/scratchpad/song/swap/moonman.png",
    "w": 941,
    "h": 1672,
    "her": 0,
@@ -162,7 +162,7 @@
   {
    "a": 16.42,
    "img": "f_white",
-   "src": "file:///tmp/claude-0/-home-user-fortesting/31472ba1-8ea5-51fc-a7e6-64ea60291e16/scratchpad/song/hq/f_white.png",
+   "src": "file:///tmp/claude-0/-home-user-fortesting/31472ba1-8ea5-51fc-a7e6-64ea60291e16/scratchpad/song/swap/f_white.png",
    "w": 1232,
    "h": 2000,
    "her": 1,
@@ -180,7 +180,7 @@
   {
    "a": 24.62,
    "img": "f_purple",
-   "src": "file:///root/.claude/uploads/31472ba1-8ea5-51fc-a7e6-64ea60291e16/0e74cace-image.png",
+   "src": "file:///tmp/claude-0/-home-user-fortesting/31472ba1-8ea5-51fc-a7e6-64ea60291e16/scratchpad/song/swap/f_purple.png",
    "w": 1024,
    "h": 1536,
    "her": 1,
@@ -189,7 +189,7 @@
   {
    "a": 27.26,
    "img": "pasupu",
-   "src": "file:///root/.claude/uploads/31472ba1-8ea5-51fc-a7e6-64ea60291e16/d408a773-image.png",
+   "src": "file:///tmp/claude-0/-home-user-fortesting/31472ba1-8ea5-51fc-a7e6-64ea60291e16/scratchpad/song/swap/pasupu.png",
    "w": 1024,
    "h": 1536,
    "her": 0,
@@ -198,7 +198,7 @@
   {
    "a": 30.3,
    "img": "f_yellow",
-   "src": "file:///tmp/claude-0/-home-user-fortesting/31472ba1-8ea5-51fc-a7e6-64ea60291e16/scratchpad/song/hq/f_yellow.png",
+   "src": "file:///tmp/claude-0/-home-user-fortesting/31472ba1-8ea5-51fc-a7e6-64ea60291e16/scratchpad/song/swap/f_yellow.png",
    "w": 1216,
    "h": 1880,
    "her": 1,
@@ -216,7 +216,7 @@
   {
    "a": 35.22,
    "img": "f_moon",
-   "src": "file:///root/.claude/uploads/31472ba1-8ea5-51fc-a7e6-64ea60291e16/73f382a6-image.png",
+   "src": "file:///tmp/claude-0/-home-user-fortesting/31472ba1-8ea5-51fc-a7e6-64ea60291e16/scratchpad/song/swap/f_moon.png",
    "w": 941,
    "h": 1672,
    "her": 1,
@@ -225,7 +225,7 @@
   {
    "a": 37.48,
    "img": "peanut",
-   "src": "file:///root/.claude/uploads/31472ba1-8ea5-51fc-a7e6-64ea60291e16/95fc2b4b-image.png",
+   "src": "file:///tmp/claude-0/-home-user-fortesting/31472ba1-8ea5-51fc-a7e6-64ea60291e16/scratchpad/song/swap/peanut.png",
    "w": 941,
    "h": 1672,
    "her": 0,
@@ -234,7 +234,7 @@
   {
    "a": 40.36,
    "img": "pot",
-   "src": "file:///tmp/claude-0/-home-user-fortesting/31472ba1-8ea5-51fc-a7e6-64ea60291e16/scratchpad/song/hq/pot.png",
+   "src": "file:///tmp/claude-0/-home-user-fortesting/31472ba1-8ea5-51fc-a7e6-64ea60291e16/scratchpad/song/swap/pot.png",
    "w": 941,
    "h": 1520,
    "her": 0,
@@ -243,7 +243,7 @@
   {
    "a": 43.0,
    "img": "f_lachimi",
-   "src": "file:///tmp/claude-0/-home-user-fortesting/31472ba1-8ea5-51fc-a7e6-64ea60291e16/scratchpad/song/hq/f_lachimi.png",
+   "src": "file:///tmp/claude-0/-home-user-fortesting/31472ba1-8ea5-51fc-a7e6-64ea60291e16/scratchpad/song/swap/f_lachimi.png",
    "w": 1244,
    "h": 1944,
    "her": 1,
@@ -252,7 +252,7 @@
   {
    "a": 48.339999999999996,
    "img": "tamarind",
-   "src": "file:///tmp/claude-0/-home-user-fortesting/31472ba1-8ea5-51fc-a7e6-64ea60291e16/scratchpad/song/hq/tamarind.png",
+   "src": "file:///tmp/claude-0/-home-user-fortesting/31472ba1-8ea5-51fc-a7e6-64ea60291e16/scratchpad/song/swap/tamarind.png",
    "w": 1364,
    "h": 1808,
    "her": 0,
@@ -261,7 +261,7 @@
   {
    "a": 51.199999999999996,
    "img": "moonman",
-   "src": "file:///root/.claude/uploads/31472ba1-8ea5-51fc-a7e6-64ea60291e16/f34ab5e4-image.png",
+   "src": "file:///tmp/claude-0/-home-user-fortesting/31472ba1-8ea5-51fc-a7e6-64ea60291e16/scratchpad/song/swap/moonman.png",
    "w": 941,
    "h": 1672,
    "her": 0,
@@ -270,7 +270,7 @@
   {
    "a": 53.9,
    "img": "f_white",
-   "src": "file:///tmp/claude-0/-home-user-fortesting/31472ba1-8ea5-51fc-a7e6-64ea60291e16/scratchpad/song/hq/f_white.png",
+   "src": "file:///tmp/claude-0/-home-user-fortesting/31472ba1-8ea5-51fc-a7e6-64ea60291e16/scratchpad/song/swap/f_white.png",
    "w": 1232,
    "h": 2000,
    "her": 1,

@@ -9,6 +9,11 @@ SRC = {"peanut": U + "95fc2b4b-image.png", "moonman": U + "f34ab5e4-image.png", 
        "f_moon": U + "73f382a6-image.png", "moonsaree": U + "28c9b7ac-image.png", "pasupu": U + "d408a773-image.png",
        "f_purple": U + "0e74cace-image.png", "pot": HQ + "pot.png",
        "f_lachimi": HQ + "f_lachimi.png", "f_yellow": HQ + "f_yellow.png", "f_white": HQ + "f_white.png", "tamarind": HQ + "tamarind.png"}
+# face-swapped versions (faceswap.py) replace the originals when present
+import os
+SW = HQ.replace("/hq/", "/swap/")
+for k in SRC:
+    if os.path.exists(SW + k + ".png"): SRC[k] = SW + k + ".png"
 im = Image.open(U + "7400b341-image.png"); im.crop((0, 0, im.width, 1520)).convert("RGB").save(HQ + "pot.png")
 TOTAL = 59.6
 BEATS = [0.19, 0.91, 1.53, 2.23, 2.93, 3.6, 4.27, 4.97, 5.64, 6.32, 7.01, 7.64, 8.36, 9.06, 9.73, 10.43, 11.1, 11.77, 12.45, 13.12,
