@@ -42,7 +42,7 @@ function rock(x, y, s, col = C.v) { return [S(P([[x - s, y], [x - s * 0.9, y - s
 function bubble(x, y, w2, h2, col = C.w) { return [S(E(x, y, w2, h2), col, 6), S(P([[x - w2 * 0.3, y + h2 * 0.9], [x - w2 * 0.5, y + h2 * 1.5], [x - w2 * 0.05, y + h2 * 0.98]]), col, 6)]; }
 function shirt(x, y, s, col = C.b) { return [S(P([[x - s * 0.35, y - s], [x - s, y - s * 0.7], [x - s * 0.8, y - s * 0.35], [x - s * 0.55, y - s * 0.45], [x - s * 0.55, y + s * 0.5], [x + s * 0.55, y + s * 0.5], [x + s * 0.55, y - s * 0.45], [x + s * 0.8, y - s * 0.35], [x + s, y - s * 0.7], [x + s * 0.35, y - s], [x, y - s * 0.75], [x - s * 0.35, y - s]]), col, 7), S(L(x, y - s * 0.75, x, y + s * 0.5), col, 3)]; }
 function bug(x, y, s, col = C.w) { return [S(E(x, y, s, s * 0.6), col, 5), S(Ci(x + s * 1.1, y, s * 0.35), col, 5), ...[-0.5, 0, 0.5].flatMap(k => [S(L(x + k * s, y - s * 0.5, x + k * s - 10, y - s), col, 3), S(L(x + k * s, y + s * 0.5, x + k * s - 10, y + s), col, 3)])]; }
-const EN = { 'తీపి': 'Theepi', 'చేదు': 'Chedhu', 'ఉప్పు': 'Uppu', 'తేలిక': 'Thelika', 'చూద్దాం!': 'Choodhaam!', 'హో..రు!': 'Ho..ru!', 'పోరాటం': 'Poraatam', 'మడత': 'Madatha', 'ఉవ్వా!': 'Uvvaa!', 'కష్టం': 'Kashtam', 'కొత్తేం కాదు': 'Kotthem kaadhu', 'అనుభవం': 'Anubhavam' };
+const EN = { 'తీపి': 'Theepi', 'చేదు': 'Chedhu', 'ఉప్పు': 'Uppu', 'తేలిక': 'Thelika', 'చూద్దాం!': 'Choodhaam!', 'హో..రు!': 'Ho..ru!', 'పోరాటం': 'Poraatam', 'మడత': 'Madatha', 'ఉవ్వా!': 'Uvvaa!', 'కష్టం': 'Kashtam', 'కొత్తేం కాదు': 'Kotthem kaadhu', 'అనుభవం': 'Anubhavam', 'చరిత': 'Charitha', 'విధి': 'Vidhi', 'అ ఆ': 'A Aa' };
 function tx(x, y, s, size, col = C.w) { if (D.font === 'en' && EN[s]) { s = EN[s]; size *= 0.8; } return [T(x, y, s, size, col)]; }
 
 // ---------- scene library (coordinates: drawing area ~ y 560..1420) ----------
@@ -89,11 +89,27 @@ const LIB = {
   gelupu: () => [[G(road(C.o)), 0, .4], [G(trophy(590, 880, 70)), .4, .65], [G(man(420, 1400, 220, 'up', C.w, 'smile'), star(260, 700, 24), star(820, 700, 24)), .65, .95]],
 };
 
+if (D.extraSrc) Object.assign(LIB, (0, eval)(D.extraSrc));
+const Fl = (pts, col) => ({ fill: pts, col });   // explicit colour fill (shown in the final colour phase)
+
+// ---------- final colour phase: closed chalk shapes get a soft chalk colour fill ----------
+const PAL = ['#ffe27a', '#9fd2ff', '#ff9fb8', '#9fe8a0', '#ffb36b', '#c9a8ff'];
+function area(p) { let a = 0; for (let i = 0; i < p.length; i++) { const q = p[(i + 1) % p.length]; a += p[i][0] * q[1] - q[0] * p[i][1]; } return Math.abs(a / 2); }
+function autoFills(items) { const out = []; let k = 0;
+  items.forEach(it => { if (!it.pts) return; const p = it.pts, a = p[0], b = p[p.length - 1];
+    if (Math.hypot(a[0] - b[0], a[1] - b[1]) > 30) return; const A = area(p); if (A < 1200) return;
+    let col = it.col; if (col === C.w) col = A < 9000 ? '#f2c79b' : PAL[k++ % PAL.length];
+    out.push({ fill: p, col }); });
+  return out; }
+
 // ---------- scenes from data ----------
 const SC = [];
 D.scenes.forEach((s, k) => { R = rng(k * 97 + 5); const d = s.b - s.a, groups = LIB[s.key]();
-  const items = []; groups.forEach(([g, f0, f1]) => items.push(...seq(g, s.a + d * f0 + 0.05, s.a + d * f1)));
-  SC.push({ t0: s.a, t1: s.b, items }); });
+  const last = k === D.scenes.length - 1, ew = last ? 0 : 0.5, dd = D.color ? (d - ew) * 0.74 : d;
+  const items = [], fills = [];
+  groups.forEach(([g, f0, f1]) => { const st = g.filter(x => !x.fill); fills.push(...g.filter(x => x.fill)); items.push(...seq(st, s.a + dd * f0 + 0.05, s.a + dd * f1)); });
+  const cs = s.a + dd * 0.97, ce = s.b - ew - 0.05;
+  SC.push({ t0: s.a, t1: s.b, items, fills: D.color ? [...fills, ...autoFills(items)] : [], cs, ce: Math.max(ce, cs + 0.3) }); });
 
 // ---------- chalk texture ----------
 const grainC = document.createElement('canvas'); grainC.width = 512; grainC.height = 512;
@@ -136,7 +152,13 @@ function drawItems(ctx, items, t, full) {
   }
 }
 function chalkify(ctx) { ctx.save(); ctx.globalCompositeOperation = 'destination-in'; ctx.fillStyle = grainPat; ctx.fillRect(0, 0, W, H); ctx.restore(); }
-function drawScene(ctx, s, t, full) { ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; ctx.clearRect(0, 0, W, H); drawItems(ctx, s.items, t, full); chalkify(ctx); }
+function drawFills(ctx, s, t, full) { if (!s.fills.length) return; const f = full ? 1 : ease((t - s.cs) / Math.min(0.9, s.ce - s.cs)); if (f <= 0) return;
+  ctx.save(); s.fills.forEach(({ fill: p, col }) => { ctx.globalAlpha = 0.5 * f; ctx.fillStyle = col; ctx.beginPath(); ctx.moveTo(p[0][0], p[0][1]); p.forEach(q => ctx.lineTo(q[0], q[1])); ctx.closePath(); ctx.fill();
+    // chalk side-strokes for a hand-coloured look
+    ctx.globalAlpha = 0.22 * f; ctx.strokeStyle = col; ctx.lineWidth = 3; ctx.clip(); const xs = p.map(q => q[0]), ys = p.map(q => q[1]), x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
+    ctx.beginPath(); for (let x = x0 - (y1 - y0); x < x1; x += 14) { ctx.moveTo(x, y1); ctx.lineTo(x + (y1 - y0), y0); } ctx.stroke(); ctx.restore(); ctx.save(); });
+  ctx.restore(); }
+function drawScene(ctx, s, t, full) { ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; ctx.clearRect(0, 0, W, H); drawFills(ctx, s, t, full); drawItems(ctx, s.items, t, full); chalkify(ctx); }
 
 // ---------- lyrics: top area, medium size, words fill yellow-orange as sung ----------
 const FONT = D.font === 'te' ? 'Rama' : 'PB', FS = D.font === 'te' ? 80 : 64, MAXW = 900, LH = D.font === 'te' ? 112 : 92;

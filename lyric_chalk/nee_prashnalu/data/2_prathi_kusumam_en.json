@@ -1,0 +1,73 @@
+{
+ "total": 30.2,
+ "start": 37.3,
+ "fadeIn": 0.4,
+ "font": "en",
+ "color": true,
+ "title": "Nee Prashnalu Neeve",
+ "scenesFile": "../scenes.js",
+ "lines": [
+  {
+   "a": 0.6,
+   "b": 4.9,
+   "t": "Prati kusumam tanade anade virise kommynaa"
+  },
+  {
+   "a": 6.6,
+   "b": 10.6,
+   "t": "Gudiko jadako saagannampaka untundaa"
+  },
+  {
+   "a": 12.0,
+   "b": 13.92,
+   "t": "Batukante badi chaduvaa"
+  },
+  {
+   "a": 14.3,
+   "b": 16.96,
+   "t": "Anukunte adi suluvaa"
+  },
+  {
+   "a": 16.96,
+   "b": 22.24,
+   "t": "Porabadina padina jaali padade kalam manalaga"
+  },
+  {
+   "a": 22.24,
+   "b": 27.92,
+   "t": "Oka nimisham kuda aagiode nuvvocche daka"
+  }
+ ],
+ "scenes": [
+  {
+   "a": 0.3,
+   "b": 6.35,
+   "key": "kusumam"
+  },
+  {
+   "a": 6.35,
+   "b": 11.75,
+   "key": "gudiko"
+  },
+  {
+   "a": 11.75,
+   "b": 14.05,
+   "key": "badi"
+  },
+  {
+   "a": 14.05,
+   "b": 16.71,
+   "key": "suluva"
+  },
+  {
+   "a": 16.71,
+   "b": 21.99,
+   "key": "porabadina"
+  },
+  {
+   "a": 21.99,
+   "b": 30.2,
+   "key": "nimisham"
+  }
+ ]
+}

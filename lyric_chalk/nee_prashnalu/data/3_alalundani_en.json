@@ -1,0 +1,103 @@
+{
+ "total": 44.2,
+ "start": 86.8,
+ "fadeIn": 0.4,
+ "font": "en",
+ "color": true,
+ "title": "Nee Prashnalu Neeve",
+ "scenesFile": "../scenes.js",
+ "lines": [
+  {
+   "a": 1.2,
+   "b": 5.98,
+   "t": "Alalundani kadaledani adigenduke telivunda"
+  },
+  {
+   "a": 6.6,
+   "b": 11.14,
+   "t": "Kalalundani kanulevani nityam nidaromanda"
+  },
+  {
+   "a": 11.7,
+   "b": 16.94,
+   "t": "Gathamundani gamanichani nadi reyike repunda"
+  },
+  {
+   "a": 16.94,
+   "b": 22.06,
+   "t": "Gathi tochani gamananiki gamyam antu unda"
+  },
+  {
+   "a": 22.06,
+   "b": 24.74,
+   "t": "Valapedo vala vesthundi"
+  },
+  {
+   "a": 24.74,
+   "b": 27.48,
+   "t": "Vayasemo atu tosthundi"
+  },
+  {
+   "a": 27.48,
+   "b": 33.02,
+   "t": "Gelupante edo inthavaraku viivarinche ruzuvemundi"
+  },
+  {
+   "a": 35.8,
+   "b": 38.04,
+   "t": "Sudilo padu prathi nava"
+  },
+  {
+   "a": 40.6,
+   "b": 43.54,
+   "t": "Chebutunnadi vinalevaa"
+  }
+ ],
+ "scenes": [
+  {
+   "a": 0.3,
+   "b": 6.35,
+   "key": "alalu"
+  },
+  {
+   "a": 6.35,
+   "b": 11.45,
+   "key": "kalalu"
+  },
+  {
+   "a": 11.45,
+   "b": 16.69,
+   "key": "nadireyi"
+  },
+  {
+   "a": 16.69,
+   "b": 21.81,
+   "key": "gamyam"
+  },
+  {
+   "a": 21.81,
+   "b": 24.49,
+   "key": "valapu"
+  },
+  {
+   "a": 24.49,
+   "b": 27.23,
+   "key": "vayasu"
+  },
+  {
+   "a": 27.23,
+   "b": 35.55,
+   "key": "gelupu"
+  },
+  {
+   "a": 35.55,
+   "b": 40.35,
+   "key": "sudilo"
+  },
+  {
+   "a": 40.35,
+   "b": 44.2,
+   "key": "vinaleva"
+  }
+ ]
+}

@@ -1,0 +1,73 @@
+{
+ "total": 37.5,
+ "start": 0.0,
+ "fadeIn": 0.05,
+ "font": "en",
+ "color": true,
+ "title": "Nee Prashnalu Neeve",
+ "scenesFile": "../scenes.js",
+ "lines": [
+  {
+   "a": 0.2,
+   "b": 4.3,
+   "t": "Nee prashnalu neeve evvaru badulivvaru gaa"
+  },
+  {
+   "a": 8.0,
+   "b": 12.96,
+   "t": "Nee chikkulu neve evvaru vidipincharu gaa"
+  },
+  {
+   "a": 16.6,
+   "b": 20.62,
+   "t": "E galo ninnu tarumutunte allari gaa"
+  },
+  {
+   "a": 21.8,
+   "b": 26.06,
+   "t": "Agalo ledo teliyadante chelladu gaa"
+  },
+  {
+   "a": 27.2,
+   "b": 31.54,
+   "t": "Padi nelalu tanalo ninno mosina ammynaa"
+  },
+  {
+   "a": 32.9,
+   "b": 36.96,
+   "t": "Apudo ipudo kanane kanane kananu antundaa"
+  }
+ ],
+ "scenes": [
+  {
+   "a": 0.3,
+   "b": 7.75,
+   "key": "prashnalu"
+  },
+  {
+   "a": 7.75,
+   "b": 16.35,
+   "key": "chikkulu"
+  },
+  {
+   "a": 16.35,
+   "b": 21.55,
+   "key": "gaali"
+  },
+  {
+   "a": 21.55,
+   "b": 26.95,
+   "key": "aagalo"
+  },
+  {
+   "a": 26.95,
+   "b": 32.65,
+   "key": "amma"
+  },
+  {
+   "a": 32.65,
+   "b": 37.5,
+   "key": "kanane"
+  }
+ ]
+}

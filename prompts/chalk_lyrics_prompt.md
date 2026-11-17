@@ -20,9 +20,13 @@ Chalk lyrics video: make chalkboard lyric shorts from this song.
 3. Middle area: hand-drawn stick-figure chalk sketch for every lyric line,
    drawn stroke by stroke with the chalk hand while the line plays; eraser
    wipe between sketches, faint ghost of the previous sketch stays.
-4. Small "♪ song name ♪" tag under the drawing (no contact number).
-5. Song audio as is (cut from the song, -14 LUFS, short fades).
-6. Lyric timing: Whisper large-v3 word times on the song.
+4. Final colour: at the end of every sketch (before the eraser) the closed
+   shapes fill with soft chalk colour + hatching (`"color": true` in data).
+5. Lyrics = ONLY the user's Telugu / English text (no changes except removing
+   trailing "...." / "ooo"); timing matched to the song with Whisper.
+6. Small "♪ song name ♪" tag under the drawing (no contact number).
+7. Song audio as is (cut from the song, -14 LUFS, short fades).
+8. Lyric timing: Whisper large-v3 word times on the song.
 
 ## Pipeline (`lyric_chalk/`)
 - `lyrics.py` – lyric lines (Telugu, English letters) per song section
@@ -30,4 +34,5 @@ Chalk lyrics video: make chalkboard lyric shorts from this song.
 - `chalk.html` – sketch library (`LIB`) + chalk renderer; `prims.js` primitives
 - `render.js` – `node render.js data/x.json preview 3,8,15 <dir>`
                 `node render.js data/x.json full song.m4a out.mp4`
-For a new song: new lyrics.py + build.py times, add new sketches to `LIB`.
+For a new song: make a folder like `nee_prashnalu/` with lines.json, scenes.js
+(sketches, set as `scenesFile` in data) and build.py (line times).

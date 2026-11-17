@@ -5,7 +5,8 @@ const { chromium } = require('playwright');
 const { spawn } = require('child_process');
 const fs = require('fs'), path = require('path');
 const [, , dataFile, mode, a1, a2] = process.argv;
-const D = JSON.parse(fs.readFileSync(dataFile, 'utf8')); const FPS = 30;
+const D = JSON.parse(fs.readFileSync(dataFile, 'utf8'));
+if (D.scenesFile) D.extraSrc = fs.readFileSync(path.resolve(path.dirname(dataFile), D.scenesFile), 'utf8'); const FPS = 30;
 (async () => {
   const browser = await chromium.launch({ args: ['--allow-file-access-from-files'] });
   const page = await browser.newPage({ viewport: { width: 1080, height: 1920 }, deviceScaleFactor: 1 });
@@ -31,7 +32,7 @@ const D = JSON.parse(fs.readFileSync(dataFile, 'utf8')); const FPS = 30;
     }
     ff.stdin.end(); await new Promise(r => ff.on('close', r));
     // song cut [start, start+total] with fade in/out
-    const af = `afade=t=in:st=0:d=0.4,afade=t=out:st=${(D.total - 0.6).toFixed(2)}:d=0.6,loudnorm=I=-14:TP=-1.5:LRA=11`;
+    const af = `afade=t=in:st=0:d=${D.fadeIn ?? 0.4},afade=t=out:st=${(D.total - 0.6).toFixed(2)}:d=0.6,loudnorm=I=-14:TP=-1.5:LRA=11`;
     await new Promise(r => spawn('ffmpeg', ['-v', 'error', '-y', '-i', silent, '-ss', String(D.start), '-t', String(D.total), '-i', a1,
       '-map', '0:v', '-map', '1:a', '-af', af, '-c:v', 'copy', '-c:a', 'aac', '-b:a', '192k', '-ar', '48000', '-shortest', '-movflags', '+faststart', a2], { stdio: 'inherit' }).on('close', r));
     fs.unlinkSync(silent);
