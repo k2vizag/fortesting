@@ -1,0 +1,58 @@
+# K2 Vizag – YouTube upload queue
+# Add a video = add a block under "videos". Uploaded ones are recorded in
+# uploaded.json and never uploaded twice. Set "skip: true" to hold a video.
+
+settings:
+  mode: schedule          # schedule = upload now, YouTube publishes it at the time below
+                          # direct   = publish immediately with "privacy" below
+  publish_time: "18:00"   # daily publish time
+  timezone: Asia/Kolkata
+  publish_per_day: 1      # videos going public per day (3 h apart if more than 1)
+  uploads_per_run: 6      # YouTube API allows ~6 uploads per day
+
+defaults:                 # used for every video unless the video sets its own
+  privacy: public
+  category: 10            # 10 = Music, 22 = People & Blogs, 27 = Education
+  language: te
+  made_for_kids: false
+  tags: [telugu, telugu songs, telugu lyrics, lyrics video, shorts]
+  description: |
+    Like 👍 Share 🔁 Subscribe 🔔 for more!
+    #k2vizag #shorts
+
+videos:
+  - file: lyric_chalk/nee_prashnalu/videos/nee_prashnalu_1_nee_prashnalu_te.mp4
+    title: "నీ ప్రశ్నలు నీవే ఎవ్వరో బదులివ్వరుగా ✍️ Chalkboard Lyrics | Part 1 #shorts"
+    description: &np |
+      Nee Prashnalu Neeve – Kotha Bangaru Lokam 🎵
+      Hand-drawn chalkboard lyric video ✍️ Every line drawn in chalk.
+      #neeprashnaluneeve #kothabangarulokam #telugulyrics #chalkart
+    tags: &npt [nee prashnalu neeve, kotha bangaru lokam, chalkboard lyrics, chalk art]
+  - file: lyric_chalk/nee_prashnalu/videos/nee_prashnalu_1_nee_prashnalu_en.mp4
+    title: "Nee Prashnalu Neeve Lyrics ✍️ Chalk Art | Part 1 #shorts"
+    description: *np
+    tags: *npt
+  - file: lyric_chalk/nee_prashnalu/videos/nee_prashnalu_2_prathi_kusumam_te.mp4
+    title: "ప్రతి కుసుమం తనదే అనదె ✍️ Chalkboard Lyrics | Part 2 #shorts"
+    description: *np
+    tags: *npt
+  - file: lyric_chalk/nee_prashnalu/videos/nee_prashnalu_2_prathi_kusumam_en.mp4
+    title: "Prati Kusumam Tanade Lyrics ✍️ Chalk Art | Part 2 #shorts"
+    description: *np
+    tags: *npt
+  - file: lyric_chalk/nee_prashnalu/videos/nee_prashnalu_3_alalundani_te.mp4
+    title: "అలలుండని కడలేదని ✍️ Chalkboard Lyrics | Part 3 #shorts"
+    description: *np
+    tags: *npt
+  - file: lyric_chalk/nee_prashnalu/videos/nee_prashnalu_3_alalundani_en.mp4
+    title: "Alalundani Kadaledani Lyrics ✍️ Chalk Art | Part 3 #shorts"
+    description: *np
+    tags: *npt
+  - file: lyric_chalk/nee_prashnalu/videos/nee_prashnalu_4_porapaatuna_te.mp4
+    title: "పొరపాటున చెయి జారిన తరుణం ✍️ Chalkboard Lyrics | Part 4 #shorts"
+    description: *np
+    tags: *npt
+  - file: lyric_chalk/nee_prashnalu/videos/nee_prashnalu_4_porapaatuna_en.mp4
+    title: "Porabatuna Cheyizarina Tarunam Lyrics ✍️ Chalk Art | Part 4 #shorts"
+    description: *np
+    tags: *npt

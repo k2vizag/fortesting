@@ -1,0 +1,37 @@
+name: YouTube upload
+
+on:
+  schedule:
+    - cron: "17 6 * * *"     # every day 11:47 IST – uploads the next videos in the queue
+  push:
+    paths: ["youtube_uploader/queue.yaml"]   # also run when new videos are queued
+  workflow_dispatch:           # "Run workflow" button in the Actions tab
+
+concurrency: youtube-upload
+
+permissions:
+  contents: write              # to commit uploaded.json back
+
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install -q google-api-python-client google-auth pyyaml
+      - name: Upload next videos
+        env:
+          YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
+          YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
+          YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
+        run: python youtube_uploader/upload.py
+      - name: Save upload log
+        if: always()
+        run: |
+          git config user.name "youtube-uploader"
+          git config user.email "actions@users.noreply.github.com"
+          git add youtube_uploader/uploaded.json 2>/dev/null || exit 0
+          git diff --cached --quiet && exit 0
+          git commit -m "YouTube: record uploads [skip ci]"
+          git pull --rebase -q && git push

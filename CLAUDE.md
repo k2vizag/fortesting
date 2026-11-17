@@ -28,3 +28,10 @@ follow **prompts/chalk_lyrics_prompt.md** – pipeline in `lyric_chalk/`.
 When a task produces more than 5 videos, also put them all into ONE zip
 (`zip -0`, in `downloads/`) and send that zip, so the user can download
 everything in one tap (extract in the phone's Files app). Don't commit the zip.
+
+## YouTube upload queue
+After making videos the user wants on YouTube, add each one to
+`youtube_uploader/queue.yaml` (file, title ≤100 chars with #shorts,
+description, tags) and run `python3 youtube_uploader/upload.py --dry-run`
+to check it. GitHub Actions uploads them daily – see youtube_uploader/README.md.
+Never ask for or handle the YouTube secrets in chat.
