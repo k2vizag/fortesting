@@ -23,3 +23,8 @@ user's message is short.
 ## Chalkboard lyrics videos
 If the user asks for a "chalkboard" / "chalk" lyrics video (song + lyrics),
 follow **prompts/chalk_lyrics_prompt.md** – pipeline in `lyric_chalk/`.
+
+## Delivery
+When a task produces more than 5 videos, also put them all into ONE zip
+(`zip -0`, in `downloads/`) and send that zip, so the user can download
+everything in one tap (extract in the phone's Files app). Don't commit the zip.
