@@ -33,8 +33,12 @@ if (D.scenesFile) D.extraSrc = fs.readFileSync(path.resolve(path.dirname(dataFil
     ff.stdin.end(); await new Promise(r => ff.on('close', r));
     // song cut [start, start+total] with fade in/out
     const af = `afade=t=in:st=0:d=${D.fadeIn ?? 0.4},afade=t=out:st=${(D.total - 0.6).toFixed(2)}:d=0.6,loudnorm=I=-14:TP=-1.5:LRA=11`;
-    await new Promise(r => spawn('ffmpeg', ['-v', 'error', '-y', '-i', silent, '-ss', String(D.start), '-t', String(D.total), '-i', a1,
-      '-map', '0:v', '-map', '1:a', '-af', af, '-c:v', 'copy', '-c:a', 'aac', '-b:a', '192k', '-ar', '48000', '-shortest', '-movflags', '+faststart', a2], { stdio: 'inherit' }).on('close', r));
+    // optional cuts: D.segments = [[songStart, songEnd], ...] joined with tiny fades (pauses removed)
+    const segs = D.segments || [[D.start, D.start + D.total]];
+    const fc = segs.map(([a, b], i) => `[1:a]atrim=${a}:${b},asetpts=PTS-STARTPTS${i ? ',afade=t=in:d=0.06' : ''}${i < segs.length - 1 ? `,afade=t=out:st=${(b - a - 0.06).toFixed(3)}:d=0.06` : ''}[s${i}]`).join(';')
+      + ';' + segs.map((_, i) => `[s${i}]`).join('') + `concat=n=${segs.length}:v=0:a=1,${af}[aout]`;
+    await new Promise(r => spawn('ffmpeg', ['-v', 'error', '-y', '-i', silent, '-i', a1,
+      '-filter_complex', fc, '-map', '0:v', '-map', '[aout]', '-c:v', 'copy', '-c:a', 'aac', '-b:a', '192k', '-ar', '48000', '-shortest', '-movflags', '+faststart', a2], { stdio: 'inherit' }).on('close', r));
     fs.unlinkSync(silent);
     console.log('done', a2);
   }
