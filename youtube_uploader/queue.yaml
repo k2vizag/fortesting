@@ -56,3 +56,22 @@ videos:
     title: "Porabatuna Cheyizarina Tarunam Lyrics ✍️ Chalk Art | Part 4 #shorts"
     description: *np
     tags: *npt
+  - file: lyric_chalk/kangaree/videos/kangaree_1_kangaree_padakura_te.mp4
+    title: "కంగారే పడకురా అందరి కథ ఇంతేరా ✍️ Chalkboard Lyrics | Part 1 #shorts"
+    description: &kp |
+      Kangaree Padaku Ra – Baapu 🎵
+      Hand-drawn chalkboard lyric video ✍️ Every line drawn in chalk.
+      #kangareepadakura #baapu #telugulyrics #motivationalsong #chalkart
+    tags: &kpt [kangaree padaku ra, baapu, motivational telugu song, chalkboard lyrics, chalk art]
+  - file: lyric_chalk/kangaree/videos/kangaree_2_neeke_ila_te.mp4
+    title: "నీకే ఇలా జరిగింది అంటూ బాధ పడకు ✍️ Chalkboard Lyrics | Part 2 #shorts"
+    description: *kp
+    tags: *kpt
+  - file: lyric_chalk/kangaree/videos/kangaree_3_paduthu_paduthu_te.mp4
+    title: "పడుతూ పడుతూ ఉన్నా తడబడకు ✍️ Chalkboard Lyrics | Part 3 #shorts"
+    description: *kp
+    tags: *kpt
+  - file: lyric_chalk/kangaree/videos/kangaree_4_kanipetti_te.mp4
+    title: "తిప్పలెన్ని ఉన్నా… నొప్పిలేని జన్మే ఉండదురా ✍️ Part 4 #shorts"
+    description: *kp
+    tags: *kpt
