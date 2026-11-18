@@ -23,6 +23,7 @@ DB = sum(dur(f) for f in rest); D = (A1 - A0) + DB
 print(f"video {D:.2f}s: face wash {A1-A0:.1f}s + chal chalo {DB:.2f}s (song {B0}-{B0+DB:.2f})")
 open(f"{tmp}/list.txt", "w").write("".join(f"file '{p}'\n" for p in lst))
 XF = 0.25   # short audio crossfade at the jump
+# final file: delogo=x=850:y=1690:w=94:h=94 applied afterwards (corner sparkle mark), audio copied
 subprocess.run(["ffmpeg", "-v", "error", "-y", "-f", "concat", "-safe", "0", "-i", f"{tmp}/list.txt",
   "-ss", f"{A0}", "-t", f"{A1-A0+XF}", "-i", f"{W}/song.wav",
   "-ss", f"{B0-XF}", "-t", f"{DB+XF}", "-i", f"{W}/song.wav",
