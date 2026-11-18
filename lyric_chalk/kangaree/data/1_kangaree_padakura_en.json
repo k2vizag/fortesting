@@ -1,0 +1,92 @@
+{
+ "total": 39.2,
+ "start": 24.6,
+ "segments": [
+  [
+   24.6,
+   36.7
+  ],
+  [
+   47.0,
+   74.1
+  ]
+ ],
+ "font": "en",
+ "color": true,
+ "title": "Kangaree Padaku Ra",
+ "scenesFile": "../scenes.js",
+ "lines": [
+  {
+   "a": 1.3,
+   "b": 5.3,
+   "t": "Kangaare padakuraa andhari katha intheraa"
+  },
+  {
+   "a": 6.7,
+   "b": 11.04,
+   "t": "Kashtaale erugani katha antoo undadhuraa"
+  },
+  {
+   "a": 12.7,
+   "b": 16.64,
+   "t": "Kanneelle daatani kallevi levu kadhaa"
+  },
+  {
+   "a": 18.0,
+   "b": 22.26,
+   "t": "Kallolam jaragani brathukantoo undadhugaa"
+  },
+  {
+   "a": 23.0,
+   "b": 27.96,
+   "t": "Aa dhaivam epudoo aade aate idhiraa"
+  },
+  {
+   "a": 28.7,
+   "b": 33.76,
+   "t": "E pusthakamoo nerpinchani paatham idhiraa"
+  },
+  {
+   "a": 34.5,
+   "b": 38.98,
+   "t": "Neetho nuvu yuddham chesthoo saagaaliraa"
+  }
+ ],
+ "scenes": [
+  {
+   "a": 0.3,
+   "b": 6.45,
+   "key": "kangaru"
+  },
+  {
+   "a": 6.45,
+   "b": 12.45,
+   "key": "katha"
+  },
+  {
+   "a": 12.45,
+   "b": 17.75,
+   "key": "kanneellu"
+  },
+  {
+   "a": 17.75,
+   "b": 22.75,
+   "key": "kallolam"
+  },
+  {
+   "a": 22.75,
+   "b": 28.45,
+   "key": "daivam"
+  },
+  {
+   "a": 28.45,
+   "b": 34.25,
+   "key": "pustakam"
+  },
+  {
+   "a": 34.25,
+   "b": 39.2,
+   "key": "yuddham"
+  }
+ ]
+}

@@ -1,0 +1,63 @@
+{
+ "total": 22.6,
+ "start": 73.9,
+ "segments": null,
+ "font": "en",
+ "color": true,
+ "title": "Kangaree Padaku Ra",
+ "scenesFile": "../scenes.js",
+ "lines": [
+  {
+   "a": 0.6,
+   "b": 6.28,
+   "t": "Neeke ilaa jarigindhi antoo neelo nuve mari baadha padaku"
+  },
+  {
+   "a": 6.28,
+   "b": 10.08,
+   "t": "E chettukanthati gaali undunu choodaraa"
+  },
+  {
+   "a": 11.5,
+   "b": 14.52,
+   "t": "Nee chikkulannivi theeravantoo"
+  },
+  {
+   "a": 14.52,
+   "b": 17.26,
+   "t": "Ekkillu peduthoo aagipoku"
+  },
+  {
+   "a": 17.26,
+   "b": 21.14,
+   "t": "Dhairyamgaa vethuku dhaari dhorukunu sodharaa"
+  }
+ ],
+ "scenes": [
+  {
+   "a": 0.3,
+   "b": 6.03,
+   "key": "neeke"
+  },
+  {
+   "a": 6.03,
+   "b": 11.25,
+   "key": "chettu"
+  },
+  {
+   "a": 11.25,
+   "b": 14.27,
+   "key": "chikkulu"
+  },
+  {
+   "a": 14.27,
+   "b": 17.01,
+   "key": "ekkillu"
+  },
+  {
+   "a": 17.01,
+   "b": 22.6,
+   "key": "dhairyam"
+  }
+ ]
+}

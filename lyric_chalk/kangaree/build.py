@@ -1,4 +1,4 @@
-# "Kangaree Padaku Ra" chalk lyric shorts – Telugu only (user's lyrics, lines.json).
+# "Kangaree Padaku Ra" chalk lyric shorts – Telugu (user's lyrics) + English letters (lyrics_en.txt, written by Claude).
 # Line times (song seconds) from Whisper large-v3 word times; first word moved later
 # where Whisper stretched it over the music. Chorus used once (video 2).
 import json, os, sys
@@ -31,7 +31,8 @@ for name, st, en, rng_ in VIDEOS:
         a0 = 0.3 if not sc else round(T2[i][0] - st - 0.25, 2)
         if sc: sc[-1]["b"] = a0
         sc.append({"a": a0, "b": total, "key": SCN[i]})
-    lines = [{"a": round(T2[i][0] - st, 2), "b": round(T2[i][1] - st, 2), "t": LY[i][0]} for i in rng_]
-    json.dump({"total": total, "start": st, "segments": segs if len(segs) > 1 else None, "font": "te", "color": True, "title": "Kangaree Padaku Ra",
-               "scenesFile": "../scenes.js", "lines": lines, "scenes": sc}, open(f"{OUT}/{name}_te.json", "w"), ensure_ascii=False, indent=1)
+    for fi, font in enumerate(("te", "en")):
+        lines = [{"a": round(T2[i][0] - st, 2), "b": round(T2[i][1] - st, 2), "t": LY[i][fi]} for i in rng_]
+        json.dump({"total": total, "start": st, "segments": segs if len(segs) > 1 else None, "font": font, "color": True, "title": "Kangaree Padaku Ra",
+                   "scenesFile": "../scenes.js", "lines": lines, "scenes": sc}, open(f"{OUT}/{name}_{font}.json", "w"), ensure_ascii=False, indent=1)
     print(name, total, len(rng_))

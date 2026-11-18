@@ -42,7 +42,7 @@ function rock(x, y, s, col = C.v) { return [S(P([[x - s, y], [x - s * 0.9, y - s
 function bubble(x, y, w2, h2, col = C.w) { return [S(E(x, y, w2, h2), col, 6), S(P([[x - w2 * 0.3, y + h2 * 0.9], [x - w2 * 0.5, y + h2 * 1.5], [x - w2 * 0.05, y + h2 * 0.98]]), col, 6)]; }
 function shirt(x, y, s, col = C.b) { return [S(P([[x - s * 0.35, y - s], [x - s, y - s * 0.7], [x - s * 0.8, y - s * 0.35], [x - s * 0.55, y - s * 0.45], [x - s * 0.55, y + s * 0.5], [x + s * 0.55, y + s * 0.5], [x + s * 0.55, y - s * 0.45], [x + s * 0.8, y - s * 0.35], [x + s, y - s * 0.7], [x + s * 0.35, y - s], [x, y - s * 0.75], [x - s * 0.35, y - s]]), col, 7), S(L(x, y - s * 0.75, x, y + s * 0.5), col, 3)]; }
 function bug(x, y, s, col = C.w) { return [S(E(x, y, s, s * 0.6), col, 5), S(Ci(x + s * 1.1, y, s * 0.35), col, 5), ...[-0.5, 0, 0.5].flatMap(k => [S(L(x + k * s, y - s * 0.5, x + k * s - 10, y - s), col, 3), S(L(x + k * s, y + s * 0.5, x + k * s - 10, y + s), col, 3)])]; }
-const EN = { 'తీపి': 'Theepi', 'చేదు': 'Chedhu', 'ఉప్పు': 'Uppu', 'తేలిక': 'Thelika', 'చూద్దాం!': 'Choodhaam!', 'హో..రు!': 'Ho..ru!', 'పోరాటం': 'Poraatam', 'మడత': 'Madatha', 'ఉవ్వా!': 'Uvvaa!', 'కష్టం': 'Kashtam', 'కొత్తేం కాదు': 'Kotthem kaadhu', 'అనుభవం': 'Anubhavam', 'చరిత': 'Charitha', 'విధి': 'Vidhi', 'అ ఆ': 'A Aa' };
+const EN = { 'తీపి': 'Theepi', 'చేదు': 'Chedhu', 'ఉప్పు': 'Uppu', 'తేలిక': 'Thelika', 'చూద్దాం!': 'Choodhaam!', 'హో..రు!': 'Ho..ru!', 'పోరాటం': 'Poraatam', 'మడత': 'Madatha', 'ఉవ్వా!': 'Uvvaa!', 'కష్టం': 'Kashtam', 'కొత్తేం కాదు': 'Kotthem kaadhu', 'అనుభవం': 'Anubhavam', 'చరిత': 'Charitha', 'విధి': 'Vidhi', 'అ ఆ': 'A Aa', 'కథ': 'Katha', 'జీవితం': 'Jeevitham', 'నాకే?': 'Naake?', 'దారి': 'Dhaari', 'ఓర్పు': 'Orpu' };
 function tx(x, y, s, size, col = C.w) { if (D.font === 'en' && EN[s]) { s = EN[s]; size *= 0.8; } return [T(x, y, s, size, col)]; }
 
 // ---------- scene library (coordinates: drawing area ~ y 560..1420) ----------
@@ -167,7 +167,7 @@ function layout(str, fs = FS) { TX.font = `${fs}px ${FONT}`; const ws = str.spli
   // balance two rows
   if (rows.length >= 2 && ws.length > 2) { let best = null; for (let k = 1; k < ws.length; k++) { const a = TX.measureText(ws.slice(0, k).join(' ')).width, b = TX.measureText(ws.slice(k).join(' ')).width; if (a <= MAXW && b <= MAXW) { const d = Math.abs(a - b); if (!best || d < best[0]) best = [d, k]; } } if (best) return [ws.slice(0, best[1]), ws.slice(best[1])]; }
   return rows; }
-let LINES = []; const buildLines = () => LINES = D.lines.map(l => { let fs = FS, rows = layout(l.t); while (rows.length > 2 && fs > FS * 0.75) { fs -= 2; rows = layout(l.t, fs); } const tot = l.t.replace(/ /g, '').length; let acc = 0; const words = [];
+let LINES = []; const buildLines = () => LINES = D.lines.map(l => { let fs = FS, rows = layout(l.t); while (rows.length > 2 && fs > FS * 0.66) { fs -= 2; rows = layout(l.t, fs); } const tot = l.t.replace(/ /g, '').length; let acc = 0; const words = [];
   rows.forEach((r, ri) => r.forEach(w => { words.push({ w, ri, f0: acc / tot, f1: (acc + w.length) / tot }); acc += w.length; })); return { ...l, rows, words, fs }; });
 function lyric(t) {
   TX.setTransform(1, 0, 0, 1, 0, 0); TX.clearRect(0, 0, W, H);
