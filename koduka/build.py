@@ -121,8 +121,8 @@ for lang in ("te", "en"):
     open(f"{d}/list.txt", "w").write(lst)
     subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", sl, "-f", "concat", "-safe", "0", "-i", f"{d}/list.txt",
                     "-ss", f"{T0}", "-t", f"{TOTAL}", "-i", SONG,
-                    "-filter_complex", f"[1:v]fps=30,format=rgba[tx];[0:v][tx]overlay=0:0:format=auto,format=yuv420p[v];"
+                    "-filter_complex", f"[1:v]fps=30,format=rgba[tx];[0:v][tx]overlay=0:0:format=auto,hqdn3d=2:2:6:6,format=yuv420p[v];"
                     f"[2:a]afade=t=in:st=0:d=1.0,afade=t=out:st={TOTAL-2.5:.2f}:d=2.5,loudnorm=I=-14:TP=-1.5:LRA=11,aresample=48000[a]",
-                    "-map", "[v]", "-map", "[a]", "-t", f"{TOTAL}", "-c:v", "libx264", "-preset", "slow", "-crf", "21",
+                    "-map", "[v]", "-map", "[a]", "-t", f"{TOTAL}", "-c:v", "libx264", "-preset", "slow", "-crf", "24",
                     "-c:a", "aac", "-b:a", "192k", "-movflags", "+faststart", f"{OUT}/naa_koduka_lyrical_{lang}.mp4"], check=True)
 print("done", round(TOTAL, 1))
