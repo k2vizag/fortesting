@@ -15,6 +15,7 @@ def out_t(t):                                                    # song time -> 
         o += b - a
     raise ValueError(t)
 TOTAL = sum(b - a for a, b in SEG)
+BOUND = [SEG[0][1] - SEG[0][0], SEG[0][1] - SEG[0][0] + SEG[1][1] - SEG[1][0]]   # part boundaries (video time)
 # visuals: (src start, src end) in order, sums to TOTAL per section
 VIS = [(32.9, 38.5), (45.25, 72.9),                              # A: colour smoke, festival dance
        (89.0, 94.5), (123.0, 144.0), (76.0, 83.45),              # B: searching, roses, girls laughing
@@ -79,18 +80,23 @@ def make_states(lang):
         else:
             ost = [out_t(x) for x in st]
         lines.append((k, oa, ob, ws, ost))
+    sec_of = lambda oa: sum(oa >= x for x in BOUND)
     states = []; LEAD = 0.25
+    def push(t0, t1, words, fill, nxt):
+        if states and t0 > states[-1]["t1"] + 0.01:             # gap -> title only
+            states.append({"t0": states[-1]["t1"], "t1": t0, "words": [], "fill": 0, "next": ""})
+        if states and t0 < states[-1]["t1"]: states[-1]["t1"] = t0
+        if t1 - t0 > 0.005: states.append({"t0": round(t0, 3), "t1": round(t1, 3), "words": words, "fill": fill, "next": nxt})
     for i, (k, oa, ob, ws, ost) in enumerate(lines):
-        nxt = T[lines[i + 1][0]] if i + 1 < len(lines) else ""
-        t0 = max(0.0, oa - LEAD)
+        nxt = ""
+        if i + 1 < len(lines) and sec_of(lines[i + 1][1]) == sec_of(oa):   # no preview across parts
+            nxt = T[lines[i + 1][0]]
+        t0 = max(0.0, oa - LEAD, BOUND[sec_of(oa) - 1] if sec_of(oa) else 0.0)
         cuts = [t0] + [max(t0, x) for x in ost] + [ob]
         for n in range(len(ws) + 1):                 # n words filled during [cuts[n], cuts[n+1])
-            if cuts[n + 1] - cuts[n] > 0.005:
-                states.append({"t0": round(cuts[n], 3), "t1": round(cuts[n + 1], 3), "words": ws, "fill": n, "next": nxt})
-    # first line: start at 0
+            push(cuts[n], cuts[n + 1], ws, n, nxt)
     states[0]["t0"] = 0.0
-    for x, y in zip(states, states[1:]): x["t1"] = y["t0"]
-    states[-1]["t1"] = TOTAL
+    if states[-1]["t1"] < TOTAL: states.append({"t0": states[-1]["t1"], "t1": TOTAL, "words": [], "fill": 0, "next": ""})
     json.dump({"lang": lang, "title": "♪ అలసేంద్ర ♪" if lang == "te" else "♪ O Alasendra ♪", "states": states},
               open(f"{OUT}/states_{lang}.json", "w"), ensure_ascii=False, indent=0)
     return states
@@ -123,4 +129,23 @@ for lang in ("te", "en"):
                     "-filter_complex", f"[1:v]fps=30,format=rgba[tx];[0:v][tx]overlay=0:0:format=auto,fade=t=in:st=0:d=0.5,fade=t=out:st={TOTAL-1.2:.2f}:d=1.2,format=yuv420p[v]",
                     "-map", "[v]", "-map", "0:a", "-t", f"{TOTAL}", "-c:v", "libx264", "-preset", "slow", "-crf", "20", "-c:a", "copy",
                     "-movflags", "+faststart", f"{OUT}/alasendra_lyrical_{lang}.mp4"], check=True)
-print("total", round(TOTAL, 2))
+# 3 parts (one per script section), each with its own fades
+PARTS = [(0.0, BOUND[0]), (BOUND[0], BOUND[1]), (BOUND[1], TOTAL)]
+for lang in ("te", "en"):
+    for j, (a, b) in enumerate(PARTS):
+        d = b - a
+        subprocess.run(["ffmpeg", "-v", "error", "-y", "-ss", f"{a}", "-t", f"{d}", "-i", f"{OUT}/alasendra_lyrical_{lang}.mp4",
+                        "-vf", f"fade=t=in:st=0:d=0.4,fade=t=out:st={d-0.8:.2f}:d=0.8",
+                        "-af", f"afade=t=in:st=0:d=0.3,afade=t=out:st={d-1.2:.2f}:d=1.2",
+                        "-c:v", "libx264", "-preset", "slow", "-crf", "20", "-c:a", "aac", "-b:a", "192k",
+                        "-movflags", "+faststart", f"{OUT}/alasendra_part{j+1}_{lang}.mp4"], check=True)
+def lufs(p):
+    r = subprocess.run(["ffmpeg", "-hide_banner", "-i", p, "-af", "ebur128", "-f", "null", "-"], capture_output=True, text=True).stderr
+    return float(r.split("Integrated loudness:")[1].split("I:")[1].split("LUFS")[0])
+for lang in ("te", "en"):          # level every part to -14 LUFS (video copied)
+    for j in range(3):
+        p = f"{OUT}/alasendra_part{j+1}_{lang}.mp4"; g = -14.0 - lufs(p)
+        subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", p, "-c:v", "copy", "-af", f"volume={g:.2f}dB,alimiter=limit=0.89",
+                        "-c:a", "aac", "-b:a", "192k", "-movflags", "+faststart", p + ".tmp.mp4"], check=True)
+        os.replace(p + ".tmp.mp4", p)
+print("total", round(TOTAL, 2), "parts", [round(b - a, 2) for a, b in PARTS])
