@@ -1,4 +1,4 @@
-// (from alasendra) Renders one transparent 1080x1920 PNG per lyric state: title, current line (filled words in
+// (from alasendra; koduka layout: lyric line at the top, song title at the bottom, no next line) Renders one transparent 1080x1920 PNG per lyric state: title, current line (filled words in
 // yellow-orange, rest white) and the next line in grey. usage: node text_layer.js states.json fontsdir outdir
 const { chromium } = require('playwright');
 const fs = require('fs'), path = require('path');
@@ -10,9 +10,9 @@ const html = `<!doctype html><html><head><meta charset="utf-8"><style>
 @font-face{font-family:Pop;src:url(file://${fontsDir}/PopB.ttf)}
 html,body{margin:0;width:1080px;height:1920px;background:transparent;overflow:hidden}
 body{font-family:${te ? 'Rama' : 'Pop'};color:#fff;text-align:center}
-#title{position:absolute;top:110px;left:0;right:0;font-size:${te ? 70 : 60}px;
+#title{position:absolute;top:1650px;left:0;right:0;font-size:${te ? 70 : 60}px;
   text-shadow:0 0 18px rgba(255,170,40,.75),0 3px 6px #000}
-#cur{position:absolute;top:1440px;left:50px;right:50px;font-size:${te ? 84 : 68}px;line-height:1.35;
+#cur{position:absolute;top:110px;left:50px;right:50px;font-size:${te ? 84 : 68}px;line-height:1.35;
   text-shadow:0 4px 10px rgba(0,0,0,.9),0 0 3px #000}
 #cur .f{color:#ffc22e;text-shadow:0 0 16px rgba(255,140,30,.8),0 4px 10px rgba(0,0,0,.9),0 0 3px #000}
 #next{position:absolute;top:1730px;left:80px;right:80px;font-size:${te ? 56 : 46}px;line-height:1.3;color:rgba(235,235,235,.72);

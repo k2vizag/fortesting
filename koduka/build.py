@@ -107,7 +107,7 @@ for lang in ("te", "en"):
         if len(words) != len(tw):                     # EN word count differs -> spread over the sung span
             a, b = tw[0], tw[-1] + 0.5; tot = sum(map(len, words)); tw = []; t = a
             for w in words: tw.append(t); t += (b - a) * len(w) / tot
-        nxt = (L[i + 1][0] if lang == "te" else L[i + 1][1]) if i + 1 < len(L) and line_start[i + 1] - line_end[i] < 2.0 else ""
+        nxt = ""                                     # no upcoming line (user request)
         a = max(0.0, o(line_start[i]) - 0.3); b = o(line_end[i])
         cuts = [a] + [max(a, x) for x in tw] + [b]
         for n in range(len(words) + 1): push(cuts[n], cuts[n + 1], words, n, nxt)
@@ -125,4 +125,20 @@ for lang in ("te", "en"):
                     f"[2:a]afade=t=in:st=0:d=1.0,afade=t=out:st={TOTAL-2.5:.2f}:d=2.5,loudnorm=I=-14:TP=-1.5:LRA=11,aresample=48000[a]",
                     "-map", "[v]", "-map", "[a]", "-t", f"{TOTAL}", "-c:v", "libx264", "-preset", "slow", "-crf", "24",
                     "-c:a", "aac", "-b:a", "192k", "-movflags", "+faststart", f"{OUT}/naa_koduka_lyrical_{lang}.mp4"], check=True)
+# 4 parts (video time, user's timeline), each faded and levelled to -14 LUFS
+PARTS = [(2, 50), (54, 95), (113, 162), (173, 218)]
+def lufs(p):
+    r = subprocess.run(["ffmpeg", "-hide_banner", "-i", p, "-af", "ebur128", "-f", "null", "-"], capture_output=True, text=True).stderr
+    return float(r.split("Integrated loudness:")[1].split("I:")[1].split("LUFS")[0])
+for lang in ("te", "en"):
+    for j, (a, b) in enumerate(PARTS):
+        d = b - a; p = f"{OUT}/naa_koduka_part{j+1}_{lang}.mp4"
+        subprocess.run(["ffmpeg", "-v", "error", "-y", "-ss", f"{a}", "-t", f"{d}", "-i", f"{OUT}/naa_koduka_lyrical_{lang}.mp4",
+                        "-vf", f"fade=t=in:st=0:d=0.4,fade=t=out:st={d-0.8:.2f}:d=0.8",
+                        "-af", f"afade=t=in:st=0:d=0.4,afade=t=out:st={d-1.2:.2f}:d=1.2",
+                        "-c:v", "libx264", "-preset", "slow", "-crf", "23", "-c:a", "aac", "-b:a", "192k", p + ".tmp.mp4"], check=True)
+        g = -14.0 - lufs(p + ".tmp.mp4")
+        subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", p + ".tmp.mp4", "-c:v", "copy", "-af", f"volume={g:.2f}dB,alimiter=limit=0.89",
+                        "-c:a", "aac", "-b:a", "192k", "-movflags", "+faststart", p], check=True)
+        os.remove(p + ".tmp.mp4")
 print("done", round(TOTAL, 1))
