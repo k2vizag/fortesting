@@ -1,0 +1,269 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+html,body{margin:0;background:#000;overflow:hidden}canvas{display:block}
+</style></head><body><canvas id="c" width="1080" height="1920"></canvas><script>
+// Cinematic silhouette scenes for "Naa Koduka". One scene per lyric line:
+// elements rise in as dark silhouettes while the line is sung, then (last ~25% of the line)
+// the sky saturates and every shape blooms into full colour. Scenes cross-fade.
+// window.__DATA__ = {total, scenes:[{a,b,key,seed}]}: a = scene start, b = end of the sung line (colour peaks at b); window.render(t) draws frame at t seconds.
+const X = document.getElementById('c').getContext('2d');
+const W = 1080, H = 1920, HOR = 1290;                // horizon line
+const cl = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v));
+const ease = v => { v = cl(v); return v * v * (3 - 2 * v); };
+const lerp = (a, b, k) => a + (b - a) * k;
+function rng(s) { return () => { s |= 0; s = s + 0x6D2B79F5 | 0; let t = Math.imul(s ^ s >>> 15, 1 | s); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+const hex = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
+function mix(c1, c2, k) { const a = hex(c1), b = hex(c2); return `rgb(${a.map((v, i) => Math.round(lerp(v, b[i], cl(k)))).join(',')})`; }
+const SIL = '#0b0a12';
+// ---------- palettes: [top, mid, bottom-at-horizon], silhouette phase uses muted version ----------
+const SKY = {
+  dawn: ['#3b2a63', '#e0708a', '#ffc27a'], day: ['#4aa3e8', '#9fd3f5', '#fff1c4'], sunset: ['#2a1b4d', '#c2456b', '#ffa94d'],
+  night: ['#050a24', '#14245a', '#33508f'], moon: ['#0a1236', '#24407e', '#7d94c9'], storm: ['#14121f', '#3b3557', '#6d5f86'],
+  gold: ['#5a2a6e', '#ef7b45', '#ffd36e'], dusk: ['#1d2550', '#6b4c8f', '#f09a7a'], hot: ['#c8501e', '#f2913a', '#ffe08a'],
+};
+const GROUND = { dawn: '#3c4a2a', day: '#4f8a2e', sunset: '#3a2a2a', night: '#101a24', moon: '#18263a', storm: '#1e1b26', gold: '#5a4a22', dusk: '#2a2a3a', hot: '#8a5a2a' };
+function muted(c) { const [r, g, b] = hex(c); const l = (r + g + b) / 3; return '#' + [r, g, b].map(v => Math.round(lerp(v, l * 0.55, 0.62)).toString(16).padStart(2, '0')).join(''); }
+// ---------- drawing helpers ----------
+let K = 0, A = 1, TT = 0, R = rng(1);      // K = colour amount (0 silhouette .. 1 full colour), TT = time, A = element alpha
+const col = c => mix(SIL, c, K);           // element colour at current colour amount
+function poly(pts, fill) { X.beginPath(); pts.forEach(([x, y], i) => i ? X.lineTo(x, y) : X.moveTo(x, y)); X.closePath(); X.fillStyle = fill; X.fill(); }
+function circ(x, y, r, fill) { X.beginPath(); X.arc(x, y, r, 0, Math.PI * 2); X.fillStyle = fill; X.fill(); }
+function ell(x, y, rx, ry, rot, fill) { X.beginPath(); X.ellipse(x, y, rx, ry, rot, 0, Math.PI * 2); X.fillStyle = fill; X.fill(); }
+function limb(pts, w, stroke) { X.beginPath(); pts.forEach(([x, y], i) => i ? X.lineTo(x, y) : X.moveTo(x, y)); X.lineWidth = w; X.lineCap = 'round'; X.lineJoin = 'round'; X.strokeStyle = stroke; X.stroke(); }
+function curve(p0, c1, c2, p1, w, stroke) { X.beginPath(); X.moveTo(...p0); X.bezierCurveTo(...c1, ...c2, ...p1); X.lineWidth = w; X.lineCap = 'round'; X.strokeStyle = stroke; X.stroke(); }
+function glow(x, y, r, c, a) { const g = X.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, c.replace('rgb', 'rgba').replace(')', `,${a})`)); g.addColorStop(1, 'rgba(0,0,0,0)'); X.fillStyle = g; X.fillRect(x - r, y - r, 2 * r, 2 * r); }
+const rgbA = (c, a) => { const [r, g, b] = hex(c); return `rgba(${r},${g},${b},${a})`; };
+// ---------- figures ----------
+// mother: feet centre (x,y), height h, flip 1 = facing right
+function mother(x, y, h, pose = 'stand', f = 1) {
+  const q = (a, b) => [x + a * h * f, y + b * h];
+  const skin = col('#9a5b34'), saree = col('#c2185b'), pallu = col('#ffb300'), hair = col('#1a1010');
+  // saree skirt
+  X.beginPath(); X.moveTo(...q(-0.07, -0.50)); X.bezierCurveTo(...q(-0.12, -0.3), ...q(-0.2, -0.1), ...q(-0.19, 0));
+  X.lineTo(...q(0.17, 0)); X.bezierCurveTo(...q(0.16, -0.12), ...q(0.1, -0.32), ...q(0.08, -0.50)); X.closePath(); X.fillStyle = saree; X.fill();
+  // border at hem
+  poly([q(-0.19, -0.03), q(0.17, -0.03), q(0.17, 0), q(-0.19, 0)], pallu);
+  // torso
+  poly([q(-0.08, -0.78), q(0.07, -0.78), q(0.085, -0.5), q(-0.075, -0.5)], saree);
+  // pallu over shoulder flowing behind
+  X.beginPath(); X.moveTo(...q(0.06, -0.79)); X.bezierCurveTo(...q(-0.05, -0.7), ...q(-0.12, -0.6), ...q(-0.2 - 0.02 * Math.sin(TT * 1.3), -0.42));
+  X.lineTo(...q(-0.15, -0.4)); X.bezierCurveTo(...q(-0.06, -0.55), ...q(0.0, -0.66), ...q(0.08, -0.72)); X.closePath(); X.fillStyle = pallu; X.fill();
+  // neck + head + bun
+  poly([q(-0.02, -0.82), q(0.02, -0.82), q(0.02, -0.77), q(-0.02, -0.77)], skin);
+  circ(...q(0.005, -0.88), h * 0.062, skin);
+  X.beginPath(); X.arc(...q(-0.005, -0.895), h * 0.066, Math.PI * (f > 0 ? 0.75 : 0.25), Math.PI * (f > 0 ? 2.05 : 1.45 - 0.2) ); X.fillStyle = hair; X.fill();
+  circ(...q(-0.07, -0.88), h * 0.035, hair);                            // bun
+  if (K > 0.5) circ(...q(0.02, -0.905), h * 0.008, col('#d32f2f'));      // bindi
+  const aw = h * 0.034;
+  const arms = {
+    stand: [[q(0.05, -0.76), q(0.09, -0.62), q(0.1, -0.5)], [q(-0.05, -0.76), q(-0.09, -0.62), q(-0.09, -0.5)]],
+    hold: [[q(0.05, -0.76), q(0.12, -0.62), q(0.2, -0.5)], [q(-0.05, -0.76), q(-0.09, -0.62), q(-0.09, -0.5)]],
+    point: [[q(0.05, -0.76), q(0.17, -0.88), q(0.27, -1.0)], [q(-0.05, -0.76), q(-0.09, -0.62), q(-0.09, -0.5)]],
+    bless: [[q(0.05, -0.76), q(0.17, -0.7), q(0.27, -0.62)], [q(-0.05, -0.76), q(-0.09, -0.62), q(-0.09, -0.5)]],
+    cradle: [[q(0.05, -0.76), q(0.13, -0.66), q(0.0, -0.6)], [q(-0.05, -0.76), q(0.08, -0.7), q(0.1, -0.64)]],
+    open: [[q(0.05, -0.76), q(0.17, -0.74), q(0.28, -0.8)], [q(-0.05, -0.76), q(-0.17, -0.74), q(-0.28, -0.8)]],
+    hug: [[q(0.05, -0.76), q(0.16, -0.66), q(0.18, -0.56)], [q(-0.05, -0.76), q(0.06, -0.64), q(0.12, -0.56)]],
+    lamp: [[q(0.05, -0.76), q(0.16, -0.66), q(0.24, -0.66)], [q(-0.05, -0.76), q(-0.09, -0.62), q(-0.09, -0.5)]],
+    sing: [[q(0.05, -0.76), q(0.12, -0.64), q(0.2, -0.6)], [q(-0.05, -0.76), q(0.08, -0.66), q(0.18, -0.62)]],
+  }[pose];
+  arms.forEach(a => limb(a, aw, skin));
+}
+// child: feet centre, height h
+function child(x, y, h, pose = 'stand', f = 1, shirt = '#29b6f6') {
+  const q = (a, b) => [x + a * h * f, y + b * h];
+  const skin = col('#a8653a'), sh = col(shirt), pant = col('#5d4037'), hair = col('#141010');
+  const w = h * 0.075;
+  if (pose === 'sleep') {   // lying on side, x,y = centre of body on ground
+    ell(...q(0, -0.12), h * 0.42, h * 0.11, 0, sh); ell(...q(0.32, -0.13), h * 0.11, h * 0.08, 0, pant);
+    circ(...q(-0.5, -0.17), h * 0.12, skin); X.beginPath(); X.arc(...q(-0.5, -0.19), h * 0.125, Math.PI, 2 * Math.PI); X.fillStyle = hair; X.fill(); return;
+  }
+  if (pose === 'sit') {
+    limb([q(0.0, -0.3), q(0.2, -0.32), q(0.26, -0.04)], w, pant); limb([q(0.0, -0.3), q(0.16, -0.3), q(0.2, -0.04)], w, pant);
+    poly([q(-0.09, -0.68), q(0.08, -0.68), q(0.09, -0.3), q(-0.1, -0.3)], sh);
+    circ(...q(0.0, -0.8), h * 0.115, skin); X.beginPath(); X.arc(...q(0.0, -0.82), h * 0.12, Math.PI * 0.95, Math.PI * 2.1); X.fillStyle = hair; X.fill();
+    limb([q(0.05, -0.62), q(0.15, -0.46), q(0.22, -0.36)], w * 0.8, skin); limb([q(-0.05, -0.62), q(0.05, -0.46), q(0.16, -0.38)], w * 0.8, skin);
+    return;
+  }
+  const lg = { stand: [[0.04, 0.05], [-0.04, -0.05]], walk: [[0.12, 0.16], [-0.1, -0.12]], run: [[0.2, 0.26], [-0.16, -0.24]] }[pose] || [[0.04, 0.05], [-0.04, -0.05]];
+  const sw = pose === 'walk' || pose === 'run' ? Math.sin(TT * 5) * 0.03 : 0;
+  limb([q(0.03, -0.42), q(lg[0][0] + sw, -0.2), q(lg[0][1] + sw, 0)], w, pant);
+  limb([q(-0.03, -0.42), q(lg[1][0] - sw, -0.2), q(lg[1][1] - sw, 0)], w, pant);
+  poly([q(-0.1, -0.44), q(0.1, -0.44), q(0.09, -0.32), q(-0.09, -0.32)], pant);
+  poly([q(-0.1, -0.7), q(0.1, -0.7), q(0.11, -0.42), q(-0.11, -0.42)], sh);
+  circ(...q(0.0, -0.82), h * 0.115, skin); X.beginPath(); X.arc(...q(0.0, -0.84), h * 0.12, Math.PI * 0.95, Math.PI * 2.1); X.fillStyle = hair; X.fill();
+  const arms = {
+    stand: [[q(0.08, -0.66), q(0.12, -0.54), q(0.12, -0.44)], [q(-0.08, -0.66), q(-0.12, -0.54), q(-0.12, -0.44)]],
+    walk: [[q(0.08, -0.66), q(0.16, -0.54), q(0.2, -0.46)], [q(-0.08, -0.66), q(-0.14, -0.55), q(-0.18, -0.48)]],
+    run: [[q(0.08, -0.66), q(0.2, -0.6), q(0.26, -0.7)], [q(-0.08, -0.66), q(-0.18, -0.56), q(-0.26, -0.6)]],
+    reach: [[q(0.08, -0.66), q(-0.06, -0.8), q(-0.16, -0.94)], [q(-0.08, -0.66), q(-0.12, -0.54), q(-0.12, -0.44)]],
+    up: [[q(0.08, -0.66), q(0.18, -0.86), q(0.22, -1.02)], [q(-0.08, -0.66), q(-0.18, -0.86), q(-0.22, -1.02)]],
+    rub: [[q(0.08, -0.66), q(0.14, -0.72), q(0.05, -0.83)], [q(-0.08, -0.66), q(-0.14, -0.72), q(-0.05, -0.83)]],
+    scared: [[q(0.08, -0.66), q(0.2, -0.76), q(0.14, -0.9)], [q(-0.08, -0.66), q(0.02, -0.76), q(0.06, -0.9)]],
+    plant: [[q(0.08, -0.66), q(0.2, -0.5), q(0.28, -0.36)], [q(-0.08, -0.66), q(0.1, -0.5), q(0.22, -0.38)]],
+    bag: [[q(0.08, -0.66), q(0.12, -0.54), q(0.12, -0.44)], [q(-0.08, -0.66), q(-0.12, -0.54), q(-0.12, -0.44)]],
+  }[pose] || [[q(0.08, -0.66), q(0.12, -0.54), q(0.12, -0.44)], [q(-0.08, -0.66), q(-0.12, -0.54), q(-0.12, -0.44)]];
+  arms.forEach(a => limb(a, w * 0.8, skin));
+  if (pose === 'bag') { poly([q(-0.2, -0.68), q(-0.08, -0.68), q(-0.08, -0.42), q(-0.2, -0.42)], col('#e53935')); }
+}
+// ---------- nature & props ----------
+function tree(x, y, h, kind = 'round', fruits = 0) {
+  const tr = col('#5d4037'), lf = col('#2e7d32'), lf2 = col('#43a047');
+  const sway = Math.sin(TT * 0.8 + x) * h * 0.01;
+  poly([[x - h * 0.04, y], [x + h * 0.04, y], [x + h * 0.025, y - h * 0.55], [x - h * 0.025, y - h * 0.55]], tr);
+  limb([[x, y - h * 0.45], [x + h * 0.14, y - h * 0.62]], h * 0.03, tr); limb([[x, y - h * 0.4], [x - h * 0.13, y - h * 0.58]], h * 0.03, tr);
+  if (kind === 'palm') { for (let i = 0; i < 7; i++) { const a = -Math.PI / 2 + (i - 3) * 0.45; curve([x, y - h * 0.55], [x + Math.cos(a) * h * 0.2, y - h * 0.55 + Math.sin(a) * h * 0.25], [x + Math.cos(a) * h * 0.35, y - h * 0.5 + Math.sin(a) * h * 0.1], [x + Math.cos(a) * h * 0.42 + sway, y - h * 0.4], h * 0.04, lf); } return; }
+  const blobs = [[0, -0.78, 0.26], [-0.18, -0.66, 0.18], [0.19, -0.67, 0.19], [-0.08, -0.92, 0.17], [0.12, -0.9, 0.16]];
+  blobs.forEach(([bx, by, r], i) => circ(x + bx * h + sway, y + by * h, r * h, i % 2 ? lf2 : lf));
+  for (let i = 0; i < fruits; i++) { const rr = rng(i + 7); circ(x + (rr() - 0.5) * h * 0.45 + sway, y - h * (0.65 + rr() * 0.3), h * 0.025, col(i % 2 ? '#ff7043' : '#ffca28')); }
+}
+function bush(x, y, s, thorn = false) {
+  const c1 = col(thorn ? '#3e5a2a' : '#388e3c');
+  [[0, 0, 1], [-0.7, 0.15, 0.75], [0.7, 0.15, 0.75]].forEach(([dx, dy, r]) => circ(x + dx * s, y - s * 0.5 + dy * s, r * s * 0.6, c1));
+  if (thorn) for (let i = 0; i < 16; i++) { const a = i / 16 * Math.PI * 2; limb([[x + Math.cos(a) * s * 0.7, y - s * 0.5 + Math.sin(a) * s * 0.55], [x + Math.cos(a) * s * 1.05, y - s * 0.5 + Math.sin(a) * s * 0.85]], 5, col('#6d4c41')); }
+}
+function flower(x, y, s, c = '#ec407a') {
+  limb([[x, y], [x + Math.sin(TT + x) * s * 0.1, y - s * 1.4]], s * 0.12, col('#43a047'));
+  const cx = x + Math.sin(TT + x) * s * 0.1, cy = y - s * 1.5;
+  for (let i = 0; i < 6; i++) { const a = i / 6 * Math.PI * 2 + TT * 0.2; ell(cx + Math.cos(a) * s * 0.4, cy + Math.sin(a) * s * 0.4, s * 0.32, s * 0.18, a, col(c)); }
+  circ(cx, cy, s * 0.22, col('#ffd54f'));
+}
+function grass(y0, n, h, c = '#2e5d1e', seed = 3) { const r = rng(seed); X.strokeStyle = col(c); X.lineWidth = 4; X.lineCap = 'round';
+  for (let i = 0; i < n; i++) { const x = r() * W, hh = h * (0.5 + r()), s = Math.sin(TT * 1.5 + x * 0.02) * 6; X.beginPath(); X.moveTo(x, y0 + r() * 40); X.quadraticCurveTo(x + s, y0 - hh * 0.5, x + s * 2, y0 - hh); X.stroke(); } }
+function hill(y, amp, c, ph = 0) { X.beginPath(); X.moveTo(0, H); for (let x = 0; x <= W; x += 20) X.lineTo(x, y - amp * (0.6 + 0.4 * Math.sin(x / 260 + ph)) - amp * 0.3 * Math.sin(x / 90 + ph * 2)); X.lineTo(W, H); X.closePath(); X.fillStyle = c; X.fill(); }
+function moonD(x, y, r, phase = 1) { glow(x, y, r * 3.2, mix('#3a4a7a', '#fff3c4', K), 0.35 + 0.25 * K); circ(x, y, r, mix('#cfd6e6', '#fff6d5', K)); if (phase < 1) circ(x + r * 0.45, y - r * 0.15, r * 0.9, 'rgba(0,0,0,0)'); circ(x - r * 0.3, y - r * 0.2, r * 0.12, mix('#b8c0d4', '#efe2b5', K)); circ(x + r * 0.25, y + r * 0.3, r * 0.17, mix('#b8c0d4', '#efe2b5', K)); }
+function sunD(x, y, r) { glow(x, y, r * 4, mix('#c07040', '#ffd27a', K), 0.4 + 0.3 * K); circ(x, y, r, mix('#e0a070', '#fff0b0', K)); }
+function stars(n, seed = 5, ymax = HOR - 300) { const r = rng(seed); for (let i = 0; i < n; i++) { const x = r() * W, y = r() * ymax, s = 1.5 + r() * 3, tw = 0.5 + 0.5 * Math.sin(TT * 2 + i); circ(x, y, s * (0.7 + 0.3 * tw), `rgba(255,${240 + 15 * K | 0},${200 + 55 * (1 - K) | 0},${0.4 + 0.6 * tw})`); } }
+function starD(x, y, r, c = '#ffd54f') { const pts = []; for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? r * 0.45 : r; pts.push([x + Math.cos(a) * rr, y + Math.sin(a) * rr]); } glow(x, y, r * 2.5, mix('#555577', c, K), 0.3 + 0.4 * K); poly(pts, mix('#8890a8', c, K)); }
+function cloud(x, y, s, c = '#90caf9') { const cc = mix('#2a2f44', c, K); [[0, 0, 1], [-0.9, 0.25, 0.7], [0.9, 0.25, 0.75], [0.45, -0.35, 0.65], [-0.45, -0.3, 0.6]].forEach(([dx, dy, r]) => circ(x + dx * s, y + dy * s, r * s, cc)); }
+function birdD(x, y, s, c = '#263238') { const fl = Math.sin(TT * 8 + x) * 0.5; limb([[x - s, y - s * fl], [x - s * 0.3, y], [x, y + s * 0.15], [x + s * 0.3, y], [x + s, y - s * fl]], s * 0.18, col(c)); }
+function hut(x, y, s) { poly([[x - s, y], [x + s, y], [x + s, y - s * 0.9], [x - s, y - s * 0.9]], col('#a1887f')); poly([[x - s * 1.25, y - s * 0.85], [x, y - s * 1.7], [x + s * 1.25, y - s * 0.85]], col('#795548')); poly([[x - s * 0.2, y], [x + s * 0.2, y], [x + s * 0.2, y - s * 0.55], [x - s * 0.2, y - s * 0.55]], col('#3e2723')); if (K > 0.3) { poly([[x + s * 0.45, y - s * 0.45], [x + s * 0.75, y - s * 0.45], [x + s * 0.75, y - s * 0.7], [x + s * 0.45, y - s * 0.7]], mix('#000000', '#ffd54f', K)); } }
+function school(x, y, s) { poly([[x - s, y], [x + s, y], [x + s, y - s * 0.8], [x - s, y - s * 0.8]], col('#ef9a9a')); poly([[x - s * 1.1, y - s * 0.78], [x, y - s * 1.25], [x + s * 1.1, y - s * 0.78]], col('#c62828'));
+  for (let i = -2; i <= 2; i++) if (i) poly([[x + i * s * 0.32 - s * 0.1, y - s * 0.6], [x + i * s * 0.32 + s * 0.1, y - s * 0.6], [x + i * s * 0.32 + s * 0.1, y - s * 0.35], [x + i * s * 0.32 - s * 0.1, y - s * 0.35]], col('#fff59d'));
+  poly([[x - s * 0.15, y], [x + s * 0.15, y], [x + s * 0.15, y - s * 0.45], [x - s * 0.15, y - s * 0.45]], col('#5d4037')); limb([[x, y - s * 1.25], [x, y - s * 1.6]], 5, col('#6d4c41')); poly([[x, y - s * 1.6], [x + s * 0.3, y - s * 1.5], [x, y - s * 1.4]], col('#ff9800')); }
+function city(y, seed = 9) { const r = rng(seed); let x = -20; while (x < W) { const w = 60 + r() * 90, h = 150 + r() * 330; poly([[x, y], [x + w, y], [x + w, y - h], [x, y - h]], col(['#5c6bc0', '#7e57c2', '#26a69a', '#8d6e63'][(r() * 4) | 0]));
+    for (let yy = y - h + 20; yy < y - 20; yy += 36) for (let xx = x + 12; xx < x + w - 14; xx += 26) if (r() > 0.45) poly([[xx, yy], [xx + 12, yy], [xx + 12, yy + 18], [xx, yy + 18]], mix('#111118', '#ffe082', K * 0.9)); x += w + 6; } }
+function rocks(y0, n, seed = 4, s = 50) { const r = rng(seed); for (let i = 0; i < n; i++) { const x = r() * W, sz = s * (0.5 + r()), yy = y0 + r() * 380; ell(x, yy, sz, sz * 0.6, 0, col(['#8d6e63', '#9e9e9e', '#a1887f'][i % 3])); } }
+function path(c = '#c8a165') { poly([[W * 0.42, HOR], [W * 0.58, HOR], [W * 0.95, H], [W * 0.05, H]], col(c)); }
+function lamp(x, y, s) { glow(x, y, s * 6, mix('#806030', '#ffcc66', K), 0.35 + 0.45 * K); limb([[x, y - s * 1.2], [x, y - s * 0.7]], 4, col('#5d4037')); poly([[x - s * 0.45, y - s * 0.7], [x + s * 0.45, y - s * 0.7], [x + s * 0.35, y + s * 0.4], [x - s * 0.35, y + s * 0.4]], mix('#3a3020', '#ffb74d', Math.max(K, 0.35))); circ(x, y - s * 0.1, s * 0.22, mix('#806040', '#fff3c4', Math.max(K, 0.5))); }
+function cradle(x, y, s) { limb([[x - s, y - s * 2.2], [x - s * 0.6, y - s * 0.5]], 6, col('#795548')); limb([[x + s, y - s * 2.2], [x + s * 0.6, y - s * 0.5]], 6, col('#795548'));
+  const sw = Math.sin(TT * 1.6) * 0.12; X.save(); X.translate(x, y - s * 2.2); X.rotate(sw); X.beginPath(); X.moveTo(-s * 0.8, s * 1.4); X.quadraticCurveTo(0, s * 2.1, s * 0.8, s * 1.4); X.lineTo(s * 0.6, s * 1.2); X.quadraticCurveTo(0, s * 1.7, -s * 0.6, s * 1.2); X.closePath(); X.fillStyle = col('#ffb300'); X.fill();
+  limb([[0, 0], [-s * 0.7, s * 1.3]], 3, col('#8d6e63')); limb([[0, 0], [s * 0.7, s * 1.3]], 3, col('#8d6e63')); circ(-s * 0.35, s * 1.3, s * 0.2, col('#a8653a')); X.restore(); }
+function noteD(x, y, s, c = '#ffd54f') { const yy = y + Math.sin(TT * 2 + x) * 10; ell(x, yy, s * 0.35, s * 0.25, -0.4, col(c)); limb([[x + s * 0.3, yy - s * 0.05], [x + s * 0.3, yy - s * 1.1], [x + s * 0.75, yy - s * 0.85]], s * 0.12, col(c)); }
+function heartD(x, y, s, c = '#ff4d7a') { X.beginPath(); X.moveTo(x, y + s * 0.9); X.bezierCurveTo(x - s * 1.6, y - s * 0.2, x - s * 0.6, y - s * 1.3, x, y - s * 0.4); X.bezierCurveTo(x + s * 0.6, y - s * 1.3, x + s * 1.6, y - s * 0.2, x, y + s * 0.9); X.fillStyle = col(c); X.fill(); }
+function handsD(x, y, s) { const sk1 = col('#9a5b34'), sk2 = col('#c07a4a'); X.save(); X.translate(x, y);
+  limb([[-s * 2.2, s * 0.5], [-s * 0.2, 0]], s * 0.7, sk1); limb([[s * 2.2, s * 0.2], [s * 0.3, s * 0.1]], s * 0.5, sk2); circ(-s * 0.1, 0, s * 0.55, sk1); circ(s * 0.25, s * 0.08, s * 0.4, sk2);
+  poly([[-s * 2.6, s * 0.1], [-s * 1.6, -s * 0.05], [-s * 1.6, s * 1.0], [-s * 2.6, s * 1.0]], col('#c2185b')); poly([[s * 2.6, -s * 0.2], [s * 1.7, -s * 0.15], [s * 1.7, s * 0.6], [s * 2.6, s * 0.6]], col('#29b6f6')); X.restore(); }
+function shield(x, y, r) { const g = X.createRadialGradient(x, y, r * 0.2, x, y, r); g.addColorStop(0, rgbA('#fff3c4', 0.05 + 0.2 * K)); g.addColorStop(0.8, rgbA('#ffd54f', 0.12 + 0.35 * K)); g.addColorStop(1, 'rgba(255,213,79,0)'); X.fillStyle = g; X.beginPath(); X.arc(x, y, r, 0, Math.PI * 2); X.fill(); }
+function bolt(x, y, s, flash) { poly([[x, y], [x + s * 0.5, y], [x + s * 0.1, y + s * 1.2], [x + s * 0.6, y + s * 1.2], [x - s * 0.3, y + s * 2.8], [x + s * 0.05, y + s * 1.6], [x - s * 0.4, y + s * 1.6]], mix('#8a88a0', '#fff59d', Math.max(K, flash))); }
+function monster(x, y, s) { const w = Math.sin(TT * 1.2) * s * 0.05; X.beginPath(); X.moveTo(x - s, y); X.bezierCurveTo(x - s * 1.2 + w, y - s * 1.5, x - s * 0.6, y - s * 2.4, x, y - s * 2.4); X.bezierCurveTo(x + s * 0.6, y - s * 2.4, x + s * 1.2 - w, y - s * 1.5, x + s, y);
+  for (let i = 0; i < 5; i++) X.lineTo(x + s - (i + 0.5) * s * 0.4, y - (i % 2 ? 0 : s * 0.25)); X.closePath(); X.fillStyle = mix('#05040a', '#4a3a6a', K * 0.6); X.fill();
+  circ(x - s * 0.3, y - s * 1.6, s * 0.12, mix('#a01010', '#ffeb3b', K)); circ(x + s * 0.3, y - s * 1.6, s * 0.12, mix('#a01010', '#ffeb3b', K)); }
+function net(x, y, s) { X.strokeStyle = col('#bcaaa4'); X.lineWidth = 3; for (let i = -4; i <= 4; i++) { X.beginPath(); X.moveTo(x + i * s * 0.25, y - s); X.lineTo(x + i * s * 0.18, y); X.stroke(); X.beginPath(); X.moveTo(x - s, y - s + (i + 4) * s * 0.12); X.lineTo(x + s, y - s + (i + 4) * s * 0.12); X.stroke(); } }
+function nest(x, y, s) { ell(x, y, s, s * 0.45, 0, col('#8d6e63')); for (let i = 0; i < 9; i++) limb([[x - s + i * s * 0.25, y - s * 0.2], [x - s * 0.8 + i * s * 0.2, y + s * 0.3]], 3, col('#5d4037')); [[-0.4, '#b3e5fc'], [0, '#e1f5fe'], [0.4, '#b3e5fc']].forEach(([dx, c]) => ell(x + dx * s, y - s * 0.35, s * 0.2, s * 0.26, 0, col(c))); }
+function compass(x, y, r) { circ(x, y, r, col('#ffe0b2')); circ(x, y, r * 0.85, col('#3e2723')); const a = TT * 0.4; poly([[x + Math.cos(a) * r * 0.75, y + Math.sin(a) * r * 0.75], [x + Math.cos(a + 1.57) * r * 0.12, y + Math.sin(a + 1.57) * r * 0.12], [x - Math.cos(a) * r * 0.2, y - Math.sin(a) * r * 0.2], [x - Math.cos(a + 1.57) * r * 0.12, y - Math.sin(a + 1.57) * r * 0.12]], col('#e53935'));
+  ['N', 'E', 'S', 'W'].forEach((d, i) => { X.fillStyle = col('#ffe0b2'); X.font = `bold ${r * 0.28}px sans-serif`; X.textAlign = 'center'; X.fillText(d, x + Math.sin(i * 1.5708) * r * 0.62, y - Math.cos(i * 1.5708) * r * 0.62 + r * 0.1); }); }
+function footprints(n) { for (let i = 0; i < n; i++) { const t = i / n, y = H - 80 - t * (H - HOR - 140), x = W / 2 + (i % 2 ? 26 : -26) * (1 - t * 0.6), s = 30 * (1 - t * 0.6); ell(x, y, s * 0.5, s, 0, col('#6d4c41')); } }
+function sapling(x, y, g) { limb([[x, y], [x, y - 220 * g]], 8, col('#558b2f')); for (let i = 1; i <= 3; i++) if (g > i * 0.25) { const yy = y - 70 * i; ell(x - 34, yy, 34, 14, -0.5, col('#7cb342')); ell(x + 34, yy - 10, 34, 14, 0.5, col('#7cb342')); } }
+function dust(x, y, r, seed = 2) { const rr = rng(seed); for (let i = 0; i < 60; i++) { const a = rr() * Math.PI * 2 + TT * (0.5 + rr()), d = r * (0.8 + rr() * 0.7); circ(x + Math.cos(a) * d, y + Math.sin(a) * d * 0.7, 3 + rr() * 5, mix('#5a5040', '#d7ccc8', K)); } }
+function rays(x, y, r, n = 12, c = '#ffe082') { X.save(); X.translate(x, y); X.rotate(TT * 0.05); for (let i = 0; i < n; i++) { X.rotate(Math.PI * 2 / n); X.beginPath(); X.moveTo(0, 0); X.lineTo(-r * 0.08, -r); X.lineTo(r * 0.08, -r); X.closePath(); X.fillStyle = rgbA(c, 0.04 + 0.1 * K); X.fill(); } X.restore(); }
+// ---------- backdrop ----------
+function sky(p, extra) {
+  const pal = SKY[p], g = X.createLinearGradient(0, 0, 0, HOR);
+  const m = c => mix(muted(c), c, K);
+  g.addColorStop(0, m(pal[0])); g.addColorStop(0.62, m(pal[1])); g.addColorStop(1, m(pal[2]));
+  X.fillStyle = g; X.fillRect(0, 0, W, HOR + 2);
+}
+function ground(p, kind = 'flat') {
+  const gc = mix(SIL, GROUND[p], K * 0.9);
+  if (kind === 'hills') { hill(HOR + 40, 120, mix(SIL, '#2e4a3a', K), 1.3); }
+  X.fillStyle = gc; X.fillRect(0, HOR, W, H - HOR);
+  const g = X.createLinearGradient(0, HOR, 0, H); g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(0.5, 'rgba(0,0,0,0.55)'); g.addColorStop(1, 'rgba(0,0,0,0.92)'); X.fillStyle = g; X.fillRect(0, HOR, W, H - HOR);
+}
+// ---------- scene library: each returns {sky, ground, items:[fn...]} ; items appear in order ----------
+const M = (x, y, h, pose, f) => () => mother(x, y, h, pose, f);
+const Ch = (x, y, h, pose, f, sh) => () => child(x, y, h, pose, f, sh);
+const LIB = {
+  field: () => ({ sky: 'dawn', g: 'hills', items: [() => sunD(780, 860, 90), () => { for (let r = 0; r < 6; r++) hill(HOR + 30 + r * 8, 18, col(r % 2 ? '#7cb342' : '#558b2f'), r); }, () => grass(HOR + 10, 80, 50, '#689f38'), M(380, HOR + 40, 430, 'hold', 1), Ch(470, HOR + 40, 240, 'reach', -1)] }),
+  flowers: () => ({ sky: 'day', g: 'flat', items: [() => cloud(260, 380, 70, '#ffffff'), () => cloud(800, 520, 55, '#ffffff'), () => { for (let i = 0; i < 9; i++) flower(80 + i * 115, HOR + 60 + (i % 2) * 30, 46, ['#ec407a', '#ab47bc', '#ff7043', '#ffca28'][i % 4]); }, () => { for (let i = 0; i < 7; i++) flower(140 + i * 140, HOR + 170, 64, ['#f06292', '#ffb74d', '#ba68c8'][i % 3]); }, () => birdD(620, 600, 30), () => birdD(700, 650, 22)] }),
+  walk: () => ({ sky: 'gold', g: 'hills', items: [() => sunD(540, 1040, 130), () => tree(160, HOR + 20, 520), () => grass(HOR + 10, 70, 40, '#827717'), M(470, HOR + 30, 460, 'hold', 1), Ch(570, HOR + 30, 250, 'walk', 1), () => { for (let i = 0; i < 5; i++) flower(700 + i * 70, HOR + 90, 30, ['#ff7043', '#ffca28'][i % 2]); }] }),
+  hands: () => ({ sky: 'sunset', g: 'flat', items: [() => sunD(540, 1100, 150), () => rays(540, 1100, 700), () => handsD(540, 900, 120), () => heartD(540, 520, 80)] }),
+  womb: () => ({ sky: 'dusk', g: 'flat', items: [() => moonD(800, 420, 70), () => stars(60), M(540, HOR + 40, 620, 'cradle', 1), () => glow(560, HOR + 40 - 620 * 0.62, 150, mix('#555577', '#ffcc80', K), 0.5), () => heartD(700, 700, 40)] }),
+  shadow: () => ({ sky: 'gold', g: 'flat', items: [() => sunD(160, 1120, 110), () => { X.save(); X.globalAlpha *= 0.6; X.translate(560, HOR + 30); X.transform(1, 0, -1.2, 0.35, 0, 0); mother(0, 0, 600, 'stand', 1); X.restore(); }, Ch(520, HOR + 30, 300, 'stand', 1), M(380, HOR + 30, 480, 'hold', 1)] }),
+  together: () => ({ sky: 'sunset', g: 'hills', items: [() => sunD(540, 1150, 160), () => tree(860, HOR + 30, 560), M(480, HOR + 40, 500, 'hug', 1), Ch(570, HOR + 40, 260, 'reach', -1), () => heartD(530, 640, 45), () => birdD(300, 700, 26), () => birdD(360, 660, 20)] }),
+  pathwalk: () => ({ sky: 'day', g: 'flat', items: [() => cloud(300, 420, 60, '#ffffff'), () => path(), () => tree(130, HOR + 60, 480), () => tree(950, HOR + 60, 440), Ch(560, HOR + 250, 300, 'walk', 1), M(250, HOR + 120, 420, 'open', 1)] }),
+  seasons: () => ({ sky: 'dawn', g: 'hills', items: [() => sunD(220, 760, 70), () => moonD(860, 760, 55), () => { X.strokeStyle = rgbA('#ffffff', 0.15 + 0.3 * K); X.setLineDash([12, 14]); X.lineWidth = 4; X.beginPath(); X.arc(540, 1100, 500, Math.PI * 1.1, Math.PI * 1.9); X.stroke(); X.setLineDash([]); }, () => tree(540, HOR + 30, 600, 'round', 8), Ch(300, HOR + 40, 220, 'stand', 1), Ch(780, HOR + 40, 380, 'walk', 1, '#26a69a')] }),
+  moon: () => ({ sky: 'moon', g: 'hills', items: [() => stars(90), () => moonD(760, 520, 150), M(360, HOR + 40, 520, 'point', 1), Ch(470, HOR + 40, 260, 'up', 1)] }),
+  moonsleep: () => ({ sky: 'night', g: 'flat', items: [() => stars(100), () => moonD(540, 420, 120), () => { const g = X.createLinearGradient(540, 540, 540, HOR + 200); g.addColorStop(0, rgbA('#fff3c4', 0.03 + 0.18 * K)); g.addColorStop(1, 'rgba(255,243,196,0)'); X.fillStyle = g; poly([[470, 540], [610, 540], [860, HOR + 220], [220, HOR + 220]], g); }, Ch(540, HOR + 150, 330, 'sleep', 1), () => cloud(200, 640, 50, '#5c6bc0')] }),
+  hungry: () => ({ sky: 'hot', g: 'flat', items: [() => sunD(780, 520, 120), () => { ell(560, HOR + 160, 90, 26, 0, col('#b0bec5')); ell(560, HOR + 150, 70, 16, 0, col('#78909c')); }, Ch(420, HOR + 160, 300, 'sit', 1), () => tree(940, HOR + 40, 380)] }),
+  drought: () => ({ sky: 'hot', g: 'flat', items: [() => sunD(540, 620, 170), () => rays(540, 620, 900, 16, '#ffcc80'), () => { X.strokeStyle = col('#5d4037'); X.lineWidth = 4; const r = rng(11); for (let i = 0; i < 14; i++) { let x = r() * W, y = HOR + 30 + r() * 500; X.beginPath(); X.moveTo(x, y); for (let k = 0; k < 4; k++) { x += (r() - 0.5) * 120; y += r() * 50; X.lineTo(x, y); } X.stroke(); } }, Ch(540, HOR + 220, 330, 'stand', 1), () => tree(180, HOR + 40, 360, 'palm')] }),
+  trees: () => ({ sky: 'day', g: 'hills', items: [() => tree(180, HOR + 40, 560), () => tree(880, HOR + 40, 600), () => tree(530, HOR - 10, 420), M(420, HOR + 80, 460, 'open', 1), () => birdD(600, 500, 28)] }),
+  fruit: () => ({ sky: 'day', g: 'hills', items: [() => tree(540, HOR + 60, 900, 'round', 22), Ch(640, HOR + 120, 300, 'up', -1), () => { const fy = (TT * 160) % 300; circ(600, HOR - 320 + fy, 24, col('#ff7043')); circ(470, HOR - 260 + (fy * 0.8 + 90) % 300, 22, col('#ffca28')); }] }),
+  awake: () => ({ sky: 'night', g: 'flat', items: [() => stars(80), () => moonD(840, 420, 70), () => hut(300, HOR + 30, 190), Ch(640, HOR + 150, 320, 'sit', -1)] }),
+  redeyes: () => ({ sky: 'night', g: 'flat', items: [() => stars(70), () => glow(540, 900, 400, mix('#332244', '#ff8a65', K), 0.4), Ch(540, HOR + 260, 680, 'rub', 1), () => { circ(510, HOR + 260 - 680 * 0.82, 10, mix('#300000', '#ff1744', K)); circ(570, HOR + 260 - 680 * 0.82, 10, mix('#300000', '#ff1744', K)); }] }),
+  clouds: () => ({ sky: 'moon', g: 'hills', items: [() => stars(50), () => cloud(300, 520, 110, '#64b5f6'), () => cloud(780, 400, 130, '#42a5f5'), () => cloud(620, 700, 90, '#90caf9'), M(420, HOR + 40, 520, 'point', 1)] }),
+  lullaby: () => ({ sky: 'moon', g: 'flat', items: [() => stars(80), () => cloud(760, 420, 100, '#64b5f6'), () => cradle(400, HOR - 40, 150), M(700, HOR + 60, 520, 'sing', -1), () => { noteD(560, 760, 40); noteD(480, 640, 34, '#ff8a65'); noteD(620, 560, 30, '#81d4fa'); }] }),
+  apart: () => ({ sky: 'storm', g: 'flat', items: [() => { X.strokeStyle = col('#ff7043'); X.lineWidth = 10; X.beginPath(); X.moveTo(540, HOR); [[520, HOR + 120], [570, HOR + 240], [510, HOR + 380], [560, H]].forEach(p => X.lineTo(...p)); X.stroke(); }, Ch(280, HOR + 80, 420, 'stand', 1, '#ffa726'), Ch(800, HOR + 80, 420, 'stand', -1, '#7e57c2'), () => cloud(540, 500, 90, '#9575cd')] }),
+  world: () => ({ sky: 'dusk', g: 'flat', items: [() => moonD(860, 380, 60), () => city(HOR + 20), () => { for (let i = 0; i < 5; i++) Ch(120 + i * 210, HOR + 160 + (i % 2) * 40, 230, 'walk', i % 2 ? -1 : 1, ['#ef5350', '#ab47bc', '#26a69a', '#ffa726', '#5c6bc0'][i])(); }] }),
+  school: () => ({ sky: 'day', g: 'flat', items: [() => cloud(820, 400, 70, '#ffffff'), () => school(380, HOR + 30, 230), () => tree(860, HOR + 30, 480), Ch(760, HOR + 200, 320, 'bag', -1), () => { X.globalAlpha *= 0.9; cross(380, HOR - 520, 60); }] }),
+  learn: () => ({ sky: 'dawn', g: 'hills', items: [() => sunD(780, 980, 140), () => rays(780, 980, 800), () => path('#a1887f'), Ch(560, HOR + 300, 420, 'walk', 1, '#26a69a'), () => birdD(300, 640, 28), () => birdD(380, 600, 22)] }),
+  shout: () => ({ sky: 'storm', g: 'flat', items: [() => { for (let i = 0; i < 3; i++) Ch(200 + i * 170, HOR + 60, 330, 'up', 1, '#8d6e63')(); }, () => { for (let i = 0; i < 4; i++) { X.strokeStyle = col('#ef5350'); X.lineWidth = 8; X.beginPath(); X.arc(700 + i * 30, 820, 60 + i * 50, -0.6, 0.6); X.stroke(); } }, () => shield(900, HOR - 120, 230), Ch(900, HOR + 60, 330, 'stand', -1)] }),
+  broken: () => ({ sky: 'dusk', g: 'flat', items: [() => { X.save(); X.translate(380, 760); X.rotate(-0.5); poly([[-200, -18], [-10, -18], [0, 18], [-200, 18]], col('#8d6e63')); X.rotate(0.9); poly([[10, -18], [200, -18], [200, 18], [0, 18]], col('#8d6e63')); X.restore(); }, () => starD(400, 760, 50, '#ffeb3b'), () => shield(760, HOR - 140, 260), Ch(760, HOR + 80, 380, 'stand', -1)] }),
+  calm: () => ({ sky: 'dawn', g: 'hills', items: [() => sunD(540, 1060, 150), () => rays(540, 1060, 700), Ch(540, HOR + 120, 400, 'sit', 1), () => { for (let i = 0; i < 6; i++) flower(160 + i * 160, HOR + 220, 34, ['#ec407a', '#ffca28'][i % 2]); }] }),
+  patience: () => ({ sky: 'day', g: 'flat', items: [() => sunD(860, 460, 90), Ch(380, HOR + 140, 360, 'plant', 1), () => sapling(620, HOR + 140, 0.35 + 0.65 * K), () => cloud(260, 440, 60, '#ffffff')] }),
+  rocky: () => ({ sky: 'gold', g: 'flat', items: [() => path('#a1887f'), () => rocks(HOR + 20, 26, 4, 46), () => sunD(540, 1080, 110), Ch(540, HOR + 330, 380, 'walk', 1)] }),
+  footsteps: () => ({ sky: 'dawn', g: 'flat', items: [() => path('#bcaaa4'), () => footprints(10), () => sunD(540, 1120, 100), Ch(540, HOR + 60, 200, 'walk', 1)] }),
+  feet: () => ({ sky: 'gold', g: 'flat', items: [() => sunD(780, 1000, 110), () => path('#a1887f'), () => rocks(HOR + 40, 24, 8, 52), M(330, HOR + 200, 520, 'hold', 1), Ch(520, HOR + 330, 340, 'walk', 1)] }),
+  guide: () => ({ sky: 'night', g: 'flat', items: [() => stars(70), () => path('#5d4037'), () => rocks(HOR + 40, 14, 6, 40), M(380, HOR + 260, 560, 'lamp', 1), () => lamp(510, HOR + 260 - 560 * 0.64, 36), Ch(600, HOR + 280, 300, 'walk', 1)] }),
+  starsfriends: () => ({ sky: 'night', g: 'hills', items: [() => stars(140, 8, HOR - 100), () => compass(540, 640, 170), () => { starD(220, 420, 40); starD(860, 360, 46, '#80deea'); starD(840, 880, 34, '#f48fb1'); }, Ch(540, HOR + 60, 320, 'up', 1)] }),
+  goodlife: () => ({ sky: 'dawn', g: 'hills', items: [() => sunD(540, 1000, 160), () => rays(540, 1000, 900), () => tree(160, HOR + 40, 440), Ch(560, HOR + 70, 460, 'up', 1, '#26a69a'), () => { birdD(760, 640, 30); birdD(840, 600, 24); }] }),
+  lonely: () => ({ sky: 'dusk', g: 'hills', items: [() => moonD(820, 420, 60), () => tree(360, HOR + 60, 760), Ch(560, HOR + 120, 300, 'sit', -1)] }),
+  beside: () => ({ sky: 'gold', g: 'hills', items: [() => tree(360, HOR + 60, 760), Ch(560, HOR + 120, 300, 'sit', -1), () => { X.save(); X.globalAlpha *= 0.55 + 0.45 * K; glow(720, HOR - 120, 360, mix('#444466', '#ffe0b2', K), 0.5); mother(720, HOR + 120, 520, 'bless', -1); X.restore(); }, () => heartD(640, 760, 40)] }),
+  birds: () => ({ sky: 'dawn', g: 'hills', items: [() => sunD(780, 960, 110), () => { for (let i = 0; i < 9; i++) birdD(200 + i * 80 + Math.sin(i) * 40, 500 + (i % 3) * 80 + Math.cos(i * 2) * 30, 30 + (i % 3) * 6); }, Ch(380, HOR + 80, 360, 'up', 1)] }),
+  trap: () => ({ sky: 'day', g: 'flat', items: [() => tree(820, HOR + 60, 620), () => net(400, HOR + 60, 220), () => { const k = ease(K); birdD(420 + k * 260, HOR - 120 - k * 460, 40, '#ff7043'); }, () => grass(HOR + 60, 60, 40, '#558b2f')] }),
+  thorn: () => ({ sky: 'gold', g: 'flat', items: [() => bush(540, HOR + 80, 360, true), () => nest(540, HOR - 140, 120), () => birdD(720, 700, 40, '#5d4037')] }),
+  rise: () => ({ sky: 'dawn', g: 'hills', items: [() => sunD(540, 1060, 140), () => rays(540, 1060, 900), () => { const k = 0.3 + 0.7 * K; birdD(540, 1000 - k * 500, 60, '#ff7043'); }, Ch(380, HOR + 60, 380, 'up', 1, '#26a69a'), () => sapling(800, HOR + 60, 1)] }),
+  crossroad: () => ({ sky: 'dusk', g: 'flat', items: [() => { poly([[0, HOR + 260], [W, HOR + 220], [W, HOR + 330], [0, HOR + 380]], col('#a1887f')); path('#a1887f'); }, () => { limb([[860, HOR + 200], [860, HOR - 200]], 12, col('#6d4c41')); poly([[860, HOR - 190], [1010, HOR - 170], [990, HOR - 120], [860, HOR - 130]], col('#ffa726')); poly([[860, HOR - 100], [710, HOR - 80], [730, HOR - 30], [860, HOR - 40]], col('#66bb6a')); }, Ch(540, HOR + 360, 340, 'stand', 1)] }),
+  danger: () => ({ sky: 'storm', g: 'flat', items: [() => cloud(300, 420, 120, '#7986cb'), () => cloud(780, 380, 140, '#9575cd'), () => bolt(560, 520, 160, 0), () => shield(540, HOR - 40, 300), Ch(540, HOR + 140, 380, 'stand', 1)] }),
+  safe: () => ({ sky: 'gold', g: 'hills', items: [() => rays(540, HOR - 120, 900), () => shield(540, HOR - 100, 380), Ch(540, HOR + 100, 400, 'stand', 1), () => { for (let i = 0; i < 7; i++) starD(540 + Math.cos(TT * 0.6 + i) * 300, HOR - 160 + Math.sin(TT * 0.6 + i) * 200, 16); }] }),
+  bless: () => ({ sky: 'sunset', g: 'hills', items: [() => sunD(540, 1140, 170), () => rays(540, 1140, 900), M(420, HOR + 60, 560, 'bless', 1), Ch(600, HOR + 60, 300, 'stand', -1), () => glow(600, HOR + 60 - 300, 180, mix('#665544', '#fff3c4', K), 0.6)] }),
+  directions: () => ({ sky: 'day', g: 'hills', items: [() => compass(540, 600, 200), () => { for (let i = 0; i < 4; i++) { const a = i * Math.PI / 2 + TT * 0.2; limb([[540 + Math.cos(a) * 240, 600 + Math.sin(a) * 240], [540 + Math.cos(a) * 340, 600 + Math.sin(a) * 340]], 10, col('#ffb300')); } }, Ch(540, HOR + 80, 380, 'walk', 1)] }),
+  dishti: () => ({ sky: 'night', g: 'hills', items: [() => stars(80), () => { for (let i = 0; i < 8; i++) starD(540 + Math.cos(TT * 0.8 + i * 0.785) * 280, HOR - 230 + Math.sin(TT * 0.8 + i * 0.785) * 120, 26, ['#ffd54f', '#80deea', '#f48fb1'][i % 3]); }, Ch(540, HOR + 80, 380, 'stand', 1)] }),
+  wind: () => ({ sky: 'dusk', g: 'flat', items: [() => dust(540, HOR - 140, 330), () => shield(540, HOR - 120, 290), Ch(540, HOR + 80, 380, 'stand', 1), () => { X.strokeStyle = rgbA('#ffffff', 0.15 + 0.35 * K); X.lineWidth = 6; for (let i = 0; i < 5; i++) { const y = 480 + i * 110, o = (TT * 200 + i * 130) % 400; X.beginPath(); X.moveTo(40 + o, y); X.quadraticCurveTo(200 + o, y - 40, 360 + o, y); X.stroke(); } }] }),
+  thunder: () => ({ sky: 'storm', g: 'flat', items: [() => cloud(540, 380, 170, '#7986cb'), () => bolt(380, 480, 170, Math.max(0, Math.sin(TT * 3)) ** 8), () => bolt(760, 520, 130, Math.max(0, Math.sin(TT * 3 + 1.5)) ** 8), () => hut(540, HOR + 60, 200), M(780, HOR + 120, 460, 'hug', -1), Ch(700, HOR + 120, 240, 'scared', 1)] }),
+  monster: () => ({ sky: 'night', g: 'flat', items: [() => stars(40), () => monster(760, HOR + 80, 300), Ch(360, HOR + 160, 360, 'scared', 1), () => shield(360, HOR - 20, 260)] }),
+  darkness: () => ({ sky: 'night', g: 'flat', items: [() => { X.fillStyle = 'rgba(0,0,0,0.55)'; X.fillRect(0, 0, W, H); }, () => lamp(540, HOR - 140, 60), Ch(400, HOR + 120, 340, 'sit', 1), () => stars(30)] }),
+  final: () => ({ sky: 'moon', g: 'hills', items: [() => stars(120), () => moonD(540, 520, 170), M(470, HOR + 60, 620, 'hug', 1), Ch(590, HOR + 60, 320, 'reach', -1), () => heartD(540, 820, 60)] }),
+};
+// ---------- render ----------
+const D = window.__DATA__;
+function drawScene(sc, t, alpha) {
+  const p = cl((t - sc.a) / Math.max(0.5, sc.b - sc.a));
+  TT = t; R = rng(sc.seed || 1);
+  const def = LIB[sc.key]();
+  K = ease((p - 0.7) / 0.22);                                    // colour bloom over the last part of the line
+  X.save(); X.globalAlpha = alpha;
+  sky(def.sky); ground(def.sky, def.g);
+  const n = def.items.length;
+  def.items.forEach((fn, i) => {
+    const s = 0.04 + i / n * 0.55, e = s + 0.14;                 // staggered appear (silhouettes rise in)
+    const k = ease((p - s) / (e - s)); if (k <= 0) return;
+    X.save(); X.globalAlpha = alpha * k; X.translate(0, (1 - k) * 60); fn(); X.restore();
+  });
+  // cinematic vignette + letterbox glow
+  const v = X.createRadialGradient(W / 2, H * 0.42, H * 0.25, W / 2, H * 0.45, H * 0.75); v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, 'rgba(0,0,0,0.55)'); X.fillStyle = v; X.fillRect(0, 0, W, H);
+  X.restore();
+}
+let grainC = null;
+function grain(t) { if (!grainC) { grainC = document.createElement('canvas'); grainC.width = 540; grainC.height = 960; } const g = grainC.getContext('2d'), im = g.createImageData(540, 960), r = rng((t * 30) | 0); for (let i = 0; i < im.data.length; i += 4) { const v = r() * 255; im.data[i] = im.data[i + 1] = im.data[i + 2] = v; im.data[i + 3] = 10; } g.putImageData(im, 0, 0); X.drawImage(grainC, 0, 0, W, H); }
+window.render = t => {
+  X.fillStyle = '#000'; X.fillRect(0, 0, W, H);
+  const S = D.scenes; let i = 0; for (let j = 0; j < S.length; j++) if (t >= S[j].a) i = j;   // scene holds (full colour) until the next starts
+  const sc = S[i], XF = 0.6;
+  if (i > 0 && t - sc.a < XF) { drawScene(S[i - 1], t, 1); drawScene(sc, t, ease((t - sc.a) / XF)); }
+  else drawScene(sc, t, 1);
+  grain(t);
+  // fade in / out of the whole video
+  const f = Math.min(cl(t / 0.8), cl((D.total - t) / 1.2)); if (f < 1) { X.fillStyle = `rgba(0,0,0,${1 - f})`; X.fillRect(0, 0, W, H); }
+};
+function cross(x, y, s) { limb([[x - s, y - s], [x + s, y + s]], 14, col('#e53935')); limb([[x + s, y - s], [x - s, y + s]], 14, col('#e53935')); }
+window.__ready = Promise.resolve();
+</script></body></html>
