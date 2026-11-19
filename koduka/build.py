@@ -8,20 +8,43 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); from lyrics impo
 SONG, ASR, FONTS, OUT = sys.argv[1:5]; PREVIEW = "--preview" in sys.argv
 HERE = os.path.dirname(os.path.abspath(__file__)); os.makedirs(OUT, exist_ok=True)
 W = [(w[0], w[1], w[2].strip()) for s in json.load(open(ASR)) for w in s["w"] if w[2].strip()]
-W = [w for w in W if w[0] > 30.0]                  # 0-30 s: intro music (Whisper noise)
+W = [w for w in W if 30.0 < w[0] < 258.0]          # 0-30 s intro music, >258 s silence (Whisper noise)
+# Whisper stretches the first word of a segment over the music gap: keep only its last 0.6 s
+W = [(max(s, e - 0.6) if e - s > 1.3 else s, e, t) for s, e, t in W]
 # char stream with times
 wc, wt = [], []
 for s, e, t in W:
     for j, ch in enumerate(t): wc.append(ch); wt.append(s + (e - s) * j / max(1, len(t)))
-norm = lambda ch: ch if ch not in "్ాీూేో" else {"ా": "", "ీ": "ి", "ూ": "ు", "ే": "ె", "ో": "ొ", "్": "్"}[ch]
+# long/short vowel signs compared as equal; each char maps to exactly one char (keeps indices aligned)
+norm = lambda ch: ch if ch not in "్ాీూేో" else {"ా": "~", "ీ": "ి", "ూ": "ు", "ే": "ె", "ో": "ొ", "్": "్"}[ch]
 uc, uidx = [], []                                  # user chars -> (line, word)
 for li, (te, en, key) in enumerate(L):
     for wi, w in enumerate(te.split()):
         for j, ch in enumerate(w): uc.append(ch); uidx.append((li, wi, j))
-sm = difflib.SequenceMatcher(None, "".join(map(norm, uc)), "".join(map(norm, wc)), autojunk=False)
-umap = {}
-for a, b, n in sm.get_matching_blocks():
-    for k in range(n): umap[a + k] = wt[b + k]
+# global character alignment (Needleman-Wunsch, numpy rows): keeps every line in order, no drift
+import numpy as np
+UA = "".join(map(norm, uc)); WB = "".join(map(norm, wc)); n, m = len(UA), len(WB)
+MATCH, MIS, GAP = 2, -1, -1
+ub = np.frombuffer(UA.encode("utf-32-le"), dtype=np.uint32); wb = np.frombuffer(WB.encode("utf-32-le"), dtype=np.uint32)
+score = np.zeros((n + 1, m + 1), np.int32); ptr = np.zeros((n + 1, m + 1), np.uint8)   # 0 diag 1 up 2 left
+score[0, :] = np.arange(m + 1) * GAP; score[:, 0] = np.arange(n + 1) * GAP; ptr[0, 1:] = 2; ptr[1:, 0] = 1
+for i in range(1, n + 1):
+    diag = score[i - 1, :-1] + np.where(wb == ub[i - 1], MATCH, MIS)
+    up = score[i - 1, 1:] + GAP
+    best = np.maximum(diag, up); pt = np.where(diag >= up, 0, 1).astype(np.uint8)
+    row = score[i]; row[1:] = best
+    for j in range(1, m + 1):                       # left moves (sequential dependency)
+        if row[j - 1] + GAP > row[j]: row[j] = row[j - 1] + GAP; pt[j - 1] = 2
+    ptr[i, 1:] = pt
+print("align", n, m, file=sys.stderr)
+umap = {}; i, j = n, m
+while i > 0 and j > 0:
+    p = ptr[i, j]
+    if p == 0:
+        if ub[i - 1] == wb[j - 1]: umap[i - 1] = wt[j - 1]
+        i -= 1; j -= 1
+    elif p == 1: i -= 1
+    else: j -= 1
 # word start = time of its first matched char (interpolated if unmatched)
 ws = {}
 for k, (li, wi, j) in enumerate(uidx):
@@ -29,8 +52,21 @@ for k, (li, wi, j) in enumerate(uidx):
 keys = [(li, wi) for li, (te, _, _) in enumerate(L) for wi, _ in enumerate(te.split())]
 times = []
 for key in keys:
-    v = ws.get(key); times.append(min(t - j * 0.08 for j, t in v) if v else None)
+    v = ws.get(key)
+    if v and len(v) >= 2 or v and len(v) == 1 and len(L[key[0]][0].split()[key[1]]) <= 2:
+        c = sorted(t - j * 0.08 for j, t in v); times.append(c[len(c) // 2])     # median: one stray char match can't pull it
+    else: times.append(None)
 # fill gaps by linear interpolation between known words; enforce monotonic
+line_of = [li for li, _ in keys]
+for i in range(len(times)):                         # unmatched word: from the nearest matched word of the same line
+    if times[i] is None:
+        nx = next((k for k in range(i + 1, len(keys)) if line_of[k] == line_of[i] and times[k] is not None), None)
+        pv = next((k for k in range(i - 1, -1, -1) if line_of[k] == line_of[i] and times[k] is not None), None)
+        if nx is not None: times[i] = ("n", nx)
+        elif pv is not None: times[i] = ("p", pv)
+for i in range(len(times)):
+    if isinstance(times[i], tuple):
+        m, k = times[i]; times[i] = times[k] - 0.4 * (k - i) if m == "n" else times[k] + 0.4 * (i - k)
 known = [i for i, t in enumerate(times) if t is not None]
 for i in range(len(times)):
     if times[i] is None:
@@ -38,10 +74,14 @@ for i in range(len(times)):
         times[i] = times[p] + 0.35 * (i - p) if n is None else (times[n] - 0.35 * (n - i) if p is None else times[p] + (times[n] - times[p]) * (i - p) / (n - p))
 for i in range(1, len(times)): times[i] = max(times[i], times[i - 1] + 0.12)
 wt_of = dict(zip(keys, times))
+# last line (final repeat of "అమ్మ దివేనిది నా కొడుకా") is sung after 242 s, in the outro Whisper did not transcribe
+FINAL = 242.6
+if wt_of[(len(L) - 1, 0)] < FINAL:
+    for j in range(len(L[-1][0].split())): wt_of[(len(L) - 1, j)] = FINAL + 0.55 * j
 line_start = [wt_of[(li, 0)] for li in range(len(L))]
 lastw = lambda li: wt_of[(li, len(L[li][0].split()) - 1)]
-line_end = [min(lastw(li) + 0.9, line_start[li + 1] - 0.05) if li + 1 < len(L) else lastw(li) + 1.6 for li in range(len(L))]
-T0 = max(0.0, line_start[0] - 3.0); END = line_end[-1] + 3.5; TOTAL = END - T0
+line_end = [min(lastw(li) + 0.9, line_start[li + 1] - 0.05) if li + 1 < len(L) else lastw(li) + 2.5 for li in range(len(L))]
+T0 = max(0.0, line_start[0] - 3.0); END = 257.5; TOTAL = END - T0      # song fades out by ~257 s
 print(f"song {T0:.2f}-{END:.2f} ({TOTAL:.1f}s), unmatched words: {sum(1 for k in keys if k not in ws)}/{len(keys)}")
 for li in range(len(L)): print(f"{li+1:2d} {line_start[li]:7.2f}-{line_end[li]:7.2f} {L[li][0]}")
 json.dump({"T0": T0, "lines": [{"a": line_start[i], "b": line_end[i], "te": L[i][0], "en": L[i][1], "key": L[i][2],
