@@ -1,0 +1,77 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<style>
+@font-face{font-family:PX;src:url(../insurance/v2/fonts/PopX.ttf)}
+@font-face{font-family:PB;src:url(../insurance/v2/fonts/PopB.ttf)}
+html,body{margin:0;width:1080px;height:1920px;overflow:hidden;background:#0d1a26}
+*{box-sizing:border-box}
+.abs{position:absolute}
+#scene{position:absolute;inset:0;filter:blur(var(--blur,5px)) saturate(1.05)}
+/* wall */
+.wall{inset:0;background:
+  radial-gradient(ellipse 520px 620px at 540px 640px, rgba(255,176,96,.42), rgba(255,150,80,.12) 55%, transparent 75%),
+  radial-gradient(ellipse 900px 700px at 540px 700px, #24445c 0%, #183247 45%, #0f2132 75%, #0a1622 100%)}
+/* subtle wall texture: vertical panel seams */
+.seams{inset:0;background:repeating-linear-gradient(90deg, rgba(255,255,255,.025) 0 2px, transparent 2px 180px)}
+/* left: wooden acoustic slats */
+.slats{left:-20px;top:560px;width:300px;height:1100px;
+  background:repeating-linear-gradient(90deg,#7a4a26 0 22px,#2a1a10 22px 34px);
+  box-shadow:inset -60px 0 80px rgba(0,0,0,.55);border-radius:6px}
+.slats::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,190,120,.35),rgba(0,0,0,.35) 70%,rgba(0,0,0,.6))}
+/* right: shelf with books + plant + lamp */
+.shelf{right:-10px;width:330px;height:16px;background:#3b2617;box-shadow:0 10px 18px rgba(0,0,0,.5)}
+.book{position:absolute;bottom:16px;border-radius:3px 3px 0 0}
+.lamp{right:120px;top:1010px;width:220px;height:220px;border-radius:50%;
+  background:radial-gradient(circle,rgba(255,200,130,.95),rgba(255,160,80,.35) 40%,transparent 70%)}
+.plant{right:40px;width:120px;height:170px}
+/* cool LED strip */
+.led{right:8px;top:80px;width:10px;height:1550px;border-radius:5px;background:#5fd0ff;box-shadow:0 0 30px 10px rgba(80,200,255,.55)}
+.ledL{left:292px;top:560px;width:8px;height:1080px;border-radius:4px;background:#ffb060;box-shadow:0 0 26px 8px rgba(255,170,90,.5)}
+/* neon sign */
+.neon{left:28px;top:330px;text-align:center;font-family:PX;line-height:1;color:#fff;
+  text-shadow:0 0 6px #fff,0 0 18px #ff9a3d,0 0 38px #ff7a1a,0 0 70px #ff6a00}
+.neon .a{font-size:58px;letter-spacing:4px}
+.neon .b{font-size:34px;letter-spacing:7px;margin-top:10px;color:#e8f8ff;text-shadow:0 0 6px #fff,0 0 16px #4fc3ff,0 0 34px #1e9bff,0 0 60px #0a7aff}
+.bokeh{border-radius:50%}
+/* desk */
+.desk{left:0;right:0;top:1690px;bottom:0;background:linear-gradient(180deg,#3a2a1f 0%,#22170f 35%,#120b06 100%);
+  box-shadow:0 -6px 30px rgba(0,0,0,.6)}
+.desk::before{content:"";position:absolute;left:0;right:0;top:0;height:6px;background:linear-gradient(90deg,transparent,rgba(255,200,140,.45),transparent)}
+.vign{inset:0;background:radial-gradient(ellipse 760px 1100px at 540px 820px,transparent 55%,rgba(0,0,0,.55) 100%)}
+</style></head><body>
+<div id="scene">
+  <div class="abs wall"></div>
+  <div class="abs seams"></div>
+  <div class="abs slats"></div>
+  <div class="abs ledL"></div>
+  <div class="abs led"></div>
+  <div id="shelves"></div>
+  <div class="abs lamp"></div>
+  <div class="abs neon"><div class="a">KRISHNA</div><div class="b">NET CENTER</div></div>
+  <div id="bok"></div>
+  <div class="abs desk"></div>
+</div>
+<div class="abs vign"></div>
+<script>
+const S=document.getElementById('shelves');
+const mk=(h,p=document.body)=>{const t=document.createElement('template');t.innerHTML=h.trim();const n=t.content.firstChild;p.appendChild(n);return n};
+// two shelves with books
+const cols=['#c0392b','#e67e22','#f1c40f','#2c3e50','#16a085','#8e44ad','#d35400','#ecf0f1','#34495e','#27ae60'];
+let seed=7;const R=()=>{seed=(seed*16807)%2147483647;return seed/2147483647};
+for(const y of [900,1240]){
+  const sh=mk(`<div class="abs shelf" style="top:${y}px"></div>`,S);
+  let x=10;
+  while(x<300){const w=18+R()*26,h=90+R()*70;mk(`<div class="book" style="left:${x}px;width:${w}px;height:${h}px;background:${cols[Math.floor(R()*cols.length)]};opacity:.9"></div>`,sh);x+=w+3;
+    if(y===900&&x>150&&x<200){x+=110}}
+}
+// plant on top shelf
+mk(`<svg class="abs plant" style="top:${900-170}px" viewBox="0 0 120 170"><path d="M40 170h40l6-50H34z" fill="#c8b8a0"/>
+  ${[...Array(9)].map((_,i)=>{const a=-80+i*20,l=70+R()*40;const x2=60+Math.sin(a*Math.PI/180)*l,y2=120-Math.cos(a*Math.PI/180)*l;
+  return `<path d="M60 122 Q${(60+x2)/2+10} ${(122+y2)/2} ${x2} ${y2}" stroke="#3f9a52" stroke-width="12" fill="none" stroke-linecap="round"/>`}).join('')}</svg>`,S);
+// bokeh
+const B=document.getElementById('bok');
+for(let i=0;i<34;i++){const warm=R()<0.6,r=14+R()*46,x=R()*1080,y=180+R()*1450,o=0.10+R()*0.25;
+  if(x>330&&x<760&&y>300&&y<1600) continue;   // keep the area behind the person clean
+  mk(`<div class="abs bokeh" style="left:${x}px;top:${y}px;width:${r*2}px;height:${r*2}px;background:radial-gradient(circle,${warm?'rgba(255,190,120,':'rgba(120,200,255,'}${o}) 0%,${warm?'rgba(255,170,90,':'rgba(90,180,255,'}${o*0.6}) 60%,transparent 72%)"></div>`,B)}
+window.__ready=document.fonts.ready.then(()=>true);
+</script></body></html>
