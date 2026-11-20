@@ -1,39 +1,21 @@
 """RTO message (insurance / pollution) info video -> 1080x1920 short.
 Cuts pauses/repeats, 1.1x, face-centred crop, DeepFilterNet voice. Writes $W/base.mov + timeline.json.
-usage: build.py   (run dfn3.py first -> $W/dn.wav, and faces.json / db.npy from the analysis step)"""
-import json, os, subprocess
+usage: build.py <config module, e.g. rto_message>   (run dfn3.py first -> $W/dn.wav, and faces.json / db.npy from the analysis step)"""
+import importlib, json, os, subprocess, sys
 import numpy as np
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+CFG = importlib.import_module(sys.argv[1] if len(sys.argv) > 1 else "rto_message")
 
 S = "/tmp/claude-0/-home-user-fortesting/c8da1d15-5414-57cb-a7d5-c0ca68b3b8d8/scratchpad"
-RAW, W = S + "/dl/raw.mp4", S + "/w"
+RAW, W = S + CFG.RAW, S + CFG.WORK
+KEEP = CFG.KEEP
 OUT = W + "/cuts"; os.makedirs(OUT, exist_ok=True)
 SPEED = 1.10
 SRC_W, SRC_H = 2160, 3840          # after auto-rotation (phone portrait)
 
-# source ranges kept (seconds in raw), with what is said
-KEEP = [
-    (0.45, 4.65,   "అందరికీ RTO నుండి కొన్ని మెసేజెస్ వస్తున్నాయి ఇలాగా"),
-    (5.10, 9.70,   "ఇవేంటంటే మీరు ... మన దగ్గర చిన్న రోడ్డే కదా"),
-    (10.20, 13.50, "మన దగ్గర ట్రాఫిక్ పోలీసులు ఉండరు"),
-    (14.00, 18.80, "ఇక్కడ ఎవరూ అడగరు ... ఇన్సూరెన్స్ పొల్యూషన్ చేయకుండా ఉంటే"),
-    (19.15, 20.55, "ఇలాంటి మెసేజెస్ వస్తున్నాయి"),
-    (21.00, 26.60, "సో మీ బండికి ఇన్సూరెన్స్ ఉందా పొల్యూషన్ ఉందా లేదా అని వాళ్ళకి తెలిసిపోతుంది అన్నమాట"),
-    (27.00, 31.70, "సో మీకు అడిషనల్ ఫైన్ ఛాన్సెస్ ఉంటాయి ప్రెజెంట్ అయితే మీకు ఇన్ఫార్మ్ చేస్తున్నారు"),
-    (32.10, 35.70, "సో మీరు అప్డేట్ చేసుకుంటారని వాళ్ళు చేస్తున్నారు"),
-    (36.10, 39.05, "మీరు అప్డేట్ చేసుకోకపోతే ఫ్యూచర్‌లో మీకు ఫైన్ వస్తది"),
-    (39.85, 41.45, "ఇంకోటి"),        # cut 41.45-44.70: 'ప్రెజెంట్ టోల్ గేట్ / టోల్ గేట్లు మీరు' (restart, user: trim 32-34 s)
-    (44.70, 48.90, "ఇది మన దగ్గర స్టార్ట్ అవ్వలేదు కానీ వేరే రాష్ట్రాల్లో స్టార్ట్ అయింది"),
-    (49.20, 52.95, "అక్కడ ఏంటంటే మీరు టోల్ ప్లాజా క్రాస్ అవుతారు కదా"),
-    (53.10, 57.75, "క్రాస్ అయినప్పుడు మీకు అప్డేట్ వస్తది ఇన్సూరెన్స్ లాప్స్ అయినా పొల్యూషన్ లాప్స్ అయినా"),
-    (58.00, 61.20, "ఒకవేళ లాప్స్ అయితే మీకు మెసేజ్ వచ్చి అప్డేట్ చేస్తారు"),
-    (61.95, 64.00, "ఫైన్ అయితే ఫ్యూచర్‌లో ఉంటది చూసుకోండి"),
-    (66.62, 67.58, "సబ్‌స్క్రైబ్ చేయండి"),                # cut: 69.5-71.0 repeated 'subscribe చేయని వాళ్ళు'
-    (74.17, 76.62, "బాగుంది అనిపిస్తే లైక్ చేయండి"),  # cut 72.6-74.17 drawn-out 'ఆ.. ఎవరైనా' (user: trim 51-52 s); 76.6+ off-mic
-]
-
 DB = np.load(W + "/db.npy")      # 10 ms frames of the denoised voice
 TH = -45.0
-FACES = [f for f in json.load(open(W + "/faces.json")) if f[1] is not None]
+FACES = [f for f in json.load(open(W + "/faces.json")) if f[1] is not None and f[2] < 1900]
 
 def split_pauses(a, b, min_gap=0.14, pad=0.05):
     i0, i1 = int(a * 100), int(b * 100)

@@ -3,7 +3,7 @@ import json, subprocess, sys
 import numpy as np, soundfile as sf
 
 S = "/tmp/claude-0/-home-user-fortesting/c8da1d15-5414-57cb-a7d5-c0ca68b3b8d8/scratchpad"
-W = f"{S}/w"
+W = S + sys.argv[1]  # work dir under scratchpad, e.g. /w
 SR = 48000
 rng = np.random.default_rng(7)
 T = json.load(open(f"{W}/data.json"))["total"]
