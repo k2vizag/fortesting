@@ -1,0 +1,68 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<style>
+@font-face{font-family:PX;src:url(../insurance/v2/fonts/PopX.ttf)}
+@font-face{font-family:PB;src:url(../insurance/v2/fonts/PopB.ttf)}
+html,body{margin:0;width:1080px;height:1920px;overflow:hidden;background:#eeece8}
+*{box-sizing:border-box}
+.abs{position:absolute}
+#scene{position:absolute;inset:0;filter:blur(4px)}
+/* bright high-key wall: soft daylight from the upper left, gentle falloff to the corners */
+.wall{inset:0;background:
+  radial-gradient(ellipse 620px 760px at 560px 640px, #ffffff 0%, rgba(255,255,255,.6) 45%, transparent 75%),
+  radial-gradient(ellipse 1100px 900px at 300px 300px, rgba(255,250,240,.9), transparent 70%),
+  linear-gradient(180deg,#f3f1ed 0%,#ebe8e3 60%,#e2ded8 100%)}
+.seams{inset:0;background:repeating-linear-gradient(90deg, rgba(0,0,0,.018) 0 2px, transparent 2px 180px)}
+/* pale oak acoustic slats */
+.slats{left:-20px;top:560px;width:290px;height:1140px;
+  background:repeating-linear-gradient(90deg,#d9b98f 0 22px,#a9845a 22px 30px);border-radius:4px;
+  box-shadow:8px 0 30px rgba(0,0,0,.10)}
+.slats::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.35),rgba(0,0,0,.08))}
+/* wall letters */
+.sign{left:34px;top:330px;font-family:PX;line-height:1;color:#2b2f38;text-shadow:3px 5px 8px rgba(0,0,0,.18)}
+.sign .a{font-size:56px;letter-spacing:3px}
+.sign .a span{color:#F05A12}
+.sign .b{font-size:30px;letter-spacing:9px;margin-top:10px;color:#5a6070}
+.sign .bar{width:120px;height:6px;border-radius:3px;background:#F05A12;margin-top:14px}
+/* white shelves on the right */
+.shelf{right:-10px;width:330px;height:18px;background:#ffffff;box-shadow:0 10px 16px rgba(0,0,0,.12)}
+.book{position:absolute;bottom:18px;border-radius:3px 3px 0 0}
+.plant{right:40px;width:120px;height:170px}
+.lamp{right:150px;top:1060px;width:220px;height:220px;border-radius:50%;
+  background:radial-gradient(circle,rgba(255,236,200,.9),rgba(255,226,180,.35) 40%,transparent 70%)}
+/* window light streaks */
+.win{left:330px;top:180px;width:700px;height:900px;background:
+  linear-gradient(115deg,transparent 0 30%,rgba(255,255,255,.55) 30% 36%,transparent 36% 44%,rgba(255,255,255,.45) 44% 50%,transparent 50%)}
+/* light wood desk */
+.desk{left:0;right:0;top:1700px;bottom:0;background:linear-gradient(180deg,#e2c9a6 0%,#cfae84 40%,#b8946a 100%);
+  box-shadow:0 -4px 20px rgba(0,0,0,.12)}
+.desk::before{content:"";position:absolute;left:0;right:0;top:0;height:5px;background:rgba(255,255,255,.7)}
+.vign{inset:0;background:radial-gradient(ellipse 820px 1200px at 540px 800px,transparent 60%,rgba(60,50,40,.16) 100%)}
+</style></head><body>
+<div id="scene">
+  <div class="abs wall"></div>
+  <div class="abs seams"></div>
+  <div class="abs win"></div>
+  <div class="abs slats"></div>
+  <div id="shelves"></div>
+  <div class="abs lamp"></div>
+  <div class="abs sign"><div class="a">KRISHNA<span>.</span></div><div class="b">NET CENTER</div><div class="bar"></div></div>
+  <div class="abs desk"></div>
+</div>
+<div class="abs vign"></div>
+<script>
+const S=document.getElementById('shelves');
+const mk=(h,p=document.body)=>{const t=document.createElement('template');t.innerHTML=h.trim();const n=t.content.firstChild;p.appendChild(n);return n};
+const cols=['#e9d8c4','#c9d6df','#f2c9a0','#9fb7c9','#d8c3e0','#b7d3b0','#f0e2b6','#8fa3b8','#e5b9a8','#ffffff'];
+let seed=11;const R=()=>{seed=(seed*16807)%2147483647;return seed/2147483647};
+for(const y of [900,1240]){
+  const sh=mk(`<div class="abs shelf" style="top:${y}px"></div>`,S);
+  let x=10;
+  while(x<300){const w=18+R()*26,h=90+R()*70;mk(`<div class="book" style="left:${x}px;width:${w}px;height:${h}px;background:${cols[Math.floor(R()*cols.length)]};box-shadow:inset -3px 0 0 rgba(0,0,0,.08)"></div>`,sh);x+=w+3;
+    if(y===900&&x>150&&x<200){x+=110}}
+}
+mk(`<svg class="abs plant" style="top:${900-170}px" viewBox="0 0 120 170"><path d="M40 170h40l6-50H34z" fill="#ffffff" stroke="#ddd"/>
+  ${[...Array(9)].map((_,i)=>{const a=-80+i*20,l=70+R()*40;const x2=60+Math.sin(a*Math.PI/180)*l,y2=120-Math.cos(a*Math.PI/180)*l;
+  return `<path d="M60 122 Q${(60+x2)/2+10} ${(122+y2)/2} ${x2} ${y2}" stroke="#5aa86a" stroke-width="12" fill="none" stroke-linecap="round"/>`}).join('')}</svg>`,S);
+window.__ready=document.fonts.ready.then(()=>true);
+</script></body></html>

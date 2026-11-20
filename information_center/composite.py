@@ -1,5 +1,5 @@
 """Put the matted person on the studio background, with a light grade + light wrap so it sits in the scene.
-usage: composite.py base.mov alpha.mkv bg.png out.mov      (audio copied; black intro/end frames pass through)"""
+usage: composite.py base.mov alpha.mkv bg.png out.mov [dark|light]      (audio copied; black intro/end frames pass through)"""
 import subprocess, sys
 import cv2, numpy as np
 
@@ -8,15 +8,20 @@ base, alpha, bgp, dst = sys.argv[1:5]
 bg = cv2.imread(bgp).astype(np.float32)
 wrap_src = cv2.GaussianBlur(bg, (0, 0), 30)
 # person grade: a touch darker, warmer and punchier to match the moody studio light
-lut = np.clip(((np.arange(256) / 255.0 - 0.5) * 1.08 + 0.5) * 0.94 * 255, 0, 255).astype(np.float32)
-warm = np.array([0.96, 1.0, 1.04], np.float32)  # BGR gains
+LOOK = sys.argv[5] if len(sys.argv) > 5 else "dark"
+if LOOK == "light":   # white studio: keep natural brightness, just a little clarity and warmth
+    lut = np.clip(((np.arange(256) / 255.0 - 0.5) * 1.04 + 0.5) * 1.02 * 255, 0, 255).astype(np.float32)
+    warm, WRAP = np.array([0.98, 1.0, 1.02], np.float32), 0.35
+else:                 # dark studio: a touch darker, warmer and punchier
+    lut = np.clip(((np.arange(256) / 255.0 - 0.5) * 1.08 + 0.5) * 0.94 * 255, 0, 255).astype(np.float32)
+    warm, WRAP = np.array([0.96, 1.0, 1.04], np.float32), 0.55   # BGR gains
 
 def comp(f, a):
     f = lut[f] * warm
     a = a.astype(np.float32) / 255.0
     ab = cv2.GaussianBlur(a, (0, 0), 9)
     edge = np.clip(a * (1.0 - ab) * 2.2, 0, 1)[..., None]           # thin band just inside the silhouette
-    f = f * (1 - 0.55 * edge) + wrap_src * 0.55 * edge            # light wrap
+    f = f * (1 - WRAP * edge) + wrap_src * WRAP * edge            # light wrap
     # gentle rim from the warm glow behind the head (upper body only)
     a3 = a[..., None]
     out = f * a3 + bg * (1 - a3)
