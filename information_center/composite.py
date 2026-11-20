@@ -19,7 +19,22 @@ else:                 # dark studio: a touch darker, warmer and punchier
 FG = cv2.imread(sys.argv[6], cv2.IMREAD_UNCHANGED).astype(np.float32) if len(sys.argv) > 6 else None
 if FG is not None: FGA = FG[..., 3:4] / 255.0; FGC = FG[..., :3]
 
+YY = np.arange(H, dtype=np.float32)[:, None]
+LOW = np.clip((YY - 1300) / 200, 0, 1)            # lower body only
+
+def trousers_to_navy(f, a):
+    """green-teal trousers (seen near the desk) -> dark navy, so they don't read as left-over office."""
+    hsv = cv2.cvtColor(f, cv2.COLOR_BGR2HSV).astype(np.float32)
+    h, s_, v = hsv[..., 0], hsv[..., 1], hsv[..., 2]
+    m = ((h >= 30) & (h <= 98) & (s_ >= 18)).astype(np.float32) * (a > 0.4) * LOW
+    m = cv2.GaussianBlur(m, (0, 0), 3)
+    if m.max() < 0.05: return f
+    nav = hsv.copy(); nav[..., 0] = 112; nav[..., 1] = np.clip(s_ * 0.9 + 25, 0, 140); nav[..., 2] = v * 0.62
+    nav = cv2.cvtColor(nav.astype(np.uint8), cv2.COLOR_HSV2BGR).astype(np.float32)
+    return (nav * m[..., None] + f.astype(np.float32) * (1 - m[..., None])).astype(np.uint8)
+
 def comp(f, a):
+    f = trousers_to_navy(f, a.astype(np.float32) / 255.0)
     f = lut[f] * warm
     a = a.astype(np.float32) / 255.0
     ab = cv2.GaussianBlur(a, (0, 0), 9)
