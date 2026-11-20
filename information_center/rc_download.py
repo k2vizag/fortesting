@@ -23,13 +23,15 @@ KEEP = [
 ]
 TITLE = ["RC డౌన్‌లోడ్ ఆపేసారు!", "DL వెంటనే డౌన్‌లోడ్ చేయండి"]
 CARDS = [
-    dict(type="profile", theme="white", sa=218.6, sb=223.8, icon="doc", color="green", kicker="ఇంతకుముందు",
-         title="RC సర్వీస్ అవ్వగానే", pill="RC డౌన్‌లోడ్ ✓", spill=230.0,
+    dict(type="profile", theme="white", sa=218.6, sb=234.2, icon="doc", color="green", kicker="ఇంతకుముందు",
+         title="RC సర్వీస్ అవ్వగానే", pill="RC డౌన్‌లోడ్ ✓", spill=232.4,
          desc="రెన్యూవల్ • ట్రాన్స్‌ఫర్ • ఫైనాన్స్ క్లియర్", tiles=[]),
-    dict(type="timeline", theme="dark", sa=240.45, sb=274.45, kicker="ఇప్పుడు · RC", gap=300,
-         steps=[{"v": "PVC కార్డ్", "t": "ప్రింట్ చేసి ఇంటికి పోస్ట్", "icon": "doc", "sat": 242.2},
-                {"v": "₹200 +", "t": "కార్డ్ + పార్సిల్ ఛార్జీ", "icon": "rupee", "sat": 256.7},
-                {"v": "1–2 నెలలు", "t": "కార్డ్ రావడానికి టైమ్", "icon": "cal", "sat": 271.3}]),
+    dict(type="profile", theme="white", sa=240.45, sb=244.9, icon="doc", color="purple", kicker="ఇప్పుడు · RC",
+         title="PVC కార్డ్", pill="ఇంటికి పోస్ట్‌లో", spill=243.0, desc="గవర్నమెంట్ ప్రింట్ చేసి పంపిస్తుంది", tiles=[]),
+    dict(type="profile", theme="white", sa=254.25, sb=264.15, icon="rupee", color="blue", kicker="RC కార్డ్ ఛార్జీ",
+         title="₹200 +", pill="పార్సిల్ ఛార్జీ", spill=257.5, desc="", tiles=[]),
+    dict(type="profile", theme="white", sa=267.5, sb=274.45, icon="cal", color="red", kicker="కార్డ్ రావడానికి",
+         title="1–2 నెలలు", pill="టైమ్ పడుతుంది", spill=271.3, desc="", tiles=[]),
     dict(type="profile", theme="white", sa=306.3, sb=315.2, icon="check", color="orange", kicker="DRIVING LICENCE",
          title="ఇంకా డౌన్‌లోడ్ అవుతుంది", pill="ఇప్పుడే డౌన్‌లోడ్ చేయండి", spill=311.3,
          desc="ఫ్యూచర్‌లో ఆప్షన్ తీసేయొచ్చు", tiles=[]),

@@ -102,14 +102,14 @@ function fit(node,maxw){node.style.transform='';const w=node.scrollWidth;if(w>ma
 // ---------------- build: cards (lowest), then stickers/captions, board, end
 const items=[];
 function BUILD_profile(ctx){const {c,n}=ctx;
-  const g=GR[c.color||'purple'];
-  ctx.parts.av=el(`<div class="abs" style="left:390px;top:260px;width:300px;height:300px;border-radius:50%;padding:12px;background:linear-gradient(135deg,${g[0]},${g[1]});box-shadow:0 20px 50px rgba(60,40,160,.3)">
+  const g=GR[c.color||'purple']; const Y=c.tiles.length?0:190;   // no tiles: centre the content lower
+  ctx.parts.av=el(`<div class="abs" style="left:390px;top:${260+Y}px;width:300px;height:300px;border-radius:50%;padding:12px;background:linear-gradient(135deg,${g[0]},${g[1]});box-shadow:0 20px 50px rgba(60,40,160,.3)">
      <div style="width:100%;height:100%;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center">${svg(c.icon,g[1],2)}</div></div>`,n);
   ctx.parts.av.firstElementChild.firstElementChild.style.cssText='width:150px;height:150px';
-  ctx.parts.k=el(`<div class="kick" style="top:620px">${c.kicker}</div>`,n);
-  ctx.parts.t=el(`<div class="abs" style="left:0;right:0;top:680px;text-align:center;font-family:PX,TE9;font-size:96px;color:#111;line-height:1.15">${c.title}</div>`,n);
-  ctx.parts.p=el(`<div class="abs" style="left:0;right:0;top:860px;text-align:center"><span class="pill" style="background:linear-gradient(180deg,${g[0]},${g[1]})">${c.pill}</span></div>`,n);
-  ctx.parts.d=el(`<div class="abs" style="left:80px;right:80px;top:1020px;text-align:center;font-family:PB,TE8;font-size:46px;color:#555b70;line-height:1.35">${c.desc||''}</div>`,n);
+  ctx.parts.k=el(`<div class="kick" style="top:${620+Y}px">${c.kicker}</div>`,n);
+  ctx.parts.t=el(`<div class="abs" style="left:0;right:0;top:${680+Y}px;text-align:center;font-family:PX,TE9;font-size:${c.title.length>18?82:96}px;color:#111;line-height:1.15">${c.title}</div>`,n);
+  ctx.parts.p=el(`<div class="abs" style="left:0;right:0;top:${(c.title.length>16?960:860)+Y}px;text-align:center"><span class="pill" style="background:linear-gradient(180deg,${g[0]},${g[1]})">${c.pill}</span></div>`,n);
+  ctx.parts.d=el(`<div class="abs" style="left:80px;right:80px;top:${(c.title.length>16?1120:1020)+Y}px;text-align:center;font-family:PB,TE8;font-size:46px;color:#555b70;line-height:1.35">${c.desc||''}</div>`,n);
   ctx.parts.tiles=c.tiles.map((ic,i)=>el(`<div class="tile abs" style="left:${540-255+i*180-0}px;top:1300px">${svg(ic,['#4B3BE0','#1E5BFF','#FF5E1A'][i%3],2)}</div>`,n));
 }
 function RENDER_profile(ctx,lt){const p=ctx.parts,c=ctx.c;
@@ -253,6 +253,8 @@ for(const c of D.cards){
   items.push({kind:'card',a:c.a,b:c.b,ctx});
 }
 
+// Telugu kickers: no letter-spacing (breaks conjuncts), larger size
+for(const k of document.querySelectorAll('.kick')) if(/[^\x00-\x7F]/.test(k.textContent.replace(/[·→–]/g,''))){k.style.letterSpacing='0';k.style.fontSize='46px';}
 // ---- numbers
 for(const m of D.numbers){const n=el(`<div class="num" style="display:none">${m.n}</div>`);items.push({kind:'num',a:m.a,b:m.b,n})}
 // ---- stickers
