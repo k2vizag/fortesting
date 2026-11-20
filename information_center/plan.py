@@ -31,7 +31,12 @@ for c in copy.deepcopy(CFG.CARDS):
         if c["type"] == "profile": sfx.append({"t": c["a"] + c.get("pillAt", 0.45), "k": "chime"})
         for st in c.get("steps", []): sfx.append({"t": c["a"] + st["at"], "k": "coin" if "₹" in st["v"] else "tick"})
 
-data = {"main_end": ME, "total": TOT, "captions": [], "stickers": [], "numbers": [], "cards": cards,
+caps = []
+for L in getattr(CFG, "LABELS", []):
+    a, b = M(L["sa"]), M(L["sb"])
+    caps.append({"a": round(a, 3), "b": round(b, 3), "lines": [{"cls": "ch", "t": L["big"]}, {"cls": "cs", "t": L["small"]}]})
+    sfx += [{"t": a, "k": "pop"}]
+data = {"main_end": ME, "total": TOT, "captions": caps, "stickers": [], "numbers": [], "cards": cards,
         "intro": T.get("intro", 0),
         "board": {"name": "KRISHNA NET CENTER", "phone": "7989615350", "line": "RTO Works & Motor Insurance"},
         "title": CFG.TITLE}

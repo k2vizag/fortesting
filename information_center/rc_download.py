@@ -37,3 +37,4 @@ CARDS = [
          desc="ఫ్యూచర్‌లో ఆప్షన్ తీసేయొచ్చు", tiles=[]),
 ]
 SFX = []
+SHIRT = "red"        # recolour the green shirt (recolor.py)

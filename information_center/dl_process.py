@@ -34,7 +34,7 @@ CARDS = [
     dict(type="timeline", theme="dark", sa=50.95, sb=56.3, kicker="ప్రతి క్వశ్చన్‌కి", gap=300,
          steps=[{"v": "4 ఆప్షన్స్", "t": "కరెక్ట్‌ది సెలెక్ట్ చేయాలి", "icon": "eye", "sat": 51.7},
                 {"v": "30 సెకండ్స్", "t": "ఒక్కో క్వశ్చన్‌కి", "icon": "gauge", "sat": 55.0}]),
-    dict(type="profile", theme="white", sa=62.1, sb=67.0, icon="doc", color="blue", kicker="LEARNER LICENCE · LLR",
+    dict(type="profile", theme="white", sa=62.1, sb=67.0, icon="doc", color="blue", kicker="LLR · LEARNER LICENCE REGISTRATION",
          title="6 నెలల వాలిడిటీ", pill="ఎప్పుడైనా టెస్ట్ ఇవ్వొచ్చు", spill=64.3, desc="", tiles=[]),
     dict(type="profile", theme="white", sa=91.3, sb=97.28, icon="cal", color="purple", kicker="DRIVING TEST",
          title="LLR వచ్చిన 1 నెల తర్వాత", pill="స్లాట్ బుక్ చేసుకోవాలి", spill=93.6, desc="", tiles=[]),
@@ -48,3 +48,6 @@ CARDS = [
                 {"v": "20 ఇయర్స్", "t": "వాలిడిటీ (ఏజ్‌ని బట్టి)", "icon": "star", "sat": 162.9}]),
 ]
 SFX = []
+# on-screen text when 'LLR' is first explained (user: LLR = Learner Licence Registration)
+LABELS = [dict(sa=10.85, sb=14.6, big="LLR", small="Learner Licence Registration")]
+SHIRT = "blue"       # recolour the green shirt (recolor.py)

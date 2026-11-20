@@ -79,5 +79,9 @@ lst.append(end_f)
 open(f"{OUT}/list.txt", "w").write("".join(f"file '{x}'\n" for x in lst))
 subprocess.run(["ffmpeg", "-v", "error", "-y", "-f", "concat", "-safe", "0", "-i", f"{OUT}/list.txt", "-c", "copy",
                 f"{W}/base.mov"], check=True)
+if getattr(CFG, "SHIRT", None):   # recolour the shirt on the cut video (cards/title are overlaid later)
+    os.replace(f"{W}/base.mov", f"{W}/base_green.mov")
+    subprocess.run([sys.executable, os.path.join(os.path.dirname(os.path.abspath(__file__)), "recolor.py"),
+                    f"{W}/base_green.mov", f"{W}/base.mov", CFG.SHIRT], check=True)
 json.dump({"intro": INTRO, "pieces": tl, "main_end": t, "total": t + END}, open(f"{W}/timeline.json", "w"), indent=0)
 print("pieces", len(pieces), "main", round(t, 2), "total", round(t + END, 2))
