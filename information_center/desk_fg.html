@@ -1,0 +1,12 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<style>
+html,body{margin:0;width:1080px;height:1920px;overflow:hidden;background:transparent}
+/* front edge of a light wood desk, drawn IN FRONT of the person (hides lap / chair / trousers) */
+.shadow{position:absolute;left:0;right:0;top:1740px;height:70px;background:linear-gradient(180deg,transparent,rgba(40,25,10,.22))}
+.top{position:absolute;left:0;right:0;top:1800px;height:34px;background:linear-gradient(180deg,#f1dcbd,#dcbf96);
+  box-shadow:0 -2px 0 rgba(255,255,255,.8) inset}
+.front{position:absolute;left:0;right:0;top:1834px;bottom:0;background:linear-gradient(180deg,#c9a577 0%,#b58f62 60%,#a07c52 100%)}
+.front::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(90deg,rgba(255,255,255,.04) 0 3px,transparent 3px 41px)}
+</style></head><body><div class="shadow"></div><div class="top"></div><div class="front"></div>
+<script>window.__ready=Promise.resolve(true)</script></body></html>

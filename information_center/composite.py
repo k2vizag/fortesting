@@ -1,5 +1,5 @@
 """Put the matted person on the studio background, with a light grade + light wrap so it sits in the scene.
-usage: composite.py base.mov alpha.mkv bg.png out.mov [dark|light]      (audio copied; black intro/end frames pass through)"""
+usage: composite.py base.mov alpha.mkv bg.png out.mov [dark|light] [foreground.png with alpha, e.g. desk edge]      (audio copied; black intro/end frames pass through)"""
 import subprocess, sys
 import cv2, numpy as np
 
@@ -16,6 +16,9 @@ else:                 # dark studio: a touch darker, warmer and punchier
     lut = np.clip(((np.arange(256) / 255.0 - 0.5) * 1.08 + 0.5) * 0.94 * 255, 0, 255).astype(np.float32)
     warm, WRAP = np.array([0.96, 1.0, 1.04], np.float32), 0.55   # BGR gains
 
+FG = cv2.imread(sys.argv[6], cv2.IMREAD_UNCHANGED).astype(np.float32) if len(sys.argv) > 6 else None
+if FG is not None: FGA = FG[..., 3:4] / 255.0; FGC = FG[..., :3]
+
 def comp(f, a):
     f = lut[f] * warm
     a = a.astype(np.float32) / 255.0
@@ -25,6 +28,7 @@ def comp(f, a):
     # gentle rim from the warm glow behind the head (upper body only)
     a3 = a[..., None]
     out = f * a3 + bg * (1 - a3)
+    if FG is not None: out = FGC * FGA + out * (1 - FGA)
     return np.clip(out, 0, 255).astype(np.uint8)
 
 dec = subprocess.Popen(["ffmpeg", "-v", "error", "-i", base, "-f", "rawvideo", "-pix_fmt", "bgr24", "-"], stdout=subprocess.PIPE)

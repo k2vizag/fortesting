@@ -9,6 +9,7 @@ CFG = importlib.import_module(sys.argv[1] if len(sys.argv) > 1 else "rto_message
 S = "/tmp/claude-0/-home-user-fortesting/c8da1d15-5414-57cb-a7d5-c0ca68b3b8d8/scratchpad"
 RAW, W = S + CFG.RAW, S + CFG.WORK
 KEEP = CFG.KEEP
+CROPS_ONLY = os.environ.get("CROPS_ONLY") == "1"   # only refresh timeline.json (crop data), reuse encoded pieces
 OUT = W + "/cuts"; os.makedirs(OUT, exist_ok=True)
 SPEED = 1.10
 SRC_W, SRC_H = 2160, 3840          # after auto-rotation (phone portrait)
@@ -56,7 +57,8 @@ for i, (a, b, txt) in enumerate(pieces):
     x0 = int(min(max(fx - cw / 2, 0), SRC_W - cw))
     y0 = int(min(max(fy - 0.36 * ch, 0), SRC_H - ch))
     f = f"{OUT}/s{i:03d}.mov"
-    subprocess.run(["ffmpeg", "-v", "error", "-y",
+    if not (CROPS_ONLY and os.path.exists(f)):
+      subprocess.run(["ffmpeg", "-v", "error", "-y",
                     "-ss", f"{a:.3f}", "-t", f"{d:.3f}", "-i", RAW,
                     "-ss", f"{a:.3f}", "-t", f"{d:.3f}", "-i", W + "/dn.wav",
                     "-filter_complex",
@@ -68,7 +70,7 @@ for i, (a, b, txt) in enumerate(pieces):
                     "-c:a", "pcm_s16le", "-ar", "48000", "-ac", "2", f], check=True)
     real = float(subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", f],
                                 capture_output=True, text=True).stdout)
-    tl.append([round(a, 2), round(b, 2), round(t, 2), round(t + real, 2)])
+    tl.append([round(a, 2), round(b, 2), round(t, 2), round(t + real, 2), x0, y0, cw, ch])   # + source crop (2160x3840 space)
     t += real; lst.append(f)
 END = 4.0
 end_f = f"{OUT}/end.mov"
@@ -76,6 +78,9 @@ subprocess.run(["ffmpeg", "-v", "error", "-y", "-f", "lavfi", "-i", "color=0x0b0
                 "-i", "anullsrc=r=48000:cl=stereo", "-t", str(END), "-c:v", "libx264", "-preset", "fast",
                 "-crf", "12", "-c:a", "pcm_s16le", end_f], check=True)
 lst.append(end_f)
+if CROPS_ONLY:
+    json.dump({"intro": INTRO, "pieces": tl, "main_end": t, "total": t + END}, open(f"{W}/timeline.json", "w"), indent=0)
+    print("crops only", len(tl)); sys.exit()
 open(f"{OUT}/list.txt", "w").write("".join(f"file '{x}'\n" for x in lst))
 subprocess.run(["ffmpeg", "-v", "error", "-y", "-f", "concat", "-safe", "0", "-i", f"{OUT}/list.txt", "-c", "copy",
                 f"{W}/base.mov"], check=True)

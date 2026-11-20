@@ -12,7 +12,7 @@ SPEED = 1.10
 
 def M(src):
     """raw-source second -> edited-video second (a time inside a cut snaps to the next kept piece)."""
-    for a, b, oa, ob in P:
+    for a, b, oa, ob, *_ in P:
         if src < a: return oa
         if src <= b: return oa + (src - a) / SPEED
     return P[-1][3]
