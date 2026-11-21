@@ -1,6 +1,7 @@
 """Lyric video data: 57.2 s cut of the song (raw 47.5 -> 104.7 s; the lyrics run unbroken 50 -> 103.8), lines with word timings, one still per line.
 Times are seconds in the cut (raw - 47.5). Word times from the Whisper pass on the song, tidied by hand."""
 import json, sys
+import cv2
 S = "/tmp/claude-0/-home-user-fortesting/c8da1d15-5414-57cb-a7d5-c0ca68b3b8d8/scratchpad/song"
 START, TOTAL = 47.5, 57.2
 LINES = [  # (line start, line end, [(word, start)])
@@ -25,6 +26,8 @@ STILLS = [(0.0, 47, 0, -2), (2.6, 9, -2, 0), (5.1, 3, 2, 0), (7.3, 13, 0, 0), (1
           (45.9, 48, 0, 2), (50.0, 52, 0, -2), (54.6, 47, 2, 0)]
 data = {"total": TOTAL,
         "lines": [{"a": a, "b": b, "words": [{"t": w, "a": s} for w, s in ws]} for a, b, ws in LINES],
-        "stills": [{"a": a, "img": f"file://{S}/pick/p{k:03d}.jpg", "dx": dx, "dy": dy} for a, k, dx, dy in STILLS]}
+        "stills": [{"a": a, "img": f"file://{S}/pick/p{k:03d}.jpg", "dx": dx, "dy": dy,
+                    "ar": (lambda im: im.shape[1] / im.shape[0])(cv2.imread(f"{S}/pick/p{k:03d}.jpg"))}
+                   for a, k, dx, dy in STILLS]}   # ar: the frame takes the photo's own shape (whole photo visible)
 json.dump(data, open(f"{S}/lyric_data.json", "w"), indent=1)
 print("lines", len(LINES), "stills", len(STILLS))

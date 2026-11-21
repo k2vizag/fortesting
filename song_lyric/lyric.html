@@ -81,10 +81,15 @@ function render(t){
   // still
   let k=0; for(let i=0;i<D.stills.length;i++) if(t>=D.stills[i].a) k=i;
   const S=D.stills[k], lt=t-S.a, dur=(D.stills[k+1]?D.stills[k+1].a:D.total)-S.a;
+  // frame takes the photo's own shape -> the whole photo is visible (centre of the frame stays at y=800)
+  const IW=962, ih=Math.round(IW/(S.ar||1.6)), FH=ih+48;
+  const CY=860; $('frame').style.height=FH+'px'; $('frame').style.top=(CY-FH/2)+'px';
+  $('lyr').style.top=(CY+FH/2+90)+'px';   // lyrics sit just under the photo
+  $('w1').style.top=(CY-FH/2-30)+'px'; $('w2').style.top=(CY+FH/2-34)+'px';
   imgs.forEach((im,i)=>{
-    if(i===k){const p=clamp(lt/dur);const z=1.04+0.08*p;
+    if(i===k){const p=clamp(lt/dur);const z=1.0+0.03*p;
       im.style.opacity=clamp(lt/0.18);
-      im.style.transform=`scale(${z}) translate(${(S.dx||0)*p}%, ${(S.dy||0)*p}%)`;}
+      im.style.transform=`scale(${z})`;}   /* gentle zoom only, no pan: keeps the edges in frame */
     else if(i===k-1){im.style.opacity=clamp(1-lt/0.18);} else im.style.opacity=0;
   });
   const pop=eBack(lt/0.35), rot=[-2.2,1.8,-1.4,2.4][k%4];
