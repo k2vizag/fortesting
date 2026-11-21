@@ -21,13 +21,20 @@ def shirt_mask(hsv):
     for i in range(1, n):
         a = st[i, cv2.CC_STAT_AREA]
         # shirt pieces: touching the bottom, or big and below the face (sleeve cut off by a raised arm)
-        if (i in bottom and a > 15000) or (a > 2500 and cen[i][1] > 1000):
+        if (i in bottom and a > 3000) or (a > 2500 and cen[i][1] > 1000) or (a > 600 and cen[i][1] > 1450):
             keep[i] = True
     m = keep[lab].astype(np.uint8)
     # grow inside the shirt-hue band so dark folds / low-sat threads also shift
     band = ((h >= 36) & (h <= HI + 8) & (v >= 14) & (((s >= 18) & (v <= 212)) | ((s >= 23) & (v <= 245)))).astype(np.uint8)
     for _ in range(9):
         m = cv2.dilate(m, np.ones((9, 9), np.uint8)) & band
+    # lower frame: the shirt hem / trousers near the desk are yellow-green (H 36-62) in warm light -> include them,
+    # but only within reach of the shirt (never desk wood H<26, papers S<18, or far background)
+    low = np.zeros_like(m); low[1450:] = 1
+    lowg = ((h >= 30) & (h <= 98) & (s >= 18) & (v >= 18) & (v <= 235)).astype(np.uint8) & low
+    reach = cv2.dilate(m, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (121, 121)))
+    m = m | (lowg & reach)
+    m = cv2.morphologyEx(m, cv2.MORPH_CLOSE, np.ones((5, 5), np.uint8)) & (band | lowg)
     return cv2.GaussianBlur(m.astype(np.float32), (9, 9), 0)
 
 def colorize_navy(bgr, a):

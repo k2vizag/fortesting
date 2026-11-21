@@ -33,4 +33,6 @@ CARDS = [
                 {"v": "చలాన్లు క్లియర్ ✓", "t": "పెండింగ్ ఉండకూడదు", "icon": "check", "sat": 139.1}]),
 ]
 SFX = []
+# big trendy text over the opening line (user request); edited-video seconds
+HOOK = {"a": 0.0, "b": 1.75, "big": "OTP", "small": "ముఖ్యం బిగిలు!", "top": 1120}
 SHIRT = "navy"       # user: dark blue shirt -> uniform navy colourise (recolor.py)

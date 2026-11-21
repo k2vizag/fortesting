@@ -54,6 +54,14 @@ html,body{margin:0;padding:0;width:1080px;height:1920px;background:transparent;o
 .term .hd{font-family:"DejaVu Sans Mono",monospace;font-weight:bold;color:#3BFF7A;font-size:34px;letter-spacing:4px;margin:44px 50px 30px}
 .term .ln{font-family:"DejaVu Sans Mono",TE8,monospace;color:#3BFF7A;font-size:50px;margin:22px 50px;text-shadow:0 0 12px rgba(59,255,122,.55);white-space:nowrap}
 .cursor{display:inline-block;width:26px;height:50px;background:#3BFF7A;vertical-align:-8px;margin-left:6px}
+/* hook sticker (trendy big text at the start) */
+.hook{position:absolute;left:0;right:0;display:flex;flex-direction:column;align-items:center;z-index:44;pointer-events:none}
+.hook .h1{font-family:PX;font-size:250px;line-height:.95;color:#FFE600;letter-spacing:6px;
+  -webkit-text-stroke:14px #111;paint-order:stroke fill;text-shadow:12px 14px 0 #FF2D78,0 0 40px rgba(0,0,0,.35)}
+.hook .tape{margin-top:18px;padding:14px 46px 24px;border-radius:18px;
+  background:linear-gradient(100deg,#FF2D78 0%,#B026FF 100%);box-shadow:10px 12px 0 #111,0 18px 40px rgba(0,0,0,.35)}
+.hook .h2{font-family:TE9,PX;font-size:112px;line-height:1.15;color:#fff;-webkit-text-stroke:8px #111;paint-order:stroke fill;white-space:nowrap}
+.hook .spark{position:absolute;width:16px;border-radius:8px;background:#FFE600;box-shadow:0 0 0 5px #111}
 /* board */
 .board{position:absolute;width:640px;height:300px;border-radius:30px;background:#D8302B;box-shadow:6px 10px 18px rgba(0,0,0,.45)}
 .board .in{position:absolute;inset:11px;border-radius:21px;white-space:nowrap;background:#F5D90A;display:flex;flex-direction:column;align-items:center;justify-content:center}
@@ -286,6 +294,19 @@ E.like=el(`<div class="btn" style="left:150px;top:1110px;width:330px;background:
 E.sub=el(`<div class="btn" style="left:520px;top:1110px;width:410px;background:#E62117">SUBSCRIBE</div>`,E.wrap);
 E.cur=el(`<div class="abs" style="left:0;top:0;width:60px;height:60px">${'<svg viewBox="0 0 24 24" width="60" height="60"><path d="M4 2l14 10-6 1 4 8-3 1-4-8-5 4z" fill="#fff" stroke="#000" stroke-width="1.2"/></svg>'}</div>`,E.wrap);
 
+// ---- hook sticker
+let HK=null;
+if(D.hook){HK={};HK.w=el(`<div class="hook" style="top:${D.hook.top||1150}px"><div class="h1">${D.hook.big}</div><div class="tape"><div class="h2">${D.hook.small}</div></div></div>`);
+  HK.h1=HK.w.querySelector('.h1');HK.tape=HK.w.querySelector('.tape');
+  HK.sp=[[-330,-40,-35],[300,-70,30],[-300,170,-60],[330,150,55]].map(([x,y,r])=>el(`<div class="spark" style="left:${540+x}px;top:${(D.hook.top||1150)+y+90}px;height:70px;transform:rotate(${r}deg)"></div>`));}
+function renderHook(t){ if(!HK) return; const a=D.hook.a,b=D.hook.b; const on=t>=a&&t<b+0.25;
+  HK.w.style.display=on?'flex':'none'; HK.sp.forEach(e=>e.style.display=on?'block':'none'); if(!on) return;
+  const lt=t-a, out=clamp((b+0.25-t)/0.25);
+  const x1=lt/0.32, x2=(lt-0.14)/0.34;
+  HK.h1.style.transform=`rotate(-6deg) scale(${(x1<=0?0:eBack(x1))*(0.85+0.15*out)*(1+0.025*Math.sin(lt*9))})`; HK.h1.style.opacity=Math.min(clamp(x1*3),out);
+  HK.tape.style.transform=`rotate(-3deg) translateX(${(1-eOut(x2))*-420}px) scale(${0.85+0.15*out})`; HK.tape.style.opacity=Math.min(clamp(x2*3),out);
+  HK.sp.forEach((e,i)=>{const k=clamp((lt-0.2-i*0.05)/0.25);e.style.opacity=Math.min(k,out);e.style.height=(20+50*eBack(k))+'px'});
+}
 function render(t){
   let whiteCard=false;
   for(const it of items){
@@ -320,6 +341,7 @@ function render(t){
       ln.style.opacity=clamp(x*2.5); ln.style.transform=`translateY(${(1-eOut(x))*16}px) scale(${sc*f})`;
     });
   }
+  renderHook(t);
   // board
   const me=D.main_end; let bx,by,bs,ang;
   const sw=3.5*Math.sin(2*Math.PI*t/2.6);

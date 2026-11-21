@@ -39,9 +39,10 @@ for L in getattr(CFG, "LABELS", []):
 data = {"main_end": ME, "total": TOT, "captions": caps, "stickers": [], "numbers": [], "cards": cards,
         "intro": T.get("intro", 0),
         "board": {"name": "KRISHNA NET CENTER", "phone": "7989615350", "line": "RTO Works & Motor Insurance"},
-        "title": CFG.TITLE}
+        "title": CFG.TITLE, "hook": getattr(CFG, "HOOK", None)}
 json.dump(data, open(W + "/data.json", "w"), ensure_ascii=False, indent=1)
 # soft SFX: title in, cards, end screen (bloop + thump, plucks, clicks)
+if getattr(CFG, "HOOK", None): sfx += [{"t": CFG.HOOK["a"] + 0.02, "k": "pop"}, {"t": CFG.HOOK["a"] + 0.18, "k": "pop"}]
 sfx = CFG.SFX + sfx + [{"t": 0.05, "k": "impact"}, {"t": 0.15, "k": "chime"}, {"t": ME - 0.25, "k": "whoosh"},
                        {"t": ME, "k": "impact"}, {"t": ME + 0.2, "k": "chime"}, {"t": ME + 1.45, "k": "click"},
                        {"t": ME + 2.35, "k": "click"}, {"t": ME + 2.4, "k": "ding"}]
