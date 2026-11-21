@@ -48,7 +48,8 @@ if INTRO > 0:
                 "-i", "anullsrc=r=48000:cl=stereo", "-t", str(INTRO), "-c:v", "libx264", "-preset", "fast",
                 "-crf", "12", "-c:a", "pcm_s16le", intro_f], check=True)
 lst, t, tl, pieces = ([intro_f] if INTRO > 0 else []), INTRO, [], []
-for a, b, txt in KEEP:
+for a, b, txt, *flag in KEEP:
+    if flag and flag[0] == "nosplit": pieces.append((a, b, txt)); continue      # keep as is (e.g. echo room)
     for p, q in split_pauses(a, b): pieces.append((p, q, txt))
 for i, (a, b, txt) in enumerate(pieces):
     d = round(b - a, 3)
@@ -85,7 +86,7 @@ if CROPS_ONLY:
 open(f"{OUT}/list.txt", "w").write("".join(f"file '{x}'\n" for x in lst))
 subprocess.run(["ffmpeg", "-v", "error", "-y", "-f", "concat", "-safe", "0", "-i", f"{OUT}/list.txt", "-c", "copy",
                 f"{W}/base.mov"], check=True)
-if getattr(CFG, "SHIRT", None):   # recolour the shirt on the cut video (cards/title are overlaid later)
+if getattr(CFG, "SHIRT", None):  # None = keep the original shirt   # recolour the shirt on the cut video (cards/title are overlaid later)
     os.replace(f"{W}/base.mov", f"{W}/base_green.mov")
     subprocess.run([sys.executable, os.path.join(os.path.dirname(os.path.abspath(__file__)), "recolor.py"),
                     f"{W}/base_green.mov", f"{W}/base.mov", CFG.SHIRT], check=True)

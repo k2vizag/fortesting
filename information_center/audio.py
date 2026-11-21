@@ -135,7 +135,14 @@ sf.write(f"{W}/fx.wav", fx.astype(np.float32), SR, subtype="FLOAT")
 sf.write(f"{W}/music.wav", np.stack([mus, mus], 1).astype(np.float32), SR, subtype="FLOAT")
 
 # ---- mix: voice (loudnorm) + music ducked under voice + sfx
-fc = ("[0:a]highpass=f=75,loudnorm=I=-14:TP=-1.5:LRA=9,aresample=48000,asplit=2[v][vs];"
+# optional: argv[2] = end of the hook piece (s) -> that piece gets +5 dB and an auditorium echo
+HOOK_END = float(sys.argv[2]) if len(sys.argv) > 2 else 0.0
+pre = ""
+if HOOK_END > 0:
+    pre = (f"[0:a]asplit=2[h0][r0];[h0]atrim=0:{HOOK_END:.3f},asetpts=PTS-STARTPTS,volume=5dB,"
+           f"aecho=0.85:0.9:55|110|190|290|420:0.55|0.42|0.30|0.20|0.12,alimiter=limit=0.95[h1];"
+           f"[r0]atrim={HOOK_END:.3f},asetpts=PTS-STARTPTS[r1];[h1][r1]concat=n=2:v=0:a=1[vin];")
+fc = (pre + ("[vin]" if HOOK_END > 0 else "[0:a]") + "highpass=f=75,loudnorm=I=-14:TP=-1.5:LRA=9,aresample=48000,asplit=2[v][vs];"
       "[1:a]volume=0.30[m];[m][vs]sidechaincompress=threshold=0.02:ratio=8:attack=20:release=400[md];"
       "[2:a]volume=0.75[f];[v][md][f]amix=inputs=3:normalize=0:duration=first,alimiter=limit=0.95[out]")
 subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", f"{W}/base.mov", "-i", f"{W}/music.wav", "-i", f"{W}/fx.wav",
