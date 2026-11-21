@@ -30,3 +30,4 @@ CARDS = [
                 {"v": "చలాన్లు క్లియర్ ✓", "t": "పెండింగ్ ఉండకూడదు", "icon": "check", "sat": 139.1}]),
 ]
 SFX = []
+SHIRT = "darkblue"   # user: dark blue shirt (recolor.py)

@@ -1,12 +1,12 @@
 """Recolour the green plaid shirt (hue shift) in a 1080x1920 base video.
-usage: recolor.py in.mov out.mov blue|red        (audio is copied)
+usage: recolor.py in.mov out.mov blue|darkblue|red        (audio is copied)
 Mask = shirt hue band (excludes teal painting), not too dark (excludes beard),
 and only regions connected to the bottom of the frame (drops hair edges / wall specks)."""
 import subprocess, sys
 import cv2, numpy as np
 
 W, H = 1080, 1920
-TARGET = {"blue": 108, "red": 177}      # OpenCV hue (0-180)
+TARGET = {"blue": 108, "darkblue": 113, "red": 177}      # OpenCV hue (0-180)
 SRC_H = 70
 LO, HI = 56, 82
 
@@ -21,7 +21,7 @@ def shirt_mask(hsv):
     for i in range(1, n):
         a = st[i, cv2.CC_STAT_AREA]
         # shirt pieces: touching the bottom, or big and below the face (sleeve cut off by a raised arm)
-        if (i in bottom and a > 15000) or (a > 12000 and cen[i][1] > 1000):
+        if (i in bottom and a > 15000) or (a > 2500 and cen[i][1] > 1000):
             keep[i] = True
     m = keep[lab].astype(np.uint8)
     # grow inside the shirt-hue band so dark folds / low-sat threads also shift
@@ -38,8 +38,9 @@ def recolor(bgr, color):
     # set the hue to the target (keeping a little of the original variation): a fixed shift turned the
     # warm-lit yellow-green parts of the shirt (H 37-55) cyan instead of blue
     out[..., 0] = (TARGET[color] + 0.25 * (out[..., 0] - SRC_H)) % 180
-    out[..., 1] = np.clip(out[..., 1] * (1.9 if color == "blue" else 2.2) + 10, 0, 255)
+    out[..., 1] = np.clip(out[..., 1] * {"blue": 1.9, "darkblue": 2.6, "red": 2.2}[color] + 10, 0, 255)
     if color == "red": out[..., 2] = np.clip(out[..., 2] * 0.92, 0, 255)
+    if color == "darkblue": out[..., 2] = np.clip(out[..., 2] * 0.55, 0, 255)   # navy: darker, richer
     new = cv2.cvtColor(out.astype(np.uint8), cv2.COLOR_HSV2BGR).astype(np.float32)
     a3 = a[..., None]
     return (new * a3 + bgr.astype(np.float32) * (1 - a3)).astype(np.uint8)
