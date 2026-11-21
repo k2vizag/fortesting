@@ -41,12 +41,13 @@ def face(a, b):
     return float(np.median([f[1] for f in fs])), float(np.median([f[2] for f in fs]))
 
 ZOOM = 1.14            # light zoom so the face can be centred; still shows shoulders + room
-INTRO = 1.0           # black screen with the title before the video starts
+INTRO = getattr(CFG, "INTRO", 1.0)   # black screen with the title before the video starts (0 = none)
 intro_f = f"{OUT}/intro.mov"
-subprocess.run(["ffmpeg", "-v", "error", "-y", "-f", "lavfi", "-i", "color=black:s=1080x1920:r=30", "-f", "lavfi",
+if INTRO > 0:
+  subprocess.run(["ffmpeg", "-v", "error", "-y", "-f", "lavfi", "-i", "color=black:s=1080x1920:r=30", "-f", "lavfi",
                 "-i", "anullsrc=r=48000:cl=stereo", "-t", str(INTRO), "-c:v", "libx264", "-preset", "fast",
                 "-crf", "12", "-c:a", "pcm_s16le", intro_f], check=True)
-lst, t, tl, pieces = [intro_f], INTRO, [], []
+lst, t, tl, pieces = ([intro_f] if INTRO > 0 else []), INTRO, [], []
 for a, b, txt in KEEP:
     for p, q in split_pauses(a, b): pieces.append((p, q, txt))
 for i, (a, b, txt) in enumerate(pieces):

@@ -1,7 +1,10 @@
 """Video 3: Pollution certificate now needs OTP to the registered mobile + no pending challans. Raw seconds.
 User: skip 0-95 s of the raw, edit only from 96 s."""
 RAW, WORK = "/dl3/raw.mp4", "/w3"
-KEEP = [   # cut 96-104: set-up chatter + false start 'మీరు పొల్యూషన్ కి... పొల్యూషన్ కి'
+INTRO = 0.0   # user: start the video with the 'OTP ముఖ్యం బిగిలు' line (no black title screen)
+KEEP = [
+    (97.62, 98.88, "OTP ముఖ్యం బిగిలు"),            # hook (user request); cut 95.4-96.5 'OTP బిగిలు' first take
+    # cut 99-104: false start 'మీరు పొల్యూషన్ కి... పొల్యూషన్ కి'
     (104.00, 110.80, "మీరు పొల్యూషన్ చేయించుకోవాలంటే వెహికల్ సిక్స్ మంత్స్‌కి / వన్ ఇయర్‌కి పొల్యూషన్ అయిపోతుంది కదా"),
     (111.05, 114.50, "ఆ టైమ్‌లో మీరు పొల్యూషన్ చేయించుకోవడానికి వెళ్తే వాళ్ళు మీ మొబైల్ OTP అడుగుతారు"),
     (115.05, 120.05, "సో మీ బండి ఎప్పుడైతే రిజిస్ట్రేషన్ అయిందో ఆ టైమ్‌లో మీరు ఏ మొబైల్ నంబర్ ఇచ్చి ఉంటారో"),
@@ -30,4 +33,4 @@ CARDS = [
                 {"v": "చలాన్లు క్లియర్ ✓", "t": "పెండింగ్ ఉండకూడదు", "icon": "check", "sat": 139.1}]),
 ]
 SFX = []
-SHIRT = "darkblue"   # user: dark blue shirt (recolor.py)
+SHIRT = "navy"       # user: dark blue shirt -> uniform navy colourise (recolor.py)

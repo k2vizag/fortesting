@@ -1,5 +1,5 @@
 """Recolour the green plaid shirt (hue shift) in a 1080x1920 base video.
-usage: recolor.py in.mov out.mov blue|darkblue|red        (audio is copied)
+usage: recolor.py in.mov out.mov blue|darkblue|navy|red        (audio is copied)
 Mask = shirt hue band (excludes teal painting), not too dark (excludes beard),
 and only regions connected to the bottom of the frame (drops hair edges / wall specks)."""
 import subprocess, sys
@@ -30,7 +30,31 @@ def shirt_mask(hsv):
         m = cv2.dilate(m, np.ones((9, 9), np.uint8)) & band
     return cv2.GaussianBlur(m.astype(np.float32), (9, 9), 0)
 
+def colorize_navy(bgr, a):
+    """uniform navy: keep the shirt's own lightness (pattern, folds), replace its colour completely (Lab)."""
+    lab = cv2.cvtColor(bgr, cv2.COLOR_BGR2LAB).astype(np.float32)
+    L = lab[..., 0]
+    Ln = np.clip(L * 0.36 + 6, 0, 255)                       # dark navy
+    k = np.clip(Ln / 80.0, 0.30, 1.0)                         # less chroma in the dark stripes
+    out = np.stack([Ln, 128 + 7 * k, 128 - 24 * k], -1)      # a/b offsets = deep navy blue
+    new = cv2.cvtColor(out.clip(0, 255).astype(np.uint8), cv2.COLOR_LAB2BGR).astype(np.float32)
+    a3 = a[..., None]
+    return (new * a3 + bgr.astype(np.float32) * (1 - a3)).astype(np.uint8)
+
+def edge_extend(hsv, a):
+    """take in the thin yellow-green fringe at shirt edges (mixed shirt/skin pixels), never skin itself."""
+    h, s_ = hsv[..., 0], hsv[..., 1]
+    fringe = ((h >= 26) & (h <= 100) & (s_ >= 14)).astype(np.float32)
+    grown = cv2.dilate(a, np.ones((5, 5), np.uint8)) * fringe
+    return np.maximum(a, cv2.GaussianBlur(grown, (0, 0), 1.0))
+
 def recolor(bgr, color):
+    if color == "navy":
+        hsv = cv2.cvtColor(bgr, cv2.COLOR_BGR2HSV)
+        a = shirt_mask(hsv)
+        if a.max() == 0: return bgr
+        return colorize_navy(bgr, edge_extend(hsv, a))
+
     hsv = cv2.cvtColor(bgr, cv2.COLOR_BGR2HSV)
     a = shirt_mask(hsv)
     if a.max() == 0: return bgr
