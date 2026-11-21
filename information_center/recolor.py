@@ -24,6 +24,13 @@ def shirt_mask(hsv):
         if (i in bottom and a > 3000) or (a > 2500 and cen[i][1] > 1000) or (a > 600 and cen[i][1] > 1450):
             keep[i] = True
     m = keep[lab].astype(np.uint8)
+    # small shirt bits seen through finger gaps: keep tiny pieces that sit right next to the kept shirt
+    near = cv2.dilate(m, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (61, 61)))
+    for i in range(1, n):
+        if not keep[i] and st[i, cv2.CC_STAT_AREA] > 30 and cen[i][1] > 1100:
+            ys, xs = int(cen[i][1]), int(cen[i][0])
+            if near[min(ys, H - 1), min(xs, W - 1)]: keep[i] = True
+    m = keep[lab].astype(np.uint8)
     # grow inside the shirt-hue band so dark folds / low-sat threads also shift
     band = ((h >= 36) & (h <= HI + 8) & (v >= 14) & (((s >= 18) & (v <= 212)) | ((s >= 23) & (v <= 245)))).astype(np.uint8)
     for _ in range(9):
