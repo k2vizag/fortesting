@@ -33,7 +33,8 @@ def shirt_mask(hsv):
     low = np.zeros_like(m); low[1450:] = 1
     lowg = ((h >= 30) & (h <= 98) & (s >= 18) & (v >= 18) & (v <= 235)).astype(np.uint8) & low
     reach = cv2.dilate(m, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (121, 121)))
-    m = m | (lowg & reach)
+    lap = np.zeros_like(m); lap[1750:, 120:960] = 1       # his lap between the hands at the bottom edge
+    m = m | (lowg & (reach | lap))
     m = cv2.morphologyEx(m, cv2.MORPH_CLOSE, np.ones((5, 5), np.uint8)) & (band | lowg)
     return cv2.GaussianBlur(m.astype(np.float32), (9, 9), 0)
 
