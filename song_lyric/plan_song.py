@@ -6,8 +6,8 @@ S = "/tmp/claude-0/-home-user-fortesting/c8da1d15-5414-57cb-a7d5-c0ca68b3b8d8/sc
 START, TOTAL = 47.5, 57.2
 LINES = [  # (line start, line end, [(word, start)])
     (2.6, 5.1,  [("Chitti", 2.6), ("Chitti", 3.9), ("Cheema", 4.4)]),
-    (5.1, 7.3,  [("Chitti", 5.1), ("Chitti", 5.4), ("Laa", 5.7), ("Ayyo", 6.2), ("Raama", 6.7)]),
-    (7.3, 11.6, [("Vandha", 7.3), ("Tannula", 7.9), ("Chakkera", 8.3), ("Mosthundhamma", 9.0)]),
+    (5.1, 7.3,  [("Chitti", 5.1), ("Chethula", 5.6), ("Hayyo", 6.2), ("Raama", 6.7)]),   # spelling from the film card
+    (7.3, 11.6, [("Vandha", 7.3), ("Tannula", 7.9), ("Chakkera", 8.3), ("Mosthondhamma", 9.0)]),
     (11.6, 15.5, [("Kondapalli", 11.6), ("Bomma", 13.0), ("Konda", 13.7), ("Kona", 14.1), ("Daatindhamma", 14.7)]),
     (15.5, 19.0, [("Thana", 15.9), ("Kalala", 16.3), ("Vaipu", 16.7), ("Nadichindhamma", 17.4)]),
     (19.0, 23.7, [("Em", 19.0), ("Antaaru", 21.0), ("Emito", 21.6), ("Evito", 22.6)]),
@@ -21,13 +21,13 @@ LINES = [  # (line start, line end, [(word, start)])
     (50.0, 52.7, [("Rivvu", 50.0), ("Rivvu", 50.5), ("Mani", 51.1), ("Paatikave", 51.7)]),
     (52.7, 57.2, [("Vannelu", 52.7), ("Kooti", 53.2), ("Pichchuka", 53.6), ("Rekkalilaa", 54.5)]),
 ]
-STILLS = [(0.0, 47, 0, -2), (2.6, 9, -2, 0), (5.1, 3, 2, 0), (7.3, 13, 0, 0), (11.6, 51, 0, -2), (15.5, 14, 2, 0),
+STILLS = [(0.0, 47, 0, -2), (2.6, 9, -2, 0), (5.1, "card_54.2", 0, 0), (7.3, "card_57.8", 0, 0), (11.6, 51, 0, -2), (15.5, 14, 2, 0),
           (19.0, 16, -2, 0), (23.7, 36, 0, -2), (26.9, 45, 2, 0), (30.3, 46, -2, 0), (33.5, 40, 0, -2), (37.5, 6, 2, 0), (41.4, 1, -2, 0),
           (45.9, 48, 0, 2), (50.0, 52, 0, -2), (54.6, 47, 2, 0)]
 data = {"total": TOTAL,
         "lines": [{"a": a, "b": b, "words": [{"t": w, "a": s} for w, s in ws]} for a, b, ws in LINES],
-        "stills": [{"a": a, "img": f"file://{S}/pick/p{k:03d}.jpg", "dx": dx, "dy": dy,
-                    "ar": (lambda im: im.shape[1] / im.shape[0])(cv2.imread(f"{S}/pick/p{k:03d}.jpg"))}
+        "stills": [{"a": a, "img": f"file://{S}/pick/" + (f"p{k:03d}.jpg" if isinstance(k, int) else f"{k}.jpg"), "dx": dx, "dy": dy,
+                    "ar": (lambda im: im.shape[1] / im.shape[0])(cv2.imread(f"{S}/pick/" + (f"p{k:03d}.jpg" if isinstance(k, int) else f"{k}.jpg")))}
                    for a, k, dx, dy in STILLS]}   # ar: the frame takes the photo's own shape (whole photo visible)
 json.dump(data, open(f"{S}/lyric_data.json", "w"), indent=1)
 print("lines", len(LINES), "stills", len(STILLS))
